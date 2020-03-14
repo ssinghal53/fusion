@@ -1,0 +1,32 @@
+// C.5	GOLF_Professional.mof
+// ==================================================================
+//  GOLF_Professional 
+// ==================================================================
+class GOLF_Professional : GOLF_ClubMember {
+
+// ======================== local structures ========================
+	structure Sponsor {
+		string Name;
+		GOLF_Date ContractSignedDate; 
+		real32 ContractAmount;
+	}; 
+	
+// ======================== local enumerations ======================
+	enumeration ProfessionalStatusEnum : MemberStatusEnum {
+		Professional = 6, 
+		SponsoredProfessional = 7
+	}; 
+	
+// =========================== properties ===========================	
+		[Override]
+	ProfessionalStatusEnum Status = Professional; 
+	Sponsor Sponsors[]; 
+	Boolean Ranked; 
+
+// ============================ methods =============================	
+	    [Static] 
+	GOLF_ResultCodeEnum GetNumberOfProfessionals (
+		[Out] uint32 NoOfPros, 
+		[In] ProfessionalStatusEnum Status = Professional
+	);
+};	

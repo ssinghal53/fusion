@@ -1,0 +1,9 @@
+// C.11	GOLF_PhoneNumber.mof
+// ==================================================================
+//  GOLF_PhoneNumber 
+// ==================================================================
+   [OCL {"inv: AreaCode -> size() = 3", "inv: Number->Size() = 7"}]
+structure GOLF_PhoneNumber {
+	uint8 AreaCode[];
+	uint8 Number[];
+};

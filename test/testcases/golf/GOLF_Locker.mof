@@ -1,0 +1,9 @@
+// C.6	GOLF_Locker.mof
+// ==================================================================
+//  GOLF_Locker 
+// ==================================================================
+class GOLF_Locker : GOLF_Base {
+	string Location; 
+	uint16 LockerNo; 
+	real32 MonthlyRentFee; 
+};

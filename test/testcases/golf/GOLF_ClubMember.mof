@@ -1,0 +1,33 @@
+// C.4	GOLF_ClubMember.mof
+// ==================================================================
+//  GOLF_ClubMember 
+// ==================================================================
+        [Description ( 
+		  "Insances of this class represent members of a gold club." )]
+class GOLF_ClubMember: GOLF_Base {
+
+// ======================= local enumerations ========================
+    enumeration MemberStatusEnum : uint16 {
+		Basic = 0, 
+		Extended = 1, 
+		VP = 2
+	};
+	
+// =========================== properties ===========================	 
+	string FirstName; 
+	string LastName; 
+	MemberStatusEnum Status; 
+	GOLF_Date MembershipEstablishedDate;
+	
+	real32 MembershipSignUpFee; 
+	real32 MonthlyFee; 
+	GOLF_Date LastPaymentDate; 
+	
+	GOLF_Address MemberAddress; 
+		[ Required ] 
+	GOLF_PhoneNumber MemberPhoneNo;
+	string MamberEmailAddress; 
+	
+// ============================ methods =============================
+	GOLF_ResultCodeEnum SendPaymentReminderMessage(); 
+};

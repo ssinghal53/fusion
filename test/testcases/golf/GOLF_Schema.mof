@@ -1,0 +1,35 @@
+//  C.1 GOLF_Schema.mof
+//	Copyright 2011 Distributed Management Task Force, Inc. (DMTF).
+//	Example domain used to illustrate CIM v3 and MOF v3 features
+//
+//  Modified to a "define-before-use" order by Sharad Singhal, 6/14/2014
+//
+//  Qualifier types
+//
+#pragma include ("GOLF_Qualifiers.mof")
+//
+//  Global enumerations
+//
+#pragma include ("GlobalEnums/GOLF_ResultCode.mof")
+#pragma include ("GlobalEnums/GOLF_MonthsEnum.mof")
+#pragma include ("GlobalEnums/GOLF_StatesEnum.mof")
+//
+// 	Global structures
+//
+#pragma include ("GlobalStructs/GOLF_Address.mof")
+#pragma include ("GlobalStructs/GOLF_Date.mof")
+#pragma include ("GlobalStructs/GOLF_PhoneNumber.mof")
+//
+// Class declarations
+//
+#pragma include ("GOLF_Base.mof")
+#pragma include ("GOLF_ClubMember.mof")
+#pragma include ("GOLF_Professional.mof")
+#pragma include ("GOLF_Club.mof")
+#pragma include ("GOLF_Locker.mof")
+#pragma include ("GOLF_MemberLocker.mof")
+#pragma include ("GOLF_Lesson.mof")
+//
+//  Instances
+//
+#pragma include ("Instances/JohnDoe.mof")

@@ -1,0 +1,10 @@
+// C.10	GOLF_Date.mof
+// ==================================================================
+//  GOLF_Date 
+// ==================================================================
+structure GOLF_Date {
+	uint16 Year = 2000; 
+	GOLF_MonthsEnum Month = GOLF_MonthsEnum.January;
+		[MinValue(1), MaxValue(31)]
+	uint16 Day = 1; 
+};

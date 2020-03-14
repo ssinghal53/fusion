@@ -1,0 +1,13 @@
+// C.7	GOLF_MemberLocker.mof
+// ==================================================================
+//  GOLF_MemberLocker 
+// ==================================================================
+
+// association GOLF_MemberLocker : GOLF_Base {
+class GOLF_MemberLocker : GOLF_Base {
+		[Max(1)]
+	GOLF_ClubMember REF Member; 
+		[Max(1)]
+	GOLF_Locker REF Locker;
+	GOLF_Date AssignedOnDate; 
+};

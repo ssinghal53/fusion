@@ -1,0 +1,145 @@
+/*
+ * GOLF_Qualifiers
+ * Copyright 2013 Sharad Singhal. All Rights Reserved
+ */
+
+// declare enumerations required for parsing the qualifier types
+
+Enumeration CIM_AggregationKindEnum : String {
+	None,
+	Shared,
+	Composite
+};
+
+Enumeration CIM_ArrayKindEnum : String {
+	bag,
+	set,
+	ordered,
+	orderedSet,
+	indexed
+};
+
+ 
+Qualifier Abstract : boolean = false
+   Scope(Class,Enumeration,Structure)
+   Policy(Restricted);
+ 
+Qualifier AggregationKind : CIM_AggregationKindEnum = None 
+   Scope(Reference)
+   Policy(DisableOverride);
+   
+Qualifier ArrayType : CIM_ArrayKindEnum = bag
+   Scope(Method, Parameter, Property, Reference)
+   Policy(DisableOverride);
+ 
+Qualifier BitMap : String = null
+   Scope(Method,Parameter,Property);
+   
+Qualifier BitValues : String = null
+   Scope(Method,Parameter,Property);
+
+Qualifier Counter : boolean = false
+   Scope(Method,Parameter,Property)
+   Policy(DisableOverride);
+
+Qualifier Deprecated : String = null
+   Scope(Any)
+   Policy(Restricted);
+
+// Description of a class, property, or other item
+Qualifier Description : string = null 
+    Scope(Any);
+    
+Qualifier EmbeddedObject : boolean = false
+   Scope(Method,Parameter,Property)
+   Policy(DisableOverride);
+   
+Qualifier EmbeddedObject : boolean = false
+   Scope(Method,Parameter,Property)
+   Policy(DisableOverride);
+[Description("Experimental Qualifier")]
+Qualifier Experimental : boolean = false
+   Scope(Any)
+   Policy(Restricted);
+   
+Qualifier Gauge : boolean = false
+   Scope(Method,Parameter,Property)
+   Policy(DisableOverride);
+
+Qualifier In : boolean = true
+   Scope(Parameter)
+   Policy(DisableOverride);
+   
+Qualifier IsPUnit : boolean = false
+   Scope(Method,Parameter,Property);
+
+Qualifier Key : boolean = false
+   Scope(Property,Reference);
+
+Qualifier MappingStrings : String = null
+   Scope(Any);
+
+// Maximum number of items in references
+Qualifier Max : uint32 = null 
+    Scope(reference);
+
+// Maximum number of items in references
+Qualifier MaxLen : uint32 = null 
+    Scope(Property);
+
+// Minimum number of items for a reference
+Qualifier Min : uint32 = 0
+    Scope(reference);
+    
+// Minimum Value
+Qualifier MinValue : sint32 = null
+    Scope(Method, Parameter, Property);
+
+// Maximum Value
+Qualifier MaxValue : sint32 = null
+    Scope(Method, Parameter, Property);
+
+Qualifier ModelCorrespondence : String []
+    Scope(Any);
+
+Qualifier OCL : String []
+    Scope(Class,Structure,Method);
+    
+Qualifier Out : boolean = false
+   Scope(Parameter)
+   Policy(DisableOverride);
+
+Qualifier Override : boolean = false
+   Scope(Property,Method,Parameter)
+   Policy(Restricted);
+   
+Qualifier PackagePath : String = null
+   Scope(Class,Enumeration);
+
+Qualifier PUnit : String = null
+   Scope(Property,Method,Parameter);
+
+Qualifier Read : boolean = true
+   Scope(Property,Reference);   
+
+// indicates that some item is a required item
+Qualifier Required : boolean = false 
+    Scope(Method, property, reference, parameter)
+    Policy(DisableOverride);
+    
+Qualifier Static : boolean = false
+    Scope(Method)
+    Policy(DisableOverride);
+
+Qualifier Terminal : boolean = false
+   Scope(Class,Enumeration,Structure);
+
+Qualifier Version : String = null
+   Scope(Class,Enumeration,Structure)
+   Policy(Restricted);
+
+Qualifier Write : boolean = false
+   Scope(Property,Reference);
+   
+Qualifier XMLNamespaceName : String = null
+   Scope(Parameter,Property,Method);

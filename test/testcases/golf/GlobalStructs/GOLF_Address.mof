@@ -1,0 +1,11 @@
+// C.9	GOLF_Address.mof
+// ==================================================================
+//  GOLF_Address 
+// ==================================================================
+structure GOLF_Address {
+	GOLF_StatesEnum State; 
+	string City; 
+	string Street; 
+	string StreetNo;
+	string AppartmentNo; 
+};

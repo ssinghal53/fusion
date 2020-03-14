@@ -1,0 +1,20 @@
+// C.2	GOLF_Base.mof
+// ==================================================================
+//  GOLF_Base 
+// ==================================================================
+        [Abstract] 
+class GOLF_Base {
+
+// =========================== properties ===========================
+        [Description ( 
+          "InstanceID is a property that opaquely and uniquely identifies "
+		  "an instance of a class that derives from the GOLF_Base structure. "), 
+         Key]
+    string InstanceID;
+
+        [Description ( 
+          "A a short textual description (one- line string) of the "
+          "instance." ), 
+         MaxLen (64)]
+    string Caption;
+};

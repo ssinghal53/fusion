@@ -1,0 +1,40 @@
+// C.3	GOLF_Club.mof
+// ==================================================================
+//  GOLF_Club 
+// ==================================================================
+        [Description ( 
+		  "Insances of this class represent golf clubs. A golf club is an "
+		  "an organization that provides memebr services to golf players "
+		  "both amature and professional." )]
+class GOLF_Club: GOLF_Base {
+// =========================== properties ===========================
+    string ClubName; 
+	GOLF_Date YearEstablished; 
+	
+	GOLF_Address ClubAddress;
+	GOLF_PhoneNumber ClubPhoneNo; 
+	GOLF_PhoneNumber ClubFaxNo; 
+	string ClubWebSiteURL; 
+	
+	GOLF_ClubMember REF AllMembers[]; 
+	GOLF_Professional REF Professionals[]; 
+	
+// ============================ methods =============================	
+        [Static] 
+	GOLF_ResultCodeEnum AddNonProfessionalMember (
+		[In] GOLF_ClubMember newMember
+	); 
+        [Static] 
+    GOLF_ResultCodeEnum AddProfessional (
+        [In] GOLF_Professional newProfessional
+	); 
+        [Static] 
+    uint32 GetMembersWithOutstandingFees (
+		[In] GOLF_Date referenceDate,
+		[Out] GOLF_ClubMember REF lateMambers[]
+	); 
+	    [Static] 
+    GOLF_ResultCodeEnum TerminateMembership (
+		[In] GOLF_ClubMember REF memberURI
+	); 
+};

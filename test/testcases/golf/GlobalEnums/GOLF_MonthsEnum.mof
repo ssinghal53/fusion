@@ -1,0 +1,18 @@
+// C.13	GOLF_MonthsEnum.enum
+// ==================================================================
+//  GOLF_MonthsEnum 
+// ==================================================================
+enumeration GOLF_MonthsEnum : string {
+	January, 
+	February, 
+	March, 
+	April, 
+	May, 
+	June, 
+	July, 
+	August, 
+	September, 
+	October, 
+	November, 
+	December
+};

@@ -1,0 +1,16 @@
+// C.8	GOLF_Lesson.mof
+// ==================================================================
+//  GOLF_Lesson 
+// ==================================================================
+// association GOLF_Lesson : GOLF_Base {
+class GOLF_Lesson : GOLF_Base {
+	GOLF_Professional REF Instructur; 
+	GOLF_ClubMember REF Student; 
+	
+	Datetime Schedule; 
+		[Description ( "The duration of the lesson" )]
+	String Length = "60M"; 
+	string Location;
+	    	[Description ( " Cost of the lesson in US$ ")]
+	real32 LessonFee; 
+};

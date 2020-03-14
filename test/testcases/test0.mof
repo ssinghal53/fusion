@@ -1,0 +1,56 @@
+/*
+ * Test0 - Test for Qualifier Types
+ */
+
+Qualifier Test_Boolean : boolean = false Scope(Any);
+Qualifier Test_Uint8 : uint8 = 0 Scope(Any);
+Qualifier Test_Uint16 : uint16 = 0 Scope(Any);
+Qualifier Test_Uint32 : uint32 = 0 Scope(Any);
+Qualifier Test_Uint64 : uint64 = 0 Scope(Any);
+Qualifier Test_Sint8 : sint8 = 0 Scope(Any);
+Qualifier Test_Sint16 : sint16 = 0 Scope(Any);
+Qualifier Test_Sint32 : sint32 = 0 Scope(Any);
+Qualifier Test_Sint64 : sint64 = 0 Scope(Any);
+Qualifier Test_Real32 : real32 = 0.0 Scope(Any);
+Qualifier Test_Real64 : real64 = 0.0 Scope(Any);
+Qualifier Test_Char16 : char16 = 'a' Scope(Any);
+Qualifier Test_String : String = "string" Scope(Any);
+Qualifier Test_DateTime : DateTime = "20140720212527.245***:000" Scope(Any);
+Qualifier Test_Octetstring : OctetString = "0x43210" Scope(Any);
+
+Qualifier Test_BooleanArray : boolean [] = { false } Scope(Any);
+Qualifier Test_Uint8Array : uint8 [] = { 0 } Scope(Any);
+Qualifier Test_Uint16Array : uint16 [] = { 0 } Scope(Any);
+Qualifier Test_Uint32Array : uint32 [] = { 0 } Scope(Any);
+Qualifier Test_Uint64Array : uint64 [] = { 0 } Scope(Any);
+Qualifier Test_Sint8Array : sint8 [] = { 0 } Scope(Any);
+Qualifier Test_Sint16Array : sint16 [] = { 0 } Scope(Any);
+Qualifier Test_Sint32Array : sint32 [] = { 0 } Scope(Any);
+Qualifier Test_Sint64Array : sint64 [] = { 0 } Scope(Any);
+Qualifier Test_Real32Array : real32 [] = { 0.0 } Scope(Any);
+Qualifier Test_Real64Array : real64 [] = { 0.0 } Scope(Any);
+Qualifier Test_Char16Array : char16 [] = { 'a' } Scope(Any);
+Qualifier Test_StringArray : String [] = { "string" } Scope(Any);
+Qualifier Test_DateTimeArray : DateTime [] = { "20140720212527.245***:000" } Scope(Any);
+Qualifier Test_OctetstringArray : OctetString [] = { "0x43210" } Scope(Any);
+
+
+
+	/** Object Name (ObjectPath) */
+	OBJECTPATH("Ref",false,new Class[]{ObjectPath.class},ObjectPath.class),
+	/** Enumeration value (EnumerationValue) */
+	ENUMERATIONVALUE("",false, new Class[]{EnumerationValue.class},EnumerationValue.class),
+	/** CimStructure value (StructureValue) */
+	STRUCTUREVALUE("",false, new Class[]{StructureValue.class},StructureValue.class),
+	/** Instance value (CimInstance) */
+	INSTANCEVALUE("",false, new Class[]{CimInstance.class},CimInstance.class),
+	
+	
+	/** Object Name array (ObjectPath[]) */
+	OBJECTPATH_ARRAY("Ref",true,new Class[]{ObjectPath[].class},ObjectPath[].class),
+	/** Enumeration value array (EnumerationValue) */
+	ENUMERATIONVALUE_ARRAY("",true, new Class[]{EnumerationValue[].class},EnumerationValue[].class),
+	/** CimStructure value (StructureValue) */
+	STRUCTUREVALUE_ARRAY("",true, new Class[]{StructureValue[].class},StructureValue[].class),
+	/** Instance value (CimInstance) */
+	INSTANCEVALUE_ARRAY("",true, new Class[]{CimInstance[].class},CimInstance[].class);
