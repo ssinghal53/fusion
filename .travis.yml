@@ -1,3 +1,4 @@
 # travis CI test integration
 language: java
 os: linux
+script: java net.aifusion.AllTests
