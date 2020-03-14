@@ -109,7 +109,7 @@ public class Main {
 			}
 		}	
 		if(args.length == 0){
-			System.out.println("use: java "+javaCommand+" commandName [options] [file...]\nwhere commandName is one of");
+			System.out.println("use: java "+javaCommand+" commandName [options] [file...]");
 			System.out.println("\twhere commandName is one of");
 			for(String cn : knownCommands.keySet()){
 				System.out.println("\t\t"+cn+"\t- "+knownCommands.get(cn));
