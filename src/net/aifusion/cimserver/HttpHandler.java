@@ -33,7 +33,7 @@ import net.aifusion.metamodel.ModelException;
  * @author Sharad Singhal
  *
  */
-public class HttpHandler implements HttpRequestHandler {
+class HttpHandler implements HttpRequestHandler {
 	
 	/**
 	 * Create an HttpHandler

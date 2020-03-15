@@ -38,7 +38,8 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
- * Class to model a CIM CimStructure
+ * Class to model a CIM CimStructure. A CIM Structure is a template for a named value containing other name-value pairs.
+ * @see StructureValue
  * @author Sharad Singhal
  */
 public class CimStructure extends NamedElement {

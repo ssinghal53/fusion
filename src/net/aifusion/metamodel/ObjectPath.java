@@ -39,7 +39,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class to represent a CIM ObjectPath
+ * Class to represent a CIM ObjectPath. An object path represents the globally unique name of a named element, and can be used to access that
+ * element.
  * @author Sharad Singhal
  */
 public class ObjectPath {

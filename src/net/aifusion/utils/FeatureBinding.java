@@ -42,7 +42,7 @@ import net.aifusion.metamodel.ModelException;
  * @author Sharad Singhal
  *
  */
-public class FeatureBinding {
+class FeatureBinding {
 	/** Name of the feature */
 	private String featureName = null;
 	/** features linked to this name */

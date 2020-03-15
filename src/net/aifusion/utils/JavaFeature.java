@@ -62,7 +62,7 @@ import net.aifusion.metamodel.StructureValue;
  * Used in Cim2Java
  * @author Sharad Singhal
  */
-public class JavaFeature {
+class JavaFeature {
 	private static final Logger logger = Logger.getLogger(JavaFeature.class.getName());
 	private static String defaultNameSpace; 
 	/** Cim element to convert to java */

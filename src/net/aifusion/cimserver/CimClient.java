@@ -71,7 +71,9 @@ import net.aifusion.metamodel.StructureValue;
 import net.aifusion.providers.Provider;
 
 /**
- * Class to implement the client side interface for a Cim Server
+ * Class to implement the client side interface for a Cim Server.
+ * The client implements a {@linkplain Provider} interface as well as a {@linkplain CimListener} to enable the application to receive server-side events.
+ * The client forwards all requests to the server, and does not (currently) cache any data on the client side.
  * @author Sharad Singhal
  */
 public class CimClient implements Provider, CimListener {
@@ -141,7 +143,7 @@ public class CimClient implements Provider, CimListener {
 	}
 
 	/**
-	 * Create a CimClient
+	 * Create a CimClient using a server URL and an optional proxy
 	 * @param serverURL - server to which this client should connect
 	 * @param clientURL - the URL of this client (if any) for inbound communication. Null if no inbound connections expected.
 	 * @param proxyHost - outbound HTTP proxy host, if any
@@ -160,7 +162,7 @@ public class CimClient implements Provider, CimListener {
 	}
 
 	/**
-	 * Create a new CimClient
+	 * Create a new CimClient using a configuration
 	 * @param serverURL - CimServer to which this client should connect
 	 * @param configuration - configuration for the client. Maybe null if client configuration is not needed for Http
 	 */

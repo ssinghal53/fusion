@@ -68,7 +68,7 @@ public class BasicProvider implements Provider {
 	private HashMap<CimEventType,List<CimListener>> listeners = new HashMap<CimEventType,List<CimListener>>();
 
 	/**
-	 * Create a basic provider. If no repository is given (i.e., repository == null), an in-memory cache is initialized within the provider
+	 * Create a basic provider. If no repository is given (i.e., repository == null), an in-memory cache is initialized within the provider.
 	 * @param repository - repository to use for the provider
 	 */
 	public BasicProvider(Repository repository) {

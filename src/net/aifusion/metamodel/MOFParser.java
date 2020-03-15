@@ -47,8 +47,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author Sharad Singhal
  * Recursive descent parser implementing CIM Version 3 Metamodel as described in DSP0004 and DSP0221
+ * @author Sharad Singhal
  */
 public class MOFParser implements Parser {
 

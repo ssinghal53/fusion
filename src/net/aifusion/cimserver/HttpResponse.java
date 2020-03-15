@@ -53,7 +53,7 @@ import net.aifusion.metamodel.ModelException;
  * Class to represent an http response
  * @author Sharad Singhal
  */
-public class HttpResponse {
+class HttpResponse {
 	/** Logger for this class */
 	private static final Logger logger = Logger.getLogger(HttpResponse.class.getName());
 	/** Line termination */

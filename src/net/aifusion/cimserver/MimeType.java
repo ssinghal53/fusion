@@ -28,17 +28,23 @@
 package net.aifusion.cimserver;
 
 /**
- * Known MIME types
+ * Known MIME types to the Server
  * @author Sharad Singhal
  */
-public enum MimeType {
+enum MimeType {
 	// extension, type
+	/** Plain text type */
 	PLAINTEXT("txt","text/plain"),
+	/** MOF text type */
 	MOF("mof","text/mof"),
+	/** HTML type */
 	HTML("html","text/html"),
+	/** Plain text type */
 	TEXT("text","text/*"),
-	// note that BINARY must be first occurance of application/octet-stream
-	BINARY("bin","application/octet-stream"),	
+	// note that BINARY must be first occurrence of application/octet-stream
+	/** Binary stream type */
+	BINARY("bin","application/octet-stream"),
+	/** Chunked ang zipped type */
 	ZIP("zip","application/octet-stream");
 	
 	private String extension;

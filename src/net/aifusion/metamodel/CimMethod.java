@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * Class to represent a CIM Method
+ * Class to represent a CIM Method. CIM Methods are created as part of CIM Class definitions by the {@link MOFParser}.
  * @author Sharad Singhal
  */
 public class CimMethod extends QualifiedElement {

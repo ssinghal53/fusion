@@ -30,7 +30,9 @@ package net.aifusion.metamodel;
 import java.util.List;
 
 /**
- * Class to represent a CIM Interface
+ * Class to represent a CIM Interface. Interfaces provide the ability to support multiple inheritance in class definitions. They cannot be directly
+ * instantiated.
+ * @see StandardQualifierType#IMPLEMENTS
  * @author Sharad Singhal
  */
 public class CimInterface extends CimClass {

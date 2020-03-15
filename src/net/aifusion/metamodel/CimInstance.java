@@ -36,7 +36,10 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
- * Class to represent a CIM Instance
+ * Class to represent a CIM Instance. CIM Instances are active elements that can have properties and operations, and provide
+ * the ability to model control plane elements. Instances can be bound to java classes that can perform the corresponding actions
+ * within the managed environment. Instances can be created from corresponding class templates.
+ * @see #createInstance(CimClass, Map, String)
  * @author Sharad Singhal
  */
 public class CimInstance extends StructureValue {

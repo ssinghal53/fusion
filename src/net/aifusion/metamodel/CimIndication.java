@@ -28,7 +28,8 @@
 package net.aifusion.metamodel;
 
 /**
- * Base class to implement CimEvents
+ * Base class to implement Cim Events. CimIndications provide the capability to send asynchronous events from
+ * CIM Event Generators to CIM Listeners.
  * @author Sharad Singhal
  */
 public class CimIndication implements CimEvent {

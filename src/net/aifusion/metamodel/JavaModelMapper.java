@@ -41,7 +41,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility methods to map data structures between java and CIM classes
+ * Utility methods to map data structures between java and CIM classes. This class is used internally within Fusion, and
+ * should not be used in application code.
  * @author Sharad Singhal
  */
 public class JavaModelMapper {

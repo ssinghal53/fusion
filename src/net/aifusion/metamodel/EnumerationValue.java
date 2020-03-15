@@ -32,6 +32,7 @@ import java.util.List;
 /**
  * Class to represent an Enumeration Value. Enumeration values are (name, value) pairs, where
  * the name is associated with the value.
+ * @see CimEnumeration
  * @author Sharad Singhal
  */
 public class EnumerationValue extends QualifiedElement {

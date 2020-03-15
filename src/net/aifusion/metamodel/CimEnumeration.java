@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class to represent a CIM Enumeration
+ * Class to represent a CIM Enumeration. CIM Enumerations are constructed by the {@link MOFParser}.
  * @author Sharad Singhal
  *
  */

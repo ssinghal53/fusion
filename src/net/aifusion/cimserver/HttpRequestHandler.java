@@ -36,9 +36,18 @@ import net.aifusion.metamodel.ModelException;
  * Interface to handle an incoming Http Request
  * @author Sharad Singhal
  */
-public interface HttpRequestHandler {
+interface HttpRequestHandler {
 	/**
-	 * Get a request handler
+	 * Locate an HTTP request handler for the server. The configuration is checked for the name of a handler class. The following
+	 * are known internally:
+	 * <dl>
+	 * <dt>CimHandler</dt><dd>Use the built-in CIM Handler</dd>
+	 * <dt>DefaultHandler</dt><dd>Use the built-in default handler</dd>
+	 * <dt>HttpHandler</dt><dd>Use the built-in HTTP handler (not implemented)</dd>
+	 * </dl>
+	 * If none are found, then the class will attempt to load the class, and if it implements the HttpRequestHandler interface,
+	 * will first attempt to instantiate it using the given configuration, then using no configuration. On success, it will
+	 * return the located handler, else will throw a ModelException with the appropriate message.
 	 * @param config - Server Configuration class
 	 * @return - request handler
 	 */
@@ -61,12 +70,16 @@ public interface HttpRequestHandler {
 						Constructor<?> constructor = handler.getConstructor(HttpConfiguration.class);
 						return (HttpRequestHandler) constructor.newInstance(config);
 					} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
-						return (HttpRequestHandler) handler.newInstance();
+						try {
+							return (HttpRequestHandler) handler.getDeclaredConstructor().newInstance();
+						} catch (IllegalArgumentException | InvocationTargetException | SecurityException e1) {
+							throw new ModelException("Unable to locate a handler for "+handlerName,e1);
+						}
 					}
 				} else {
 					throw new ModelException(handlerName+" is not a HttpRequestHandler");
 				}
-			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
 				throw new ModelException("HttpRequestHandler#getHandler(): Unable to load class "+handlerName, e);
 			}
 		}

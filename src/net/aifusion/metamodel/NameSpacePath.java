@@ -31,7 +31,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Class to represent a CIM namespace path
+ * Class to represent a CIM namespace path. A namespace represents a group of (distributed) entities that can be considered as a logically
+ * single grouping.
  * @author Sharad Singhal
  */
 public class NameSpacePath {

@@ -419,7 +419,7 @@ public class HttpConfiguration {
 		System.out.println("\t-keystorepassword pass	# keystore password [null]");
 		System.out.println("\t-truststorepassword pass	# truststore passord [null]");
 		System.out.println("\t-x500principal dn			# x500Principal DN for server [CN=localhost,OU=cimfusion.com,O=cimfusion,C=US,L=Cupertino,ST=California]");
-		System.out.println("\t-requesthandler className	# default request handler [net.aifusion.cimserver.DefaultHandler]");
+		System.out.println("\t-requesthandler className	# default request handler [CimHandler]");
 		return;
 	}
 	/**
@@ -442,7 +442,7 @@ public class HttpConfiguration {
 	 * <dt>-keystorepassword pass</dt><dd>keystore password [null]</dd>
 	 * <dt>-truststorepassword pass</dt><dd>truststore password [null]</dd>
 	 * <dt>-x500principal dn</dt><dd>x500Principal DN for server [CN=localhost,OU=cimfusion.com,O=cimfusion,C=US,L=Belmont,ST=California]</dd>
-	 * <dt>-requesthandler className</dt><dd>default request handler [net.aifusion.cimserver.DefaultHandler]</dd>
+	 * <dt>-requesthandler className</dt><dd>default request handler [CimHandler]</dd>
 	 * <dt>-proxyHost hostName</dt><dd>proxy host [null]</dd>
 	 * <dt>-proxyPort port</dt><dd>proxy port [8080]</dd>
 	 *

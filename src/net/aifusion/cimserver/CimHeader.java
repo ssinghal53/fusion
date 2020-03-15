@@ -28,31 +28,54 @@
 package net.aifusion.cimserver;
 
 /**
- * Enumeration to define known CIM Intrinsic Methods
+ * Enumeration to define known CIM Intrinsic Methods used by the server and the client.
+ * @see HttpXHeader#INTRINSIC
  * @author Sharad Singhal
  */
-public enum CimHeader {
+enum CimHeader {
+	/** Put a named element into the server repository */
 	PUT_ELEMENT("PutElement",HttpMethod.PUT),
+	/** Get a named element from the server repository */
 	GET_ELEMENT("GetElement",HttpMethod.GET),
+	/** Check if the server has a named element */
 	HAS_ELEMENT("HasElement",HttpMethod.HEAD),
+	/** Delete a named element from the server repository */
 	DELETE_ELEMENT("DeleteElement",HttpMethod.DELETE),
+	/** Get the list of namespaces known to the server */
 	GET_NAMESPACES("GetNameSpaces",HttpMethod.GET),
+	/** Get a number of elements from the server */
 	GET_ELEMENTS("GetElements",HttpMethod.GET),
+	/** Add a listener to the server */
 	ADD_LISTENER("AddListener",HttpMethod.POST),
+	/** Remove a listener from the server */
 	REMOVE_LISTENER("RemoveListener",HttpMethod.POST),
+	/** Check if the server has a listener registered */
 	HAS_LISTENER("HasListener",HttpMethod.HEAD),
+	/** Register a child provider to the server */
 	REGISTER_PROVIDER("RegisterProvider",HttpMethod.POST),
+	/** Unregister a child provider from the server */
 	UNREGISTER_PROVIDER("UnregisterProvider",HttpMethod.POST),
+	/** Get the names of the properties defined in a CIM named element */
 	GET_PROPERTY_NAMES("GetPropertyNames",HttpMethod.GET),
+	/** Get the property type of some property */
 	GET_PROPERTY_TYPE("GetPropertyType",HttpMethod.GET),
+	/** Get the value of some property */
 	GET_PROPERTY_VALUE("GetPropertyValue",HttpMethod.GET),
+	/** Set the value of some property */
 	SET_PROPERTY_VALUE("SetPropertyValue",HttpMethod.POST),
+	/** Get the names of extrinsic methods defined in some class */
 	GET_METHOD_NAMES("GetMethodNames",HttpMethod.GET),
+	/** Get the return type of some extrinsic method defined in some class */
 	GET_METHOD_TYPE("GetMethodType",HttpMethod.GET),
+	/** Get the list of parameters defined in some extrinsic method */
 	GET_METHOD_PARAMETERS("GetMethodParameters",HttpMethod.GET),
+	/** Invoke an extrinsic method on an instance held on the server side */
 	INVOKE_METHOD("InvokeMethod",HttpMethod.POST),
+	/** Execute a CIM Query to the server and retrieve results */
 	EXECUTE_QUERY("ExecuteQuery",HttpMethod.POST),
+	/** Send an event to the server */
 	SEND_EVENT("SendEvent",HttpMethod.POST),
+	/** Shut down the client, and let the server know */
 	SHUT_DOWN("Bye",HttpMethod.HEAD)
 	;
 	
@@ -84,7 +107,7 @@ public enum CimHeader {
 	}
 	
 	/**
-	 * 
+	 * Lookup a particular Extension header from the HTTP request
 	 * @param header - string containing extension header value (case insensitive)
 	 * @return - CimHeader. Null if no such header found
 	 */

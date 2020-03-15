@@ -58,10 +58,10 @@ import net.aifusion.providers.BasicProvider;
 import net.aifusion.providers.Provider;
 
 /**
- * Class to Handle Cim Requests directed at an underlying provider
+ * Class to Handle Cim Requests directed at an underlying provider. This handler provides server-side processing for the CIM server
  * @author Sharad Singhal
  */
-public class CimHandler implements HttpRequestHandler {
+class CimHandler implements HttpRequestHandler {
 	/** Logger for this class */
 	private static Logger logger = Logger.getLogger(CimHandler.class.getName());
 	/** Underlying Cim Provider */

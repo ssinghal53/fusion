@@ -33,21 +33,21 @@ Global constants used in the meta-model classes
 @author Sharad Singhal
  */
 public class Constants {
-	/** Default schema name, if nothing is defined */
+	/** Default schema name, if nothing is defined (AIFusion)*/
 	public static final String defaultSchema = "AIFusion";
-	/** Default scheme to be used */
+	/** Default scheme to be used (http)*/
 	public static final String defaultScheme = "http";
-	/** default authority (host:port) if none specified */
+	/** default authority (host:port) if none specified(localhost:8085)*/
 	public static final String defaulAuthority = "localhost:8085";
-	/** Default local path if none specified */
+	/** Default local path if none specified (/aifusion)*/
 	public static final String defaultLocalPath = "/aifusion";
-	/** Default name space path ["http://localhost:8085/aifusion"]*/
+	/** Default name space path ("http://localhost:8085/aifusion")*/
 	public static final NameSpacePath defaultNameSpacePath = new NameSpacePath(defaultScheme+"://"+defaulAuthority+defaultLocalPath);
-	/** Default repository location for persistent objects */
+	/** Default repository location for persistent objects (repository)*/
 	public static final String defaultRepositoryLocation = "repository";
 	/** MappingStrings qualifier definition as fusiononMap JavaClassPath [# methodName] */
 	public static final String fusionMap = "Bind.CF|";
-	/** Default version (if none given) assumed for mapped java classes */
+	/** Default version (if none given) assumed for mapped java classes (0.0.1)*/
 	public static final String defaultVersion = "0.0.1";
 	/** Byte encoding for strings and character arrays (UTF-8) */
 	public static final Charset byteEncoding = StandardCharsets.UTF_8;
@@ -77,6 +77,8 @@ public class Constants {
 			"CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\r\n" + 
 			"OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\r\n" + 
 			"OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\r\n";
+	/** Current library version (1.0.0-R1")*/
+	public static final String libraryVersion = "1.0.0-R1";
 	/**
 	 * Global Constants
 	 * This class only contains static constants used in the metamodel classes. It should not be instantiated.

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Fusion Meta Model</title>
+</head>
+<body>
+<p>
+This group of packages implement a modeling framework based largely on the DMTF Common Information Model (CIM) Metamodel (version 3),
+with language bindings to Java 1.8 or later.</p>
+<p>Note, however, that the implementation differs from the CIM Metamodel in the following ways:</p>
+<ul>
+<li><b>ASSOCIATION classes are not implemented.</b> The functionality of Associations can be implemented using standard CLASS or STRUCTURE VALUE constructs.</li>
+<li><b>OUT parameters are not implemented.</b> OUT parameters were used in CIM version 2 to return multiple values. Given that the version 3 
+metamodel now contains structures, which allow multiple values to be returned, OUT parameters
+are unnecessary, and cause complexity when mapping to Java.</li>
+<li><b>INTERFACE classes have been added to the metamodel.</b> They enable multiple inheritance in the model, and map to java interface classes.</li>
+<li><b>Object names are structured differently.</b> Unlike the standards, the {@link net.aifusion.metamodel.ObjectPath} class provides a single way
+to represent all named elements within the metamodel.</li>
+<li><b>CIM operations over HTTP do not use XML.</b> The CIM Server uses MOF and plain-text over HTTP to avoid an extra layer of translation to XML.
+In addition, the number of intrinsic operations required has been reduced significantly, since the all named elements can be unambiguously
+addressed using a uniform structure.</li>
+<li><b>CQL support is partial.</b> Joins are currently not supported in CQL, so the query returns a list of instance and structure values
+rather than row sets.</li>
+<li><b>Java to MOF bindings are supported.</b> Annotations enable the CIM model to be derived directly from the java code at run-time.
+Conversely, tools can create annotated java stubs from MOF input.</li>
+</ul>
+<p><b>Related Documentation</b></p>
+<ol>
+<li><a href="http://dmtf.org/sites/default/files/standards/documents/DSP0004_3.0.1.pdf">
+Common Information Model (CIM) Metamodel (DSP0004) Version 3.0.1, 2014-08-30</a></li>
+<li><a href="https://www.dmtf.org/sites/default/files/standards/documents/DSP0221_3.0.1.pdf">
+Managed Object Format (MOF) (DSP0221) Version 3.0.1, 2015-04-16</a>
+<li><a href="https://www.dmtf.org/sites/default/files/standards/documents/DSP0004_2.8.0.pdf">
+Cim Information Model (CIM) Infrastructure (DSP0004) Version 2.8.0, 2014-08-03</a></li>
+<li><a href="https://www.dmtf.org/sites/default/files/standards/documents/DSP0200_1.4.0.pdf">
+CIM Operations over HTTP (DSP0200) Version 1.4.0, 2013-08-26</a></li>
+<li><a href="https://www.dmtf.org/sites/default/files/standards/documents/DSP0202_1.0.0.pdf">
+CIM Query Language Specification (DSP0202) Version 1.0.0, 2007-08-13</a></li>
+</ol>
+</body>
+</html>

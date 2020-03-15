@@ -52,10 +52,10 @@ import net.aifusion.metamodel.Constants;
 
 
 /**
- * Class to represent an HTTP Cookie.
+ * Class to represent an HTTP Cookie. Currently not used in the CIM Server.
  * @author Sharad Singhal
  */
-public class HttpCookie {
+class HttpCookie {
 	/** Logger for the class */
 	private static final Logger logger = Logger.getLogger(HttpCookie.class.getName());
 	/** Date formatter */

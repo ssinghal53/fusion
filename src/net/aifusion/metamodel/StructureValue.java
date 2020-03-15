@@ -35,7 +35,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class to represent CimStructure values. A structure value encapsulates a set of key-value pairs
+ * Class to represent CimStructure values. A structure value encapsulates a set of key-value pairs. It can be created from a CimStructure
+ * as a template using the factory method {@link #createStructureValue(CimStructure, Map, String)}.
  * @author Sharad Singhal
  */
 public class StructureValue extends NamedElement {

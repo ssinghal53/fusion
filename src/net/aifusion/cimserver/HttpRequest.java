@@ -42,10 +42,10 @@ import java.util.logging.Logger;
 import net.aifusion.metamodel.Constants;
 
 /**
- * Class to handle an HTTP Server request
+ * Class to handle an HTTP request at the server
  * @author Sharad Singhal
  */
-public class HttpRequest {
+class HttpRequest {
 	/** Logger for this class */
 	private static final Logger logger = Logger.getLogger(HttpRequest.class.getName());
 	/** HTTP protocol version */

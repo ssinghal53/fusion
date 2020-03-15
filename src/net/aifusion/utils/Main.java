@@ -38,13 +38,13 @@ import net.aifusion.cimserver.HttpConfiguration;
 import net.aifusion.metamodel.MOFParser;
 
 /**
- * The Main (dispatcher) entry point for all CimFusion tools<br>
+ * The Main (dispatcher) entry point for all Fusion tools<br>
  * This program is the main entry point for all tools and provides a command line interface that dispatches
  * the request to the different. The following tools are currently handled:
  * <dl>
  * <dt>Cim Server</dt><dd>Run the cim Server</dd>
- * <dt>AllTests</dt><dd>Run the unit tests</dd>
- * <dt>Configure</dt><dd>Create configuration directories</dd>
+ * <dt>Tests</dt><dd>Run the unit tests</dd>
+ * <dt>Configure</dt><dd>Create configuration needed for the CIM Server</dd>
  * <dt>MofParser</dt><dd>load mof files into the repository</dd>
  * <dt>Cim2Java</dt><dd>Create java source stubs from MOF</dd>
  * <dt>Java2Cim</dt><dd>Create mof files from java</dd>
@@ -66,14 +66,14 @@ public class Main {
 	}
 	
 	/**
-	 * The Main (dispatcher) entry point for all AIFusion tools<br>
+	 * The Main (dispatcher) entry point for all Fusion tools<br>
 	 * This program is the main entry point for all tools and provides a command line interface that dispatches
 	 * the request to the different. The following tools are currently handled:
 	 * <dl>
 	 * <dt>server</dt><dd>Run the cim Server</dd>
 	 * <dt>test</dt><dd>Run the unit tests</dd>
-	 * <dt>config</dt><dd>Create configuration directories</dd>
-	 * <dt>parse</dt><dd>load mof files into the repository</dd>
+	 * <dt>config</dt><dd>Create a CIM Server configuration</dd>
+	 * <dt>parse</dt><dd>load mof files into a repository</dd>
 	 * <dt>c2j</dt><dd>Create java source stubs from MOF</dd>
 	 * <dt>j2c</dt><dd>Create mof files from java</dd>
 	 * </dl>

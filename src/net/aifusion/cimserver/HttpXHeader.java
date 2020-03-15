@@ -31,25 +31,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Http CIM Extension Headers known to the server
+ * Http CIM Extension Headers known to the server. These extension headers are used to identify parameters for intrinsic operations requested by the client
  * @author Sharad Singhal
  */
-public enum HttpXHeader {
+enum HttpXHeader {
+	/** Intrinsic Operation being performed (see {@link CimHeader})*/
 	INTRINSIC("Cim-Instrinsic",null),
+	/** header containing the object path of the named element */
 	OBJECT_PATH("Cim-ObjectPath",new CimHeader[] {CimHeader.GET_ELEMENT,CimHeader.HAS_ELEMENT,CimHeader.DELETE_ELEMENT,CimHeader.GET_PROPERTY_NAMES,CimHeader.GET_PROPERTY_TYPE,
 			CimHeader.GET_PROPERTY_VALUE,CimHeader.SET_PROPERTY_VALUE,CimHeader.GET_METHOD_NAMES,CimHeader.GET_METHOD_TYPE,CimHeader.GET_METHOD_PARAMETERS,
 			CimHeader.INVOKE_METHOD,}),
+	/** Header containing the name space path */
 	NAMESPACE_PATH("Cim-NamespacePath",new CimHeader[] {CimHeader.PUT_ELEMENT}),
+	/** Name of the extrinsic method being addressed */
 	METHOD_NAME("Cim-MethodName",new CimHeader[]{CimHeader.GET_METHOD_TYPE,CimHeader.GET_METHOD_PARAMETERS,CimHeader.INVOKE_METHOD}),
+	/** Data type of the return value for an extrinsic method */
 	METHOD_TYPE("Cim-MethodType",new CimHeader[]{}),
+	/** Name of the property being addressed */
 	PROPERTY_NAME("Cim-PropertyName",new CimHeader[]{CimHeader.GET_PROPERTY_TYPE,CimHeader.GET_PROPERTY_VALUE,CimHeader.SET_PROPERTY_VALUE}),
+	/** Type of the property being set */
 	PROPERTY_TYPE("Cim-PropertyType",new CimHeader[]{CimHeader.SET_PROPERTY_VALUE}),
+	/** Name of the parameter being addressed */
 	PARAMETER_NAME("Cim-ParameterName",new CimHeader[]{}),
+	/** List of element types being requested in getElements */
 	ELEMENT_TYPES("Cim-ElementType",new CimHeader[]{CimHeader.GET_ELEMENTS}),
+	/** List of namespaces being requested in getElements */
 	NAME_SPACES("Cim-NameSpace",new CimHeader[]{CimHeader.GET_ELEMENTS}),
+	/** List of element names being requested in getElements */
 	ELEMENT_NAMES("Cim-ElementName",new CimHeader[]{CimHeader.GET_ELEMENTS}),
+	/** Flag identifying if subclasses should be searched for getElements */
 	LOCATE_SUBCLASS("Cim-LocateSubClass",new CimHeader[]{CimHeader.GET_ELEMENTS}),
+	/** Type of event associated with a listener */
 	EVENT_TYPE("Cim-EventType",new CimHeader[]{CimHeader.ADD_LISTENER,CimHeader.REMOVE_LISTENER,CimHeader.HAS_LISTENER}),
+	/** URL for the listener */
 	CIM_URL("Cim-RemoteUrl",new CimHeader[]{CimHeader.HAS_LISTENER,CimHeader.ADD_LISTENER,CimHeader.REMOVE_LISTENER,CimHeader.REGISTER_PROVIDER,CimHeader.UNREGISTER_PROVIDER})
 	;
 	
@@ -59,7 +73,7 @@ public enum HttpXHeader {
 	private final CimHeader [] headers;
 	
 	/**
-	 * Construct this extension header
+	 * Construct an extension header
 	 * @param httpXHeader - http extension header name
 	 * @param headers - CimHeaders to which this extension applies
 	 */
@@ -70,7 +84,7 @@ public enum HttpXHeader {
 	}
 	
 	/**
-	 * Test if this parameter applies to a given header
+	 * Test if this extension header should accompany a given {@link CimHeader}. 
 	 * @param h - header to test
 	 * @return - true if this parameter applies to the given header, false otherwise
 	 */
@@ -83,7 +97,7 @@ public enum HttpXHeader {
 	}
 	
 	/**
-	 * Get all valid parameters for a given header
+	 * Get all valid extension headers that should accompany a given {@link CimHeader}.
 	 * @param h - header to test
 	 * @return - parameters appropriate for that header
 	 */
@@ -97,7 +111,7 @@ public enum HttpXHeader {
 	}
 	
 	/**
-	 * Get the extension header corresponding to a string
+	 * Get the extension header corresponding to a string header value
 	 * @param value - string value for the header (case insensitive)
 	 * @return - corresponding extension header, null if no such header exists
 	 */

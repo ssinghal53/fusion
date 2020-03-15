@@ -32,7 +32,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used for mapping java to CIM
+ * Annotation used for mapping java to CIM. The presence of this annotation on a java class, method, or method parameter provides
+ * information to allow the run time to bind the java element to the corresponding CIM definition.
  * @author Sharad Singhal
  *
  */

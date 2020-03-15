@@ -45,7 +45,7 @@ import net.aifusion.metamodel.ModelException;
  * This class is used in Java2Cim
  * @author Sharad Singhal
  */
-public class CimFeature {
+class CimFeature {
 	private Method javaMethod;		// java method linked to this feature
 	private Class<?> returnType;	// return type for the java method
 	private Class<?> javaType;		// java type for this feature (may be different from method returnType);

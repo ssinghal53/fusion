@@ -31,7 +31,7 @@ package net.aifusion.cimserver;
  * Exception used for Http Server
  * @author Sharad Singhal
  */
-public class HttpException extends RuntimeException {
+class HttpException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 	
 	/** HTTP Status associated with this exception */

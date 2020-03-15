@@ -36,7 +36,9 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
- * Class to represent a CIM Class
+ * Class to represent a CIM Class definition. A CIM Class can declare methods (operations) in addition to properties. Classes are
+ * instantiated by CIM Instances. Classes are constructed by the {@link MOFParser} using MOF definitions.
+ * @see CimInstance
  * @author Sharad Singhal
  */
 public class CimClass extends CimStructure {
@@ -44,7 +46,7 @@ public class CimClass extends CimStructure {
 	private LinkedHashMap<String, CimMethod> localMethods = new LinkedHashMap<String, CimMethod>();
 
 	/**
-	 * Create a CIM class
+	 * Create the definition of a CIM class
 	 * @param elementType - type of this class. Must be one of CLASS or INTERFACE
 	 * @param name - name of this class
 	 * @param superType - superType of this class, if any

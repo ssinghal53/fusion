@@ -33,10 +33,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 /**
- * Default request handler for HttpServer. It simply echos what the client sent it
+ * Default request handler for HttpServer. It simply echoes what the client sent it.
  * @author Sharad Singhal
  */
-public class DefaultHandler implements HttpRequestHandler {
+class DefaultHandler implements HttpRequestHandler {
 	
 	/**
 	 * Create a new request handler

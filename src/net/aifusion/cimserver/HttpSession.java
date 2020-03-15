@@ -44,7 +44,7 @@ import java.util.logging.Logger;
  * Class to manage an Http Session. An Http session is a sequence of request/response pairs
  * @author Sharad Singhal
  */
-public class HttpSession implements Runnable {
+class HttpSession implements Runnable {
 	/** Logger for this class */
 	private static final Logger logger = Logger.getLogger(HttpSession.class.getName());
 	/** Server that owns this session */

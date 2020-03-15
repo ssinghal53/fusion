@@ -30,7 +30,7 @@ package net.aifusion.metamodel;
 import java.util.List;
 
 /**
- * Class to represent a CIM Parameter
+ * Class to represent a CIM method parameter.
  * @author Sharad Singhal
  */
 public class CimParameter extends QualifiedElement {

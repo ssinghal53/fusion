@@ -52,7 +52,7 @@ import net.aifusion.metamodel.PersistentCache;
 import net.aifusion.metamodel.Repository;
 
 /**
- * Factory class to generate Java code stubs from CimClass definitions
+ * Factory class to generate Java code stubs from Cim Class definitions
  * @author Sharad Singhal
  */
 public class Cim2Java {

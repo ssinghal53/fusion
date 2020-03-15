@@ -44,7 +44,7 @@ import net.aifusion.metamodel.ModelException;
  * This class implements a small HTTP server for use in CIM services
  * @author Sharad Singhal
  */
-public class HttpServer implements Runnable {
+class HttpServer implements Runnable {
 	/** Logger for this class */
 	private static final Logger logger = Logger.getLogger(HttpServer.class.getName());
 	/** Server configuration for this server */
