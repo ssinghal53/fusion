@@ -1,7 +1,7 @@
 # travis CI test integration
 language: java
 os: linux
-sudo: false
+dist: xenial
 script: 
 - ant build
 - ant AllTests

@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"net.aifusion.cimserver"},{"l":"net.aifusion.cql"},{"l":"net.aifusion.metamodel"},{"l":"net.aifusion.providers"},{"l":"net.aifusion.utils"}]
