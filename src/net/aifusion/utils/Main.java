@@ -32,7 +32,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import net.aifusion.AllTests;
+// import net.aifusion.AllTests;
 import net.aifusion.cimserver.CimServer;
 import net.aifusion.cimserver.HttpConfiguration;
 import net.aifusion.metamodel.MOFParser;
@@ -60,7 +60,7 @@ public class Main {
 		knownCommands.put("server", "Run the CimServer");
 		knownCommands.put("config", "Generate a CimServer configuration");
 		knownCommands.put("parse", "Parse a MOF File");
-		knownCommands.put("test", "Run unit tests");
+		// knownCommands.put("test", "Run unit tests");
 		knownCommands.put("j2c", "Java -> Cim generator");
 		knownCommands.put("c2j", "Cim -> Java stub generator");
 	}
@@ -138,7 +138,7 @@ public class Main {
 			MOFParser.main(args1);
 			break;
 		case "test":
-			AllTests.main(args1);
+		// 	AllTests.main(args1);
 			break;
 		case "j2c":
 			Java2Cim.main(args1);
