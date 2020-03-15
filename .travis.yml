@@ -1,6 +1,5 @@
 # travis CI test integration
 language: java
-jdk: oraclejdk8
 os: linux
 sudo: false
-script: java net.aifusion.AllTests
+script: ant build, AllTests
