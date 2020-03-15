@@ -2,4 +2,4 @@
 language: java
 os: linux
 sudo: false
-script: ant build
+script: ant build, AllTests
