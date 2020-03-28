@@ -30,7 +30,7 @@ package net.aifusion.cimserver;
  * Predefined Http Headers. These have the same meaning as standard HTTP headers (RFC 2616), but not all are used (or understood) by the current implementation.
  * @author Sharad Singhal
  */
-enum HttpHeader {
+public enum HttpHeader {
 	// Request Headers
 	ACCEPT("Accept"),
 	ACCEPT_CHARSET("Accept-Charset"), 

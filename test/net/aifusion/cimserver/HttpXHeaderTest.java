@@ -41,7 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.aifusion.cimserver.CimHeader;
-import net.aifusion.cimserver.HttpXHeader;
+import net.aifusion.cimserver.CimXHeader;
 
 /**
  * Class to check Http extension headers
@@ -52,7 +52,7 @@ public class HttpXHeaderTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("HttpXHeader ");
-		assertEquals(14,HttpXHeader.values().length);
+		assertEquals(14,CimXHeader.values().length);
 	}
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
@@ -71,11 +71,11 @@ public class HttpXHeaderTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpXHeader#appliesTo(net.aifusion.cimserver.CimHeader)}.
+	 * Test method for {@link net.aifusion.cimserver.CimXHeader#appliesTo(net.aifusion.cimserver.CimHeader)}.
 	 */
 	@Test
 	public void testAppliesTo() {
-		for(HttpXHeader x : HttpXHeader.values()){
+		for(CimXHeader x : CimXHeader.values()){
 			for(CimHeader h : CimHeader.values()){
 				switch(x){
 				case METHOD_NAME:	// method name is required for the following
@@ -188,12 +188,12 @@ public class HttpXHeaderTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpXHeader#getXHeaders(net.aifusion.cimserver.CimHeader)}.
+	 * Test method for {@link net.aifusion.cimserver.CimXHeader#getXHeaders(net.aifusion.cimserver.CimHeader)}.
 	 */
 	@Test
 	public void testGetXHeaders() {
 		for(CimHeader h : CimHeader.values()){
-			List<HttpXHeader> xHeaders = HttpXHeader.getXHeaders(h);
+			List<CimXHeader> xHeaders = CimXHeader.getXHeaders(h);
 			assertNotNull(xHeaders);
 			switch(h){
 			case GET_ELEMENT:
@@ -202,49 +202,49 @@ public class HttpXHeaderTest {
 			case GET_PROPERTY_NAMES:
 			case GET_METHOD_NAMES:
 				assertEquals(1,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.OBJECT_PATH));
+				assertTrue(xHeaders.contains(CimXHeader.OBJECT_PATH));
 				break;
 			case GET_ELEMENTS:
 				assertEquals(4,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.ELEMENT_TYPES) && 
-						xHeaders.contains(HttpXHeader.NAME_SPACES) && 
-						xHeaders.contains(HttpXHeader.ELEMENT_NAMES) &&
-						xHeaders.contains(HttpXHeader.LOCATE_SUBCLASS));
+				assertTrue(xHeaders.contains(CimXHeader.ELEMENT_TYPES) && 
+						xHeaders.contains(CimXHeader.NAME_SPACES) && 
+						xHeaders.contains(CimXHeader.ELEMENT_NAMES) &&
+						xHeaders.contains(CimXHeader.LOCATE_SUBCLASS));
 				break;
 			case ADD_LISTENER:
 			case REMOVE_LISTENER:
 			case HAS_LISTENER:
 				assertEquals(2,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.EVENT_TYPE) && 
-						xHeaders.contains(HttpXHeader.CIM_URL));
+				assertTrue(xHeaders.contains(CimXHeader.EVENT_TYPE) && 
+						xHeaders.contains(CimXHeader.CIM_URL));
 				break;
 			case REGISTER_PROVIDER:
 			case UNREGISTER_PROVIDER:
 				assertEquals(1,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.CIM_URL));
+				assertTrue(xHeaders.contains(CimXHeader.CIM_URL));
 				break;
 			case GET_PROPERTY_TYPE:
 			case GET_PROPERTY_VALUE:
 				assertEquals(2,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.PROPERTY_NAME) &&
-						xHeaders.contains(HttpXHeader.OBJECT_PATH));
+				assertTrue(xHeaders.contains(CimXHeader.PROPERTY_NAME) &&
+						xHeaders.contains(CimXHeader.OBJECT_PATH));
 				break;
 			case SET_PROPERTY_VALUE:
 				assertEquals(3,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.PROPERTY_NAME) &&
-						xHeaders.contains(HttpXHeader.PROPERTY_TYPE) &&
-						xHeaders.contains(HttpXHeader.OBJECT_PATH));
+				assertTrue(xHeaders.contains(CimXHeader.PROPERTY_NAME) &&
+						xHeaders.contains(CimXHeader.PROPERTY_TYPE) &&
+						xHeaders.contains(CimXHeader.OBJECT_PATH));
 				break;
 			case GET_METHOD_TYPE:
 			case GET_METHOD_PARAMETERS:
 			case INVOKE_METHOD:
 				assertEquals(2,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.METHOD_NAME) &&
-						xHeaders.contains(HttpXHeader.OBJECT_PATH));
+				assertTrue(xHeaders.contains(CimXHeader.METHOD_NAME) &&
+						xHeaders.contains(CimXHeader.OBJECT_PATH));
 				break;
 			case PUT_ELEMENT:
 				assertEquals(1,xHeaders.size());
-				assertTrue(xHeaders.contains(HttpXHeader.NAMESPACE_PATH));
+				assertTrue(xHeaders.contains(CimXHeader.NAMESPACE_PATH));
 				break;
 			default:
 				assertEquals(0,xHeaders.size());
@@ -255,13 +255,13 @@ public class HttpXHeaderTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpXHeader#lookup(java.lang.String)}.
-	 * Test method for {@link net.aifusion.cimserver.HttpXHeader#toString()}.
+	 * Test method for {@link net.aifusion.cimserver.CimXHeader#lookup(java.lang.String)}.
+	 * Test method for {@link net.aifusion.cimserver.CimXHeader#toString()}.
 	 */
 	@Test
 	public void testLookup() {
-		for(HttpXHeader h : HttpXHeader.values()){
-			assertEquals(h,HttpXHeader.lookup(h.toString()));
+		for(CimXHeader h : CimXHeader.values()){
+			assertEquals(h,CimXHeader.lookup(h.toString()));
 		}
 	}
 }

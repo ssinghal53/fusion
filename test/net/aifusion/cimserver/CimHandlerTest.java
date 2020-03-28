@@ -55,7 +55,7 @@ import net.aifusion.cimserver.HttpHeader;
 import net.aifusion.cimserver.HttpMethod;
 import net.aifusion.cimserver.HttpRequest;
 import net.aifusion.cimserver.HttpResponse;
-import net.aifusion.cimserver.HttpXHeader;
+import net.aifusion.cimserver.CimXHeader;
 import net.aifusion.cimserver.MimeType;
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEventType;
@@ -515,19 +515,19 @@ public class CimHandlerTest {
 		sb.append(HttpHeader.HOST).append(": ").append(host).append(CRLF);
 		sb.append(HttpHeader.ACCEPT).append(": ").append(MimeType.MOF.getType()).append(", ").append(MimeType.PLAINTEXT.getType()).append(CRLF);
 		sb.append(HttpHeader.CONNECTION).append(": close").append(CRLF);
-		sb.append(HttpXHeader.INTRINSIC).append(": ").append(h).append(CRLF);
+		sb.append(CimXHeader.INTRINSIC).append(": ").append(h).append(CRLF);
 		// User-Agent should be of form Name '/' version
 		sb.append(HttpHeader.USER_AGENT).append(": ").append("AIFusion/1.0").append(CRLF);
-		List<HttpXHeader> xheaders = HttpXHeader.getXHeaders(h);
-		if(xheaders.contains(HttpXHeader.OBJECT_PATH)) {
-			sb.append(HttpXHeader.OBJECT_PATH.toString()).append(": ").append(path.toString()).append(CRLF);
-			assertTrue(xheaders.remove(HttpXHeader.OBJECT_PATH));
+		List<CimXHeader> xheaders = CimXHeader.getXHeaders(h);
+		if(xheaders.contains(CimXHeader.OBJECT_PATH)) {
+			sb.append(CimXHeader.OBJECT_PATH.toString()).append(": ").append(path.toString()).append(CRLF);
+			assertTrue(xheaders.remove(CimXHeader.OBJECT_PATH));
 		}
 		if(xheaders != null && xheaders.size() > 0){
 			assertNotNull(extensions);
 			if(verbose) {
 				if(xheaders.size() != extensions.length){
-					for(HttpXHeader x : xheaders){
+					for(CimXHeader x : xheaders){
 						System.out.println(x);
 					}
 					for(String v : extensions){

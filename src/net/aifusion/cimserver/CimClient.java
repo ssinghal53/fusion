@@ -230,8 +230,8 @@ public class CimClient implements Provider, CimListener {
 			connection.setRequestProperty(HttpHeader.HOST.toString(), url.getHost());
 			connection.setRequestProperty(HttpHeader.ACCEPT.toString(), MimeType.MOF.getType()+","+MimeType.PLAINTEXT.getType());
 			connection.setRequestProperty(HttpHeader.USER_AGENT.toString(), userAgent);
-			connection.setRequestProperty(HttpXHeader.INTRINSIC.toString(), h.toString());
-			if(HttpXHeader.OBJECT_PATH.appliesTo(h)) connection.setRequestProperty(HttpXHeader.OBJECT_PATH.toString(), path.toString());
+			connection.setRequestProperty(CimXHeader.INTRINSIC.toString(), h.toString());
+			if(CimXHeader.OBJECT_PATH.appliesTo(h)) connection.setRequestProperty(CimXHeader.OBJECT_PATH.toString(), path.toString());
 			connection.setConnectTimeout(connectionTimeout);
 			connection.setReadTimeout(connectionTimeout);
 			return connection;
@@ -427,7 +427,7 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public boolean put(NamedElement element) {
 		HttpURLConnection connection = getConnection(CimHeader.PUT_ELEMENT,element.getObjectPath());
-		connection.setRequestProperty(HttpXHeader.NAMESPACE_PATH.toString(), element.getNameSpacePath().toString());
+		connection.setRequestProperty(CimXHeader.NAMESPACE_PATH.toString(), element.getNameSpacePath().toString());
 		StringBuilder b = new StringBuilder();
 		b.append(element.toMOF());
 		CimResponse response = getResponse(connection,b.toString());
@@ -452,10 +452,10 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public List<NamedElement> getElements(String elementTypes, String localNameSpaces, String elementNames, boolean locateSubTypes) {
 		HttpURLConnection connection = getConnection(CimHeader.GET_ELEMENTS,null);
-		connection.setRequestProperty(HttpXHeader.ELEMENT_TYPES.toString(), elementTypes == null ? "null" : elementTypes);
-		connection.setRequestProperty(HttpXHeader.NAME_SPACES.toString(), localNameSpaces == null ? "null" : localNameSpaces);
-		connection.setRequestProperty(HttpXHeader.ELEMENT_NAMES.toString(), elementNames == null ? "null" : elementNames);
-		connection.setRequestProperty(HttpXHeader.LOCATE_SUBCLASS.toString(), String.valueOf(locateSubTypes));
+		connection.setRequestProperty(CimXHeader.ELEMENT_TYPES.toString(), elementTypes == null ? "null" : elementTypes);
+		connection.setRequestProperty(CimXHeader.NAME_SPACES.toString(), localNameSpaces == null ? "null" : localNameSpaces);
+		connection.setRequestProperty(CimXHeader.ELEMENT_NAMES.toString(), elementNames == null ? "null" : elementNames);
+		connection.setRequestProperty(CimXHeader.LOCATE_SUBCLASS.toString(), String.valueOf(locateSubTypes));
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)){
 			BufferedCache cache = new BufferedCache(this);
@@ -483,8 +483,8 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public boolean addListener(CimEventType type, CimListener listener) {
 		HttpURLConnection connection = getConnection(CimHeader.ADD_LISTENER);
-		connection.setRequestProperty(HttpXHeader.EVENT_TYPE.toString(), type.toString());
-		connection.setRequestProperty(HttpXHeader.CIM_URL.toString(), listener.getURL().toString());
+		connection.setRequestProperty(CimXHeader.EVENT_TYPE.toString(), type.toString());
+		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), listener.getURL().toString());
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)) return true;
 		return false;
@@ -493,8 +493,8 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public void removeListener(CimEventType type, CimListener listener) {
 		HttpURLConnection connection = getConnection(CimHeader.REMOVE_LISTENER);
-		connection.setRequestProperty(HttpXHeader.EVENT_TYPE.toString(), type.toString());
-		connection.setRequestProperty(HttpXHeader.CIM_URL.toString(), listener.getURL().toString());
+		connection.setRequestProperty(CimXHeader.EVENT_TYPE.toString(), type.toString());
+		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), listener.getURL().toString());
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)){
 			return;
@@ -512,7 +512,7 @@ public class CimClient implements Provider, CimListener {
 		URL childURL = child.getURL();
 		if(childURL == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Child provider must have valid URL");
 		HttpURLConnection connection = getConnection(CimHeader.REGISTER_PROVIDER);
-		connection.setRequestProperty(HttpXHeader.CIM_URL.toString(), childURL.toString());
+		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), childURL.toString());
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)) return;
 		throw new ModelException(ExceptionReason.FAILED,response.status+":"+response.error);
@@ -523,7 +523,7 @@ public class CimClient implements Provider, CimListener {
 		URL childURL = child.getURL();
 		if(childURL == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Child provider must have valid URL");
 		HttpURLConnection connection = getConnection(CimHeader.UNREGISTER_PROVIDER);
-		connection.setRequestProperty(HttpXHeader.CIM_URL.toString(), childURL.toString());
+		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), childURL.toString());
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)) return;
 		throw new ModelException(ExceptionReason.FAILED,response.error);
@@ -548,7 +548,7 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public DataType getPropertyType(ObjectPath path, String propertyName) {
 		HttpURLConnection connection = getConnection(CimHeader.GET_PROPERTY_TYPE,path);
-		connection.setRequestProperty(HttpXHeader.PROPERTY_NAME.toString(), propertyName);
+		connection.setRequestProperty(CimXHeader.PROPERTY_NAME.toString(), propertyName);
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)){
 			String dataType = response.respBody.trim().toUpperCase();
@@ -561,10 +561,10 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public DataValue getPropertyValue(ObjectPath path, String propertyName) {
 		HttpURLConnection connection = getConnection(CimHeader.GET_PROPERTY_VALUE,path);
-		connection.setRequestProperty(HttpXHeader.PROPERTY_NAME.toString(), propertyName);
+		connection.setRequestProperty(CimXHeader.PROPERTY_NAME.toString(), propertyName);
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)){
-			String propertyType = connection.getHeaderField(HttpXHeader.PROPERTY_TYPE.toString());
+			String propertyType = connection.getHeaderField(CimXHeader.PROPERTY_TYPE.toString());
 			DataType type = DataType.valueOf(propertyType.toUpperCase());
 			// TODO: May need to strip quotes from MOF strings here. Need to check with different
 			// primitive strings and arrays
@@ -582,8 +582,8 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public void setPropertyValue(ObjectPath path, String propertyName, DataValue propertyValue) {
 		HttpURLConnection connection = getConnection(CimHeader.SET_PROPERTY_VALUE,path);
-		connection.setRequestProperty(HttpXHeader.PROPERTY_NAME.toString(), propertyName);
-		connection.setRequestProperty(HttpXHeader.PROPERTY_TYPE.toString(), propertyValue.getType().toString());
+		connection.setRequestProperty(CimXHeader.PROPERTY_NAME.toString(), propertyName);
+		connection.setRequestProperty(CimXHeader.PROPERTY_TYPE.toString(), propertyValue.getType().toString());
 		CimResponse response = getResponse(connection,propertyValue.toMOF());
 		if(HttpStatus.OK.equals(response.status)){
 			return;
@@ -610,7 +610,7 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public DataType getMethodReturnType(ObjectPath path, String methodName) {
 		HttpURLConnection connection = getConnection(CimHeader.GET_METHOD_TYPE,path);
-		connection.setRequestProperty(HttpXHeader.METHOD_NAME.toString(), methodName);
+		connection.setRequestProperty(CimXHeader.METHOD_NAME.toString(), methodName);
 		CimResponse response = getResponse(connection,null);
 		if(HttpStatus.OK.equals(response.status)){
 			String dataType = response.respBody.trim().toUpperCase();
@@ -640,7 +640,7 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public DataValue invokeMethod(ObjectPath path, String methodName, List<CimParameter> methodParameters) {
 		HttpURLConnection connection = getConnection(CimHeader.INVOKE_METHOD,path);
-		connection.setRequestProperty(HttpXHeader.METHOD_NAME.toString(), methodName);
+		connection.setRequestProperty(CimXHeader.METHOD_NAME.toString(), methodName);
 		StringBuilder b = new StringBuilder();
 		for(CimParameter p : methodParameters){
 			b.append(p.getValue().toMOF()).append(",");

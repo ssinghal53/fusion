@@ -33,7 +33,7 @@ import net.aifusion.metamodel.ModelException;
  * Enumeration to manage HTTP status values
  * @author Sharad Singhal
  */
-enum HttpStatus {
+public enum HttpStatus {
 	/** 100 - Continue */
 	CONTINUE("100","Continue"),
 	/** 101 - Switching Protocols */

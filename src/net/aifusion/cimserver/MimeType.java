@@ -31,7 +31,7 @@ package net.aifusion.cimserver;
  * Known MIME types to the Server
  * @author Sharad Singhal
  */
-enum MimeType {
+public enum MimeType {
 	// extension, type
 	/** Plain text type */
 	PLAINTEXT("txt","text/plain"),

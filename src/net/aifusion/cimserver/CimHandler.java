@@ -116,7 +116,7 @@ class CimHandler implements HttpRequestHandler {
 			return new HttpResponse(requestMethod,HttpStatus.UNSUPPORTED_MEDIA_TYPE,MimeType.PLAINTEXT,
 					"Only plainText and MOF Media types supported");
 		}
-		CimHeader cimRequest = CimHeader.lookup(request.getXHeader(HttpXHeader.INTRINSIC.toString()));
+		CimHeader cimRequest = CimHeader.lookup(request.getXHeader(CimXHeader.INTRINSIC.toString()));
 		// validate the intrinsic request
 		if(cimRequest == null || !cimRequest.getHttpMethod().equals(requestMethod)){
 			// Either the request header is not there, or the httpMethod required by it does not match
@@ -124,7 +124,7 @@ class CimHandler implements HttpRequestHandler {
 					"HttpMethod "+requestMethod+" does not match Cim-Intrinsic "+cimRequest);
 		}
 		// validate that all required extension headers are present
-		for(HttpXHeader x : HttpXHeader.getXHeaders(cimRequest)){
+		for(CimXHeader x : CimXHeader.getXHeaders(cimRequest)){
 			if(!request.hasXHeader(x.toString())) 
 				return new HttpResponse(requestMethod,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,
 						cimRequest+" requires header "+x);
@@ -171,17 +171,17 @@ class CimHandler implements HttpRequestHandler {
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.PLAINTEXT, b.toString());
 				break;
 			case GET_PROPERTY_TYPE:	// type of a given property
-				String propertyName = request.getXHeader(HttpXHeader.PROPERTY_NAME.toString());
+				String propertyName = request.getXHeader(CimXHeader.PROPERTY_NAME.toString());
 				path = getObjectPath(request);
 				DataType type = provider.getPropertyType(path, propertyName);
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.PLAINTEXT, type.toString()+CRLF);
 				break;
 			case GET_PROPERTY_VALUE:	// mof value of a given property
-				propertyName = request.getXHeader(HttpXHeader.PROPERTY_NAME.toString());
+				propertyName = request.getXHeader(CimXHeader.PROPERTY_NAME.toString());
 				path = getObjectPath(request);
 				DataValue v = provider.getPropertyValue(path, propertyName);
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, v.toMOF());
-				response.addXHeader(HttpXHeader.PROPERTY_TYPE.toString(),v.getType().toMOF());
+				response.addXHeader(CimXHeader.PROPERTY_TYPE.toString(),v.getType().toMOF());
 				break;
 			case GET_METHOD_NAMES:	// names of methods, if any
 				path = getObjectPath(request);
@@ -193,13 +193,13 @@ class CimHandler implements HttpRequestHandler {
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.PLAINTEXT, b.toString());
 				break;
 			case GET_METHOD_TYPE:	// return type of the method
-				propertyName = request.getXHeader(HttpXHeader.METHOD_NAME.toString());
+				propertyName = request.getXHeader(CimXHeader.METHOD_NAME.toString());
 				path = getObjectPath(request);
 				type = provider.getMethodReturnType(path, propertyName);
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.PLAINTEXT, type.toString()+CRLF);
 				break;
 			case GET_METHOD_PARAMETERS:	// method parameters, one per line
-				propertyName = request.getXHeader(HttpXHeader.METHOD_NAME.toString());
+				propertyName = request.getXHeader(CimXHeader.METHOD_NAME.toString());
 				path = getObjectPath(request);
 				List<CimParameter> pm = provider.getMethodParameters(path, propertyName);
 				b = new StringBuilder();
@@ -210,7 +210,7 @@ class CimHandler implements HttpRequestHandler {
 				break;
 			case SET_PROPERTY_VALUE:	// set property value
 				path = getObjectPath(request);
-				propertyName = request.getXHeader(HttpXHeader.PROPERTY_NAME.toString());
+				propertyName = request.getXHeader(CimXHeader.PROPERTY_NAME.toString());
 				NamedElement target = provider.get(path);
 				if(target == null || propertyName == null){
 					response = new HttpResponse(requestMethod,HttpStatus.NOT_FOUND,MimeType.PLAINTEXT,path+" ["+propertyName+"]");
@@ -223,7 +223,7 @@ class CimHandler implements HttpRequestHandler {
 				response = new HttpResponse(requestMethod,HttpStatus.OK);
 				break;
 			case PUT_ELEMENT:
-				NameSpacePath ns = new NameSpacePath(request.getXHeader(HttpXHeader.NAMESPACE_PATH.toString()));
+				NameSpacePath ns = new NameSpacePath(request.getXHeader(CimXHeader.NAMESPACE_PATH.toString()));
 				BufferedCache cache = new BufferedCache(provider);
 				parser = new MOFParser(cache);
 				parser.parse(new ByteArrayInputStream(httpBody.getBytes()),ns);
@@ -249,13 +249,13 @@ class CimHandler implements HttpRequestHandler {
 				break;
 			case GET_ELEMENTS:
 				// note that path is ignored, and is normally "/"
-				String elementTypes = request.getXHeader(HttpXHeader.ELEMENT_TYPES.toString());
+				String elementTypes = request.getXHeader(CimXHeader.ELEMENT_TYPES.toString());
 				if("null".equalsIgnoreCase(elementTypes)) elementTypes = null;
-				String localNameSpaces = request.getXHeader(HttpXHeader.NAME_SPACES.toString());
+				String localNameSpaces = request.getXHeader(CimXHeader.NAME_SPACES.toString());
 				if("null".equalsIgnoreCase(localNameSpaces)) localNameSpaces = null;
-				String elementNames = request.getXHeader(HttpXHeader.ELEMENT_NAMES.toString());
+				String elementNames = request.getXHeader(CimXHeader.ELEMENT_NAMES.toString());
 				if("null".equalsIgnoreCase(elementNames)) elementNames = null;
-				String locateTypes = request.getXHeader(HttpXHeader.LOCATE_SUBCLASS.toString());
+				String locateTypes = request.getXHeader(CimXHeader.LOCATE_SUBCLASS.toString());
 				boolean locateSubTypes = "true".equalsIgnoreCase(locateTypes) ? true : false;
 				elements = provider.getElements(elementTypes, localNameSpaces, elementNames, locateSubTypes);
 				// TODO: This list can be long, so we may need to send it as a chunked response
@@ -287,10 +287,10 @@ class CimHandler implements HttpRequestHandler {
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				break;
 			case HAS_LISTENER:
-				URL clientURL = new URL(request.getXHeader(HttpXHeader.CIM_URL.toString()));
+				URL clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
 				CimClient client = getClient(clientURL);
 				if(client != null){
-					CimEventType t = CimEventType.valueOf(request.getXHeader(HttpXHeader.EVENT_TYPE.toString()));
+					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
 					response = provider.hasListener(t, client) ? new HttpResponse(requestMethod,HttpStatus.OK) :
 						new HttpResponse(requestMethod,HttpStatus.NOT_FOUND);
 				} else {
@@ -298,10 +298,10 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case ADD_LISTENER:
-				clientURL = new URL(request.getXHeader(HttpXHeader.CIM_URL.toString()));
+				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
 				client = getClient(clientURL);
 				if(client != null){
-					CimEventType t = CimEventType.valueOf(request.getXHeader(HttpXHeader.EVENT_TYPE.toString()));
+					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
 					response = provider.addListener(t, client) ? new HttpResponse(requestMethod,HttpStatus.OK) :
 						new HttpResponse(requestMethod,HttpStatus.NOT_MODIFIED);
 				} else {
@@ -309,10 +309,10 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case REMOVE_LISTENER:
-				clientURL = new URL(request.getXHeader(HttpXHeader.CIM_URL.toString()));
+				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
 				client = getClient(clientURL);
 				if(client != null){
-					CimEventType t = CimEventType.valueOf(request.getXHeader(HttpXHeader.EVENT_TYPE.toString()));
+					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
 					provider.removeListener(t, client);
 					response = new HttpResponse(requestMethod,HttpStatus.OK);
 				} else {
@@ -320,7 +320,7 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case REGISTER_PROVIDER:
-				clientURL = new URL(request.getXHeader(HttpXHeader.CIM_URL.toString()));
+				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
 				client = getClient(clientURL);
 				if(client != null){
 					provider.registerChildProvider(client);
@@ -330,7 +330,7 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case UNREGISTER_PROVIDER:
-				clientURL = new URL(request.getXHeader(HttpXHeader.CIM_URL.toString()));
+				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
 				client = getClient(clientURL);
 				if(client != null){
 					provider.unregisterChildProvider(client);
@@ -341,7 +341,7 @@ class CimHandler implements HttpRequestHandler {
 				break;
 			case INVOKE_METHOD:
 				path = getObjectPath(request);
-				String methodName = request.getXHeader(HttpXHeader.METHOD_NAME.toString());
+				String methodName = request.getXHeader(CimXHeader.METHOD_NAME.toString());
 				target = provider.get(path);
 				if(target == null || methodName == null || methodName.isEmpty()){
 					break;	// Object not found
@@ -382,7 +382,7 @@ class CimHandler implements HttpRequestHandler {
 			case SEND_EVENT:
 			default:
 				response = new HttpResponse(requestMethod,HttpStatus.NOT_IMPLEMENTED);
-				response.addXHeader(HttpXHeader.INTRINSIC.toString(), cimRequest.toString());
+				response.addXHeader(CimXHeader.INTRINSIC.toString(), cimRequest.toString());
 				break;
 			}
 		} catch (Exception ex){
@@ -392,7 +392,7 @@ class CimHandler implements HttpRequestHandler {
 		}
 		// not found
 		if(response == null) response = new HttpResponse(requestMethod,HttpStatus.NOT_FOUND);
-		response.addXHeader(HttpXHeader.INTRINSIC.toString(), cimRequest.toString());
+		response.addXHeader(CimXHeader.INTRINSIC.toString(), cimRequest.toString());
 		if(logEnabled) logger.info(response.toString());
 		return response;
 	}
@@ -449,8 +449,8 @@ class CimHandler implements HttpRequestHandler {
 		ObjectPath path;
 		String host = request.getHeader(HttpHeader.HOST);
 		String target = request.getRequestTarget();
-		if(request.hasXHeader(HttpXHeader.OBJECT_PATH.toString())) {
-			path = new ObjectPath(request.getXHeader(HttpXHeader.OBJECT_PATH.toString()));
+		if(request.hasXHeader(CimXHeader.OBJECT_PATH.toString())) {
+			path = new ObjectPath(request.getXHeader(CimXHeader.OBJECT_PATH.toString()));
 		} else {
 			path = new ObjectPath(URI.create("http://"+host+target));
 		}

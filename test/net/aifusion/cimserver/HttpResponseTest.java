@@ -55,7 +55,7 @@ import net.aifusion.cimserver.HttpHeader;
 import net.aifusion.cimserver.HttpMethod;
 import net.aifusion.cimserver.HttpResponse;
 import net.aifusion.cimserver.HttpStatus;
-import net.aifusion.cimserver.HttpXHeader;
+import net.aifusion.cimserver.CimXHeader;
 import net.aifusion.cimserver.MimeType;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.ModelException;
@@ -206,7 +206,7 @@ public class HttpResponseTest {
 		// use the string input constructor
 		HttpResponse r = new HttpResponse(HttpMethod.GET,HttpStatus.OK,MimeType.PLAINTEXT, bodyText);
 		assertNotNull(r);
-		r.addXHeader(HttpXHeader.INTRINSIC.toString(), CimHeader.GET_ELEMENT.toString());
+		r.addXHeader(CimXHeader.INTRINSIC.toString(), CimHeader.GET_ELEMENT.toString());
 		sendToReceiveString(r);
 		// System.out.println(received);
 		assertEquals(193,received.length());

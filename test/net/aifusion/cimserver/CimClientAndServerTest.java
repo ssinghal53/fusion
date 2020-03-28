@@ -161,9 +161,6 @@ public class CimClientAndServerTest {
 
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("done.");
@@ -173,9 +170,6 @@ public class CimClientAndServerTest {
 		deleteFiles(repositoryLocation);
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

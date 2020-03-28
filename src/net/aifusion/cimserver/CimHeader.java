@@ -29,10 +29,10 @@ package net.aifusion.cimserver;
 
 /**
  * Enumeration to define known CIM Intrinsic Methods used by the server and the client.
- * @see HttpXHeader#INTRINSIC
+ * @see CimXHeader#INTRINSIC
  * @author Sharad Singhal
  */
-enum CimHeader {
+public enum CimHeader {
 	/** Put a named element into the server repository */
 	PUT_ELEMENT("PutElement",HttpMethod.PUT),
 	/** Get a named element from the server repository */

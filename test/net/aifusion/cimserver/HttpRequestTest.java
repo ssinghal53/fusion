@@ -49,7 +49,7 @@ import net.aifusion.cimserver.CimHeader;
 import net.aifusion.cimserver.HttpHeader;
 import net.aifusion.cimserver.HttpMethod;
 import net.aifusion.cimserver.HttpRequest;
-import net.aifusion.cimserver.HttpXHeader;
+import net.aifusion.cimserver.CimXHeader;
 import net.aifusion.cimserver.MimeType;
 
 /**
@@ -66,7 +66,7 @@ public class HttpRequestTest {
 			"Host: abc.com"+CRLF+
 			"Content-Length: "+inputs[0].length()+CRLF+
 			"Content-Type: text/plain;charset=utf-8"+CRLF+
-			HttpXHeader.INTRINSIC+": "+CimHeader.GET_ELEMENT+CRLF+
+			CimXHeader.INTRINSIC+": "+CimHeader.GET_ELEMENT+CRLF+
 			"Cookie:ID=xyzzy;Lang=US-en"	
 	};
 
@@ -192,7 +192,7 @@ public class HttpRequestTest {
 	public void testGetXheader() {
 		HttpRequest r = new HttpRequest(header,input);
 		assertNotNull(r);
-		assertEquals(CimHeader.GET_ELEMENT.toString(),r.getXHeader(HttpXHeader.INTRINSIC.toString()));
+		assertEquals(CimHeader.GET_ELEMENT.toString(),r.getXHeader(CimXHeader.INTRINSIC.toString()));
 	}
 
 	/**

@@ -34,7 +34,7 @@ import java.util.List;
  * Http CIM Extension Headers known to the server. These extension headers are used to identify parameters for intrinsic operations requested by the client
  * @author Sharad Singhal
  */
-enum HttpXHeader {
+public enum CimXHeader {
 	/** Intrinsic Operation being performed (see {@link CimHeader})*/
 	INTRINSIC("Cim-Instrinsic",null),
 	/** header containing the object path of the named element */
@@ -77,7 +77,7 @@ enum HttpXHeader {
 	 * @param httpXHeader - http extension header name
 	 * @param headers - CimHeaders to which this extension applies
 	 */
-	private HttpXHeader(String httpXHeader, CimHeader [] headers){
+	private CimXHeader(String httpXHeader, CimHeader [] headers){
 		this.httpXHeader = httpXHeader;
 		this.headers = headers;
 		return;
@@ -101,9 +101,9 @@ enum HttpXHeader {
 	 * @param h - header to test
 	 * @return - parameters appropriate for that header
 	 */
-	public static List<HttpXHeader> getXHeaders(CimHeader h){
-		ArrayList<HttpXHeader> a = new ArrayList<HttpXHeader>();
-		for(HttpXHeader p : HttpXHeader.values()){
+	public static List<CimXHeader> getXHeaders(CimHeader h){
+		ArrayList<CimXHeader> a = new ArrayList<CimXHeader>();
+		for(CimXHeader p : CimXHeader.values()){
 			if(p.appliesTo(h)) a.add(p);
 		}
 		a.trimToSize();
@@ -115,8 +115,8 @@ enum HttpXHeader {
 	 * @param value - string value for the header (case insensitive)
 	 * @return - corresponding extension header, null if no such header exists
 	 */
-	public static HttpXHeader lookup(String value){
-		for(HttpXHeader p : HttpXHeader.values()){
+	public static CimXHeader lookup(String value){
+		for(CimXHeader p : CimXHeader.values()){
 			if(p.httpXHeader.equalsIgnoreCase(value)) return p;
 		}
 		return null;

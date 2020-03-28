@@ -40,7 +40,7 @@ import net.aifusion.cimserver.HttpRequest;
 import net.aifusion.cimserver.HttpRequestHandler;
 import net.aifusion.cimserver.HttpResponse;
 import net.aifusion.cimserver.HttpStatus;
-import net.aifusion.cimserver.HttpXHeader;
+import net.aifusion.cimserver.CimXHeader;
 import net.aifusion.cimserver.MimeType;
 
 /**
@@ -62,7 +62,7 @@ public class TestHandler implements HttpRequestHandler {
 	@Override
 	public HttpResponse serve(HttpRequest request) {
 		HttpMethod method = request.getHttpMethod();
-		CimHeader cimRequest = CimHeader.lookup(request.getXHeader(HttpXHeader.INTRINSIC.toString()));
+		CimHeader cimRequest = CimHeader.lookup(request.getXHeader(CimXHeader.INTRINSIC.toString()));
 		HttpResponse response = null;
 		String body = null;
 		if(CimHeader.GET_NAMESPACES.equals(cimRequest)){
