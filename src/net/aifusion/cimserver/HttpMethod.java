@@ -31,7 +31,7 @@ package net.aifusion.cimserver;
  * Class to manage known HTTP Methods. See RFC 7231 Section 4
  * @author Sharad Singhal
  */
-enum HttpMethod {
+public enum HttpMethod {
 	/** Transfer a current representation of the target resource */
 	GET,	// required, safe, idempotent, cacheable
 	/** Same as GET, but only transfer the status line and header section */ 
