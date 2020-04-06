@@ -1629,8 +1629,10 @@ public class MOFParser implements Parser {
 			String refName = skipOver(TokenType.IDENTIFIER).value;	// named of referenced class, structure, or enum
 			if(p.lookAheadToken.is(TokenType.REF)){
 				// have a className ref parameter
-				ObjectPath path = new ObjectPath(ElementType.CLASS,refName,p.path, null, null);
-				CimStructure struct = (CimStructure) repository.get(path);
+				CimStructure struct = (CimStructure) locateStructure(refName, superType, null);
+				
+				// ObjectPath path = new ObjectPath(ElementType.CLASS,refName,p.path, null, null);
+				// CimStructure struct = (CimStructure) repository.get(path);
 				if(struct == null && !refName.equalsIgnoreCase(className)) error(ExceptionReason.NOT_FOUND, className+": could not find class definition for "+refName);
 
 				skipOver(TokenType.REF);
