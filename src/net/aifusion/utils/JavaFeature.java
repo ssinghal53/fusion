@@ -178,6 +178,7 @@ class JavaFeature {
 			for(String mName : c.getMethodNames()) {
 				DataType t = c.getMethodReturnType(mName);
 				if(t.isArray()) t = t.getComponentType();
+				if(t.isVoid()) continue;
 				if(t.isPrimitive()) {	
 					Class<?> javaType = t.getClassForType();
 					if(!javaType.getName().startsWith("java.lang")) {
@@ -205,7 +206,7 @@ class JavaFeature {
 						String imp = pkg + "." + getJavaName(st);
 						if(!localImports.contains(imp)) localImports.add(imp);
 					}
-				} else {
+				} else {	// void type does not need imports
 					throw new ModelException(cimName+"-- InitGlobals does not yet handle method return types for "+t);
 				}
 				// imports for method parameters
@@ -251,6 +252,7 @@ class JavaFeature {
 			for(String pName : s.getPropertyNames()) {
 				DataType t = s.getPropertyType(pName);
 				if(t.isArray()) t = t.getComponentType();
+				if(t.isVoid()) continue;
 				if(t.isPrimitive()) {	
 					Class<?> javaType = t.getClassForType();
 					if(!javaType.getName().startsWith("java.lang")) {
@@ -308,12 +310,13 @@ class JavaFeature {
 	 * Locate a NamedElement with a given CIM Name
 	 * @param elementName - name of the element
 	 * @param defaultNameSpace - default name space to search
-	 * @return - named element if found.
+	 * @return - named element if found. Null elementName returns NULL (void)
 	 * @throws ModelException if no such element found
 	 */
 	private NamedElement locate(String elementName,NameSpacePath defaultNameSpace) {
 		if(debug) System.out.println("\nLocate "+defaultNameSpace+"/"+elementName);
-		if(elementName == null || elementName.isEmpty()) throw new ModelException("Null element requested");
+		if(elementName == null) return null;	// void return type gets a null elementName
+		if(elementName.isEmpty()) throw new ModelException("Empty element requested");
 		
 		// check current element hierarchy for the element name
 		NamedElement c = locateElement(elementName,feature);
@@ -626,6 +629,8 @@ class JavaFeature {
 						refElement = c.getReferencedStructure(mName);
 						refClass = refElement.getName();
 						break;
+					case VOID:
+						break;
 					default:
 						// should not happen
 						throw new ModelException("Unknown type "+dt);
@@ -872,7 +877,9 @@ class JavaFeature {
 	public String getJavaType(DataType dt,String refClass) {
 		StringBuilder b = new StringBuilder();
 		DataType ct = dt.getComponentType();
-		if(ct.isPrimitive()) {
+		if(ct.isVoid()) {
+			b.append("void");
+		} else if(ct.isPrimitive()) {
 			// primitive types
 			Class<?> javaClass = dt.getClassForType();
 			b.append(javaClass.getSimpleName());
