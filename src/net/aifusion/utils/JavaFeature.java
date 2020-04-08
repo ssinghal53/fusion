@@ -152,7 +152,7 @@ class JavaFeature {
 		localImports.add(Export.class.getName());
 		if(cimConstructor) {
 			localImports.add(StructureValue.class.getName());
-		} else {
+		} else if(featureType != ElementType.ENUMERATION){
 			localImports.add(Map.class.getName());
 		}
 
