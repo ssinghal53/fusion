@@ -30,6 +30,8 @@ package net.aifusion.cimserver;
 import static org.junit.Assert.*;
 
 import java.net.URI;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import org.junit.After;
@@ -245,7 +247,8 @@ public class HttpCookieTest {
 	 */
 	@Test
 	public void testToString() {
-		HttpCookie c = new HttpCookie("SID","34AC","/abc","mydomain.com",1,new Date(99,1,1),true,true);
+		ZonedDateTime d = ZonedDateTime.of(1999, 2, 1, 8, 0, 0, 0, ZoneId.of("GMT"));
+		HttpCookie c = new HttpCookie("SID","34AC","/abc","mydomain.com",1,Date.from(d.toInstant()),true,true);
 		assertNotNull(c);
 		assertEquals("SID=34AC; Path=/abc; Max-Age=1; Expires=Mon, 1 Feb 1999 08:00:00 GMT; HttpOnly; Secure",c.toString());
 	}
