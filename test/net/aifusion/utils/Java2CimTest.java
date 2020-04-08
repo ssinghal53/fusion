@@ -217,8 +217,8 @@ public class Java2CimTest {
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
-		deleteFiles("/test");
-		repository = new PersistentCache("/test");
+		deleteFiles("teststubs");
+		repository = new PersistentCache("teststubs");
 		known = new InMemoryCache();
 		MOFParser parser = new MOFParser(known);
 		parser.parse(new ByteArrayInputStream(mof.getBytes()), Constants.defaultNameSpacePath);
@@ -230,7 +230,7 @@ public class Java2CimTest {
 	@After
 	public void tearDown() throws Exception {
 		repository.shutdown();
-		deleteFiles("/test");
+		deleteFiles("teststubs");
 		System.out.print(".");
 	}
 	
