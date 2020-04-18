@@ -25,7 +25,7 @@ public class UTCTimeValue extends AsnValue {
 	/**
 	 * Create a UTC time value
 	 * @param value - string value in UTC time format ("yyMMddHHmmssZ")
-	 * @see GenralizedTimeValue
+	 * @see GeneralizedTimeValue
 	 */
 	public UTCTimeValue(String value) {
 		super(Tag.UTC_TIME.getTagNumber(),Tag.UTC_TIME.getTagClass(),Tag.UTC_TIME.getTagEncoding());

@@ -4249,7 +4249,7 @@ public class AsnParser {
 	 * Create a tree representation of all nodes in the query parse tree
 	 * @param n - current node to be represented
 	 * @param indent - current level of indent
-	 * @return - string containing subtree
+	 * @param f - printstream to write output
 	 */
 	public static void showTree(AsnNode n, String indent,PrintStream f){
 		f.print(indent);
@@ -4294,7 +4294,7 @@ public class AsnParser {
 	}
 
 	/**
-	 * @param args
+	 * @param args input arguments
 	 */
 	public static void main(String[] args) {
 		AsnParser parser = new AsnParser();

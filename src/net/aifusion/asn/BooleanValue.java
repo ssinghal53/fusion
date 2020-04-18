@@ -21,7 +21,7 @@ public class BooleanValue extends AsnValue {
 	
 	/**
 	 * ASN.1 Boolean value
-	 * @param value - value for this Boolean value
+	 * @param b - value for this Boolean value
 	 */
 	public BooleanValue(boolean b) {
 		super(Tag.BOOLEAN);

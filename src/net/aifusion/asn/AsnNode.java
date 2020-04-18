@@ -28,7 +28,7 @@ public class AsnNode {
 	private AsnValue value;
 	/**
 	 * Create a node for a production
-	 * @param production
+	 * @param production production associated with this node
 	 */
 	public AsnNode(AsnProduction production) {
 		this.production = production;
@@ -38,6 +38,7 @@ public class AsnNode {
 	
 	/**
 	 * Create a new parser node with a given token (name)
+	 * @param production production associated with this node
 	 * @param token - Token at this node
 	 */
 	public AsnNode(AsnProduction production, Token token) {
@@ -166,7 +167,6 @@ public class AsnNode {
 	/**
 	 * Get the ASN.1 value, if any
 	 * @return asn value, if the node reduces to a constant value. Null otherwise
-	 * @see #reduce()
 	 */
 	public AsnValue getAsnValue() {
 		return value;

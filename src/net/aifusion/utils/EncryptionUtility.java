@@ -389,9 +389,10 @@ public class EncryptionUtility {
 	 * is unpacked, the received encryption key is decrypted using the receiver's private
 	 * decryption key, and the signature on the message is verified using the sender's 
 	 * public key (included as part of the message). Currently assumes RSA key pairs
+	 * @param decryptionKey - decryption key to be used
 	 * @param receivedCipherText - received message
 	 * @return - plainText. Null if some error occurs
-	 * @see #signAndEncrypt(byte[], PublicKey)
+	 * @see #signAndEncrypt(KeyPair, byte[], PublicKey)
 	 */
 	public static byte [] decryptAndVerify(PrivateKey decryptionKey, byte [] receivedCipherText){
 		if(receivedCipherText == null) return null;

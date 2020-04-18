@@ -7,7 +7,7 @@ package net.aifusion.asn;
 import java.util.HashMap;
 
 /**
- * Class to represent an Ast Module
+ * Class to represent an ASN.1 Module
  * @author Sharad Singhal
  */
 public class AsnModule extends AsnNode {

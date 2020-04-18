@@ -98,7 +98,7 @@ public class TaggedValue extends AsnValue {
 	
 	/**
 	 * Get the underlying value associated with this tagged value
-	 * @return
+	 * @return value of this tagged value
 	 */
 	public AsnValue getValue() {
 		return value;

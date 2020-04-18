@@ -12,7 +12,7 @@ import net.aifusion.metamodel.ModelException;
 
 /**
  * Class to represent a tag context for context sensitive tags<br>
- * A tag context defines the <tagNumber,tag> mapping for context sensitive tags used
+ * A tag context defines the &lt;tagNumber,tag&gt; mapping for context sensitive tags used
  * for encoding or decoding BER when IMPLICIT or AUTO tag definitions are being used.
  * @author Sharad Singhal
  */

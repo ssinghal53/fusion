@@ -188,20 +188,20 @@ public enum Tag {
 	}
 
 	/**
-	 * Tag Encoding<br/><pre>
+	 * Tag Encoding<br><pre>
 	 *  ____________________________________________________________________
 	 * |Octet 1                          | Octet 2 onwards                  |
 	 * |8 | 7    | 6 | 5 | 4 | 3 | 2 | 1 | 8    | 7 | 6 | 5 | 4 | 3 | 2 | 1 |
 	 * |Tag Class|P/C| Tag Number(0-30)  | NA                               |
 	 * |         |   | 31                | more | Tag Number                |
 	 * |_________|___|___________________|__________________________________|</pre>
-	 * Tag class can be {Universal, Application, ContextSensitive, or Private}<br/>
-	 * Encoding can {Primitive, Constructed}<br/>
-	 * Tag Number is encoded either as part of the first byte (for tag values < 31), or as the first byte followed
+	 * Tag class can be {Universal, Application, ContextSensitive, or Private}<br>
+	 * Encoding can {Primitive, Constructed}<br>
+	 * Tag Number is encoded either as part of the first byte (for tag values &lt; 31), or as the first byte followed
 	 * by one or more bytes using the long form. The initial octet encodes the tag class and encoding as before,
 	 * and bits 1..5 are 1. The tag number is encoded in the following octets, where bit 8 of each is 1 if there are
 	 * more octets, and bits 1..7 encode the tag number. The tag number bits combined, big-endian, encode the tag number.
-	 * The least number of following octets should be encoded; that is, bits 1..7 should not all be 0 in the first following octet.<br/>
+	 * The least number of following octets should be encoded; that is, bits 1..7 should not all be 0 in the first following octet.<br>
 	 * Note that the standard allows the tag number to be an arbitrary precision unsigned integer.
 	 * We restrict the tag length to be no more than 63 bits to fit in a long.
 	 * @param tagNumber - tag number

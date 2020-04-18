@@ -10,7 +10,7 @@ import net.aifusion.metamodel.ExceptionReason;
 import net.aifusion.metamodel.ModelException;
 
 /**
- * ASN.1 Integer value (<64 bits)
+ * ASN.1 Integer value (&lt;64 bits)
  * @author Sharad Singhal
  * @see LargeInteger
  */
@@ -53,7 +53,7 @@ public class IntegerValue extends AsnValue {
 	}
 
 	/**
-	 * Create an integer value (<= 64 bits) from a serialized value
+	 * Create an integer value (&lt;= 64 bits) from a serialized value
 	 * @param buffer - input buffer
 	 * @param blen - length of input buffer
 	 * @param cursor - starting location for the integer value 

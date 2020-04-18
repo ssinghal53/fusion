@@ -265,8 +265,8 @@ public class SymbolTable {
 	}
 
 	/**
-	 * Get the underlying map containing <symbolName,Symbol> from this symbol table
-	 * @return map containing <symbolName,Symbol>
+	 * Get the underlying map containing &lt;symbolName,Symbol&gt; from this symbol table
+	 * @return map containing &lt;symbolName,Symbol&gt;
 	 */
 	public LinkedHashMap<String,Symbol> getSymbolTable(){
 		return symbolTable;

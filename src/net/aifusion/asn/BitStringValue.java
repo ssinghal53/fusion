@@ -139,6 +139,7 @@ public class BitStringValue extends AsnValue {
 
 	/**
 	 * Get the value of this bit string.
+	 * @return value of this string
 	 */
 	public String getValue() {
 		return value;

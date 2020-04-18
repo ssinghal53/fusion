@@ -11,7 +11,7 @@ import net.aifusion.metamodel.ExceptionReason;
 import net.aifusion.metamodel.ModelException;
 
 /**
- * Class to hold a large (>64 bit) Integer
+ * Class to hold a large (&gt;64 bit) Integer
  * @author Sharad Singhal
  */
 public class LargeInteger extends AsnValue {
@@ -20,7 +20,7 @@ public class LargeInteger extends AsnValue {
 
 	/**
 	 * Create a large Integer
-	 * @param tag
+	 * @param value value for this large integer
 	 */
 	public LargeInteger(BigInteger value) {
 		super(Tag.INTEGER.getTagNumber(),Tag.INTEGER.getTagClass(),Tag.INTEGER.getTagEncoding());

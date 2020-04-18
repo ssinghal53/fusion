@@ -123,7 +123,7 @@ public abstract class AsnValue {
 	 * and return the proper AsnValue.
 	 * @param buffer - input buffer
 	 * @param blen - length of buffer
-	 * @param offset - offset pointing to the first byte (tag) for the value
+	 * @param cursor - offset pointing to the first byte (tag) for the value
 	 * @return - parsed ASN.1 value
 	 */
 	public static AsnValue create(byte [] buffer, int blen, int cursor) {
