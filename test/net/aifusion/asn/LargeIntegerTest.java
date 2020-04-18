@@ -1,6 +1,6 @@
 /**
- * Copyright 2020 Hewlett Packard Laboratories
- * Created Mar 19, 2020 by sharad
+ * Copyright 2020 Hewlett Packard Enterprise Development LP
+ * Created Mar 19, 2020 by Sharad Singhal
  */
 package net.aifusion.asn;
 
@@ -13,8 +13,6 @@ import java.math.BigInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import net.aifusion.asn.LargeInteger;
 
 /**
  * @author sharad
