@@ -59,7 +59,7 @@ import org.junit.runners.Suite;
 	net.aifusion.cimserver.AllTests.class,
 	
 	// ASN.1 tests
-	// net.aifusion.asn.AllTests.class
+	net.aifusion.asn.AllTests.class
 	
 })
 
