@@ -286,7 +286,7 @@ public class AsnNode {
 	public String toString(String indent) {
 		StringBuilder b = new StringBuilder(indent);
 		// b.append(getFullName()).append(" ");
-		b.append(production.astValue());
+		b.append(production.getProduction());
 		if(!tokens.isEmpty()) {
 			for(Token t : tokens) b.append(" ").append(t);
 		}

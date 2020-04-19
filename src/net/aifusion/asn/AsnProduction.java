@@ -365,7 +365,7 @@ public enum AsnProduction {
 	 * Get the name of the production
 	 * @return - name of the production
 	 */
-	public Object astValue() {
+	public Object getProduction() {
 		return productionName;
 	}
 	
