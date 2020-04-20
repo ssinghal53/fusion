@@ -4258,7 +4258,7 @@ public class AsnParser {
 		module.addChild(moduleBody());
 		skipOver(TokenType.END);
 		showDebug(module,"",System.out);
-		System.out.println("\n");
+		if(debug) System.out.println("\n");
 		return module;
 	}
 	
