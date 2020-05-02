@@ -127,10 +127,9 @@ public class TaggedValue extends AsnValue {
 		return value;
 	}
 	
-	
 	/**
 	 * Create a tagged value
-	 * @param buffer - input buffer
+	 * @param buffer - input buffer containing DER encoded value
 	 * @param blen - length of input buffer
 	 * @param cursor - current cursor in buffer
 	 * @return - tagged value

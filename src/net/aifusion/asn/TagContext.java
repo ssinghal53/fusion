@@ -61,13 +61,35 @@ public class TagContext {
 	}
 	
 	/**
-	 * Get the expected Tag type for a tag number in the current context
+	 * Reset the current context to the initial mapping
+	 */
+	public void reset() {
+		cursor = 0;
+		return;
+	}
+	
+	/**
+	 * Get the expected Universal Tag type for a tag number in the current context
 	 * @param tagNumber - tag number to look up
-	 * @return - Tag representing expected data type
+	 * @return - Tag representing expected data type. Null if no such tag found
 	 */
 	public Tag getExpectedTag(int tagNumber) {
 		if(cursor >= context.size()) throw new ModelException(ExceptionReason.INVALID_ENUMERATION_CONTEXT,"Cursor is past the context size "+context.size());
 		Map<Integer,Tag> currentContext = context.get(cursor);
+		if(!currentContext.containsKey(tagNumber))
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Context does not define tag number "+tagNumber);
+		return currentContext.get(tagNumber); 
+	}
+	
+	/**
+	 * Get the expected Universal Tag type for a tag number in a given context
+	 * @param tagNumber - tag number to look up
+	 * @param contextId - contextId to use
+	 * @return - Tag representing expected data type. Null if no such tag found
+	 */
+	public Tag getExpectedTag(int tagNumber, int contextId) {
+		if(contextId >= context.size()) throw new ModelException(ExceptionReason.INVALID_ENUMERATION_CONTEXT,"Expected contextId < "+context.size()+" given "+contextId);
+		Map<Integer,Tag> currentContext = context.get(contextId);
 		if(!currentContext.containsKey(tagNumber))
 			throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Context does not define tag number "+tagNumber);
 		return currentContext.get(tagNumber); 
