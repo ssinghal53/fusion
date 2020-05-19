@@ -127,6 +127,12 @@ public class ModelException extends RuntimeException {
 		return;
 	}
 	
+	/*
+	 * *****************************************
+	 * Public methods specific to ModelException
+	 * *****************************************
+	 */
+	
 	/**
 	 * Get the reason provided in this exception
 	 * @return - reason for this exception
