@@ -64,7 +64,7 @@ public class Cim2Java {
 	private static String dated = "July 19, 2019";
 	/** Header inserted at the top of the generated java class */
 	private static String copyRightHeader = "/*\n * CIM to Java Stub Generator Version "+version+" dated "+dated+"\n"+
-							" * Copyright 2019 Sharad Singhal\n * All Rights Reserved\n * Author: Sharad Singhal\n */\n";
+							" * Stubs may be used without restriction except for retaining this comment in source code\n */\n";
 	
 	/** Annotations added to every generated java class */
 	private Vector<String> knownImports = new Vector<String>();
