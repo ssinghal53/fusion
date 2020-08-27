@@ -51,7 +51,7 @@ public class JavaModelMapper {
 	/** Pattern to parse qualifiers for package path */
     private static Pattern packagePattern = Pattern.compile("(?i)^.*PackagePath\\s*\\(\\s*\\\"([^\"]+)(.*)$");
 	/** flag for debugging */
-	private static boolean debug = false;
+	private static boolean debug = true;
 	/**
 	 * All methods in this class should be static, so we do not need to instantiate this class
 	 */
@@ -241,11 +241,11 @@ public class JavaModelMapper {
     		if(!cimEnumType.hasKey(f.name())) return false;
     		EnumerationValue cv = cimEnumType.getValue(f.name());
     		if(!JavaEnumValueMatches(f,cv)) return false;
-    		seen.add(f.name().toLowerCase());
+    		seen.add(f.name());
     	}
     	if(debug) System.out.println("Check all CIM enum keys are are present in Java Enum");
-    	for(String key : cimEnumType.getLowerCaseKeys()){
-    		if(seen.contains(key.toLowerCase())) continue;
+    	for(String key : cimEnumType.getKeys()){
+    		if(seen.contains(key)) continue;
     		return false;
     	}
     	if(debug) System.out.println("Enum Matched");

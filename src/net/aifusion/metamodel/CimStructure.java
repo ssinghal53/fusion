@@ -317,16 +317,6 @@ public class CimStructure extends NamedElement {
 	 */
 	
 	/**
-	 * Return the names of all properties defined in this structure
-	 * @return - set containing normalized (lowercase) names of all properties in this structure
-	 * @see #getPropertyNames()
-	 */
-	@Deprecated
-	public Set<String> getLowerCasePropertyNames(){
-		return getProperties(null).keySet();
-	}
-	
-	/**
 	 * Get names of all properties defined in this structure
 	 * @return - mixed case names of all properties defined locally in this structure
 	 */

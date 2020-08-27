@@ -194,7 +194,7 @@ public class BasicProviderTest implements CimListener {
 		List<String> names = p.getPropertyNames(path);
 		assertNotNull(names);
 		assertEquals(1,names.size());
-		assertEquals("integerproperty",names.get(0));
+		assertEquals("integerProperty",names.get(0));
 
 		// get names of a structure in parent
 		path = new ObjectPath(ElementType.STRUCTURE,"test_struct",nameSpacePath[parent],null, null);
@@ -225,7 +225,7 @@ public class BasicProviderTest implements CimListener {
 		names = p.getPropertyNames(path);
 		assertNotNull(names);
 		assertEquals(2,names.size());
-		assertTrue(names.contains("integerproperty"));
+		assertTrue(names.contains("integerProperty"));
 		assertTrue(names.contains("foobar"));
 		
 		// get names of a structure in child

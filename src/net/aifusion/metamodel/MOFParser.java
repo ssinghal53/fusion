@@ -1980,7 +1980,7 @@ public class MOFParser implements Parser {
 			enumValue = enumValue.substring(enumValue.lastIndexOf('.')+1);
 		}
 		// ensure that the value given is a valid key in the enumeration
-		if(!en.getLowerCaseKeys().contains(enumValue.toLowerCase())) error(ExceptionReason.NOT_FOUND,en.getName()+" does not define the value "+enumValue);
+		if(!en.getKeys().contains(enumValue)) error(ExceptionReason.NOT_FOUND,en.getName()+" does not define the value "+enumValue);
 		return en.getValue(enumValue);
 	}
 

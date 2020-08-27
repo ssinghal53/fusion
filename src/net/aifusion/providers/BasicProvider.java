@@ -137,16 +137,16 @@ public class BasicProvider implements Provider {
 				names.addAll(((CimInstance) element).getPropertyNames());
 				return names;
 			case INTERFACE:
-				names.addAll(((CimStructure) element).getLowerCasePropertyNames());
+				names.addAll(((CimStructure) element).getPropertyNames());
 				return names;
 			case CLASS:
-				names.addAll(((CimClass) element).getLowerCasePropertyNames());
+				names.addAll(((CimClass) element).getPropertyNames());
 				return names;
 			case ENUMERATION:
-				names.addAll(((CimEnumeration) element).getLowerCaseKeys());
+				names.addAll(((CimEnumeration) element).getKeys());
 				return names;
 			case STRUCTURE:
-				names.addAll(((CimStructure) element).getLowerCasePropertyNames());
+				names.addAll(((CimStructure) element).getPropertyNames());
 				return names;
 			case STRUCTUREVALUE:
 				names.addAll(((StructureValue) element).getPropertyNames());

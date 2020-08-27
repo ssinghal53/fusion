@@ -95,7 +95,7 @@ class SelectList extends Node {
 			String header = headers.get(i);
 			StructureValue inst = instances.get(i);
 			if(inst == null) continue;
-			for(String p : template.getLowerCasePropertyNames()){
+			for(String p : template.getPropertyNames()){
 				DataValue q = template.getPropertyQualifierValue(p, "ModelCorrespondence");
 				if(q == null) continue;
 				String [] v = (String[]) q.getValue();
@@ -218,7 +218,7 @@ class SelectList extends Node {
 							// select ['*' | classProperty [as outputAlias]] from ...
 							if("*".equals(classProperty)){
 								// select '*' from ...
-								for(String pName : c.getLowerCasePropertyNames()){
+								for(String pName : c.getPropertyNames()){
 									if(!seenProperty.contains(pName)){
 										addProperty(columnName,pName,pName,c,b);
 										seenProperty.add(pName);
@@ -240,7 +240,7 @@ class SelectList extends Node {
 							if(!className.equalsIgnoreCase(c.getName())) continue;
 							if("*".equals(classProperty)){
 								// select className.* from ...
-								for(String pName : c.getLowerCasePropertyNames()){
+								for(String pName : c.getPropertyNames()){
 									if(!seenProperty.contains(pName)){
 										addProperty(columnName,pName,pName,c,b);
 										seenProperty.add(pName);

@@ -74,7 +74,7 @@ public class CimEnumeration extends NamedElement {
 		}
 		// validate that inherited keys are not being re-declared
 		if(superType != null){
-			Set<String> keysPresent = superType.getLowerCaseKeys();
+			Set<String> keysPresent = superType.getKeys();
 			for(EnumerationValue v : values){
 				if(keysPresent.contains(v.getName().toLowerCase()))
 					throw new ModelException(ExceptionReason.INVALID_PARAMETER,getName()+": declares duplicate Enum dataValue "+v.getName());
@@ -89,19 +89,6 @@ public class CimEnumeration extends NamedElement {
 	 */
 	public DataType getDataType(){
 		return type;
-	}
-	
-	/**
-	 * Get the set of keys defined in this enumeration (or its superTypes)
-	 * @return - set of keys (normalized to lowercase) in the enumeration
-	 * @see #getKeys()
-	 */
-	@Deprecated
-	public Set<String> getLowerCaseKeys(){
-		HashSet<String> keys = new HashSet<String>(values.keySet());
-		CimEnumeration superType = (CimEnumeration) getSuperType();
-		if(superType != null) keys.addAll(superType.getLowerCaseKeys());
-		return keys;
 	}
 	
 	/**

@@ -470,7 +470,7 @@ public class CimHandlerTest {
 		HttpResponse response = handler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
-		assertEquals("integerproperty\r\n",bodyString);
+		assertEquals("integerProperty\r\n",bodyString);
 	}
 
 
