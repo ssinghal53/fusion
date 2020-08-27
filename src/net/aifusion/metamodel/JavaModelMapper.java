@@ -51,7 +51,7 @@ public class JavaModelMapper {
 	/** Pattern to parse qualifiers for package path */
     private static Pattern packagePattern = Pattern.compile("(?i)^.*PackagePath\\s*\\(\\s*\\\"([^\"]+)(.*)$");
 	/** flag for debugging */
-	private static boolean debug = true;
+	private static boolean debug = false;
 	/**
 	 * All methods in this class should be static, so we do not need to instantiate this class
 	 */
