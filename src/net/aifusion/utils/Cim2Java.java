@@ -1,6 +1,6 @@
 /**
  * Copyright 2019, Sharad Singhal, All Rights Reserved
- * 
+ * Copyright 2020, Hewlett Packard Enterprise Development LP, All Rights Reserved
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright notice, this
@@ -24,6 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created July 19, 2019 by Sharad Singhal
+ * Last updated Sept. 14, 2020 by Sharad Singhal
  */
 package net.aifusion.utils;
 
@@ -59,12 +60,13 @@ public class Cim2Java {
 	/** Logger for this class */
 	private static final Logger logger = Logger.getLogger(Cim2Java.class.getName());
 	/** Stub generator version */
-	private static String version = "0.0.1";
+	private static String version = "0.0.2";
 	/** Date for this stub generator version */
-	private static String dated = "July 19, 2019";
+	private static String dated = "September 14, 2020";
 	/** Header inserted at the top of the generated java class */
 	private static String copyRightHeader = "/*\n * CIM to Java Stub Generator Version "+version+" dated "+dated+"\n"+
-							" * Copyright (c) Sharad Singhal, 2019\n"+
+							" * Copyright (c) 2014-2020, Sharad Singhal\n"+
+							" * Copyright (c) 2020, Hewlett Packard Enterprise Development LP\n"+
 							" * Stubs may be used without restriction except for retaining this comment in source code\n */\n";
 	
 	/** Annotations added to every generated java class */
@@ -84,6 +86,8 @@ public class Cim2Java {
 	private Repository repository;
 	/** Default package name */
 	private String defaultPackage = "";
+	/** Constructor type to generate */
+	private boolean cimConstructor = false;
 	
 	/** Debugging flag */
 	private static boolean debug = false;
@@ -123,6 +127,7 @@ public class Cim2Java {
 			Level level = Level.parse(programArgs.get("l").toUpperCase());
 			setLogger(level, null);
 		}
+		cimConstructor = programArgs.containsKey("sv") && programArgs.get("sv").startsWith("t") ? true : false;
 		return;
 	}
 	
@@ -200,7 +205,7 @@ public class Cim2Java {
 		localImports.clear();	// reference and parameter imports, if any
 		methodNames.clear();	// java method names generated for this stub
 		code.setLength(0); 		// generated java code
-		JavaFeature classFeature = new JavaFeature(c,"",repository);
+		JavaFeature classFeature = new JavaFeature(c,"",repository, cimConstructor);
 		
 		StringBuilder b = new StringBuilder();
 		b.append(getFileHeader(c));
@@ -292,6 +297,7 @@ public class Cim2Java {
 	 * <dt>-r repository</dt><dd>persistent repository used to resolve input classes [none]</dd>
 	 * <dt>-l logLevel</dt><dd>logging level for messages [warning]</dd>
 	 * <dt>-n nameSpace</dt><dd>name space to use in repository (only if used with -r) [/root/local]</dd>
+	 * <dt>-sv [true|false]</dt><dd>Use StructureValue based constructor [false]</dd>
 	 * </dl>
 	 * The stub generator recognizes the following qualifiers in the MOF description
 	 * <dl>

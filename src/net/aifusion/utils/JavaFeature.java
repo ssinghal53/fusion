@@ -92,7 +92,7 @@ class JavaFeature {
 	/** debugging flag */
 	private boolean debug = false;
 	/** Use Cim StructureValue in constructor(s) */
-	private boolean cimConstructor = false;
+	private boolean cimConstructor = true;
 	/** TODO: Contained features within this feature, if any (not needed for V2 MOF) */
 	private Vector<JavaFeature> embeddedFeatures = new Vector<JavaFeature>();
 	
@@ -109,11 +109,13 @@ class JavaFeature {
 	 * @param feature - CIM feature to translate
 	 * @param tab - tab to include before this feature in Java
 	 * @param repository - repository to use for resolution
+	 * @param cimConstructor - use StructureValue in constructor
 	 */
-	public JavaFeature(NamedElement feature, String tab, Repository repository) {
+	public JavaFeature(NamedElement feature, String tab, Repository repository, boolean cimConstructor) {
 		this.feature = feature;
 		this.tab = tab;
 		this.repository = repository;
+		this.cimConstructor = cimConstructor;
 		// initialize other globals
 		initGlobals();
 		// obtain feature specific code
@@ -152,6 +154,7 @@ class JavaFeature {
 		localImports.add(Export.class.getName());
 		if(cimConstructor) {
 			localImports.add(StructureValue.class.getName());
+			localImports.add(DataValue.class.getName());
 		} else if(featureType != ElementType.ENUMERATION){
 			localImports.add(Map.class.getName());
 		}
@@ -520,18 +523,24 @@ class JavaFeature {
 		// embedded enumerations and structures, if any
 		for(String eName : struct.getEnumerationNames()) {
 			CimEnumeration en = struct.getEnumeration(eName);
-			embeddedFeatures.add(new JavaFeature(en,tab+"\t",repository));
+			embeddedFeatures.add(new JavaFeature(en,tab+"\t",repository, cimConstructor));
 		}
 		for(String sName : struct.getStructureNames()) {
 			CimStructure st = struct.getStructure(sName);
-			embeddedFeatures.add(new JavaFeature(st,tab+"\t",repository));
+			embeddedFeatures.add(new JavaFeature(st,tab+"\t",repository, cimConstructor));
 		}
 		for(JavaFeature f : embeddedFeatures) {
 			b.append(f.getFeatureCode());
 		}
 		
 		if(cimConstructor) {
-			throw new ModelException("Cim Constructor not yet implemented");
+			b3.append(tab).append("\tpublic ").append(getJavaName(struct)).append("(StructureValue sv){\n");
+			if(struct.getSuperType() != null) {
+				b3.append(tab).append("\t\tsuper(sv);\n");
+			} else {
+				b3.append(tab).append("\t\tthis.sv = sv;\n");
+				b.append(tab).append("\tStructureValue sv;\n");
+			}
 		} else {
 			b3.append(tab).append("\tpublic ").append(getJavaName(struct)).append("(Map<String,Object> args){\n");
 			if(struct.getSuperType() != null) b3.append(tab).append("\t\tsuper(args);\n");
@@ -569,15 +578,24 @@ class JavaFeature {
 			String jName = toLowerCase(pName);
 			boolean isStatic = (Boolean) struct.getPropertyQualifierValue(pName, "STATIC").getValue();
 			// prop declaration
-			if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b.append("\t@Deprecated\n");
-			b.append("\tprivate ");
-			if(isStatic) b.append("static ");
-			b.append(getJavaType(dt,refClass)).append(" ");
-			b.append(jName).append(";\n");
+			// if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b.append("\t@Deprecated\n");
+			// b.append("\tprivate ");
+			// if(isStatic) b.append("static ");
+			// b.append(getJavaType(dt,refClass)).append(" ");
+			// b.append(jName).append(";\n");
 			// update constructor
 			if(cimConstructor) {
-				throw new ModelException("Not yet implemented");
+				// CimConstructor does not require any additional property-specific code for
+				// fields
+				// throw new ModelException("Not yet implemented");
 			} else {
+				// prop declaration
+				if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b.append("\t@Deprecated\n");
+				b.append("\tprivate ");
+				if(isStatic) b.append("static ");
+				b.append(getJavaType(dt,refClass)).append(" ");
+				b.append(jName).append(";\n");
+				// constructor case statement addition
 				b3.append(tab).append("\t\t\tcase \"").append(pName).append("\":\n");
 				b3.append(tab).append("\t\t\t\t").append(jName).append(" = (").append(getJavaType(dt,refClass)).append(") args.get(\"").append(pName).append("\");\n");
 				b3.append(tab).append("\t\t\t\tbreak;\n");
@@ -591,7 +609,12 @@ class JavaFeature {
 				if(isStatic) b2.append("static ");
 				b2.append(getJavaType(dt,refClass)).append(" ");
 				b2.append(dt.isBoolean() ? "is" : "get").append(toUpperCase(pName)).append("(){\n");
-				b2.append("\t\treturn ").append(jName).append(";\n");
+				if(cimConstructor) {
+					b2.append("\t\tDataValue v = getPropertyValue(\"").append(pName).append("\");\n");
+					b2.append("\t\treturn ").append("(v == null || v.getValue() == null) ? null : (").append(getJavaType(dt,refClass)).append(") v.getValue();\n");
+				} else {
+					b2.append("\t\treturn ").append(jName).append(";\n");
+				}
 				b2.append("\t}\n");
 			}
 			// writable property
@@ -602,7 +625,16 @@ class JavaFeature {
 				if(isStatic) b2.append("static ");
 				b2.append("void set").append(toUpperCase(pName)).append("( ");
 				b2.append(getJavaType(dt,refClass));
-				b2.append(" value){\n\t\t").append(jName).append(" = value;\n");
+				b2.append(" value){\n\t\t");
+				if(cimConstructor) {
+					if(!localImports.contains(DataType.class.getName())) {
+						localImports.add(DataType.class.getName());
+					}
+					b2.append("setPropertyValue(\"").append(pName).append("\",new DataValue(DataType.");
+					b2.append(dt).append(", value").append("));\n");
+				} else {
+					b2.append(jName).append(" = value;\n");
+				}
 				b2.append("\t\treturn;\n");
 				b2.append("\t}\n");
 			}
@@ -689,7 +721,30 @@ class JavaFeature {
 		b.append("\n");
 		// complete the constructor
 		if(cimConstructor) {
-			throw new ModelException("Cim Constructor not yet implemented");
+			// finish constructor
+			b3.append(tab).append("\t\treturn;\n");
+			b3.append(tab).append("\t}\n");
+			// if we do not have a superType, add getter/setter methods used in superclasses
+			// and ObjectPath getter
+			if(struct.getSuperType() == null) {
+				b3.append(tab).append("\tprotected DataValue getPropertyValue(String pName) {\n");
+				b3.append(tab).append("\t\treturn sv.getPropertyValue(pName);\n");
+				b3.append(tab).append("\t}\n");
+				
+				b3.append(tab).append("\tprotected void setPropertyValue(String pName, DataValue value) {\n");
+				b3.append(tab).append("\t\tsv.setPropertyValue(pName,value);\n");
+				b3.append(tab).append("\t\treturn;\n");
+				b3.append(tab).append("\t}\n");
+				if(!localImports.contains(ObjectPath.class.getName())) localImports.add(ObjectPath.class.getName());
+				b3.append(tab).append("\tpublic ObjectPath getObjectPath() {\n");
+				b3.append(tab).append("\t\treturn sv.getObjectPath();\n");
+				b3.append(tab).append("\t}\n");
+				
+				// TODO: add generic functions here to b2 if we do not have a superclass
+				// getStructureValue()
+				// getStructure()
+			}
+			
 		} else {
 			b3.append(tab).append("\t\t\tdefault:\n");
 			b3.append(tab).append("\t\t\t\tbreak;\n");
@@ -986,10 +1041,10 @@ class JavaFeature {
 		InMemoryCache cache = new InMemoryCache();
 		MOFParser parser = new MOFParser(cache);
 		parser.parse(new ByteArrayInputStream(mof2.getBytes()), Constants.defaultNameSpacePath);
-		for(NamedElement e : cache.getElements(null, null, null, false)){
+		for(NamedElement e : cache.getElements("Structure", null, null, false)){
 			System.out.println("----------");
 			System.out.println(e.toMOF());
-			JavaFeature f = new JavaFeature(e,"",cache);
+			JavaFeature f = new JavaFeature(e,"",cache, true);
 			System.out.println("----------");
 			System.out.println(f.getJavaCode());
 			System.out.println("----------\n");
@@ -1003,8 +1058,87 @@ class JavaFeature {
 			"	Name2 = 2,\r\n" + 
 			"	name3 = 3\r\n" + 
 			"};";
+	
+	private static String mof1 = "[Description(\"String Valued Enumeration\"), PackagePath(\"newPath1::newPath2\")]\r\n" + 
+			"Enumeration Fusion_integerEnum : String {\r\n" + 
+			"	NAME1 = \"0\",\r\n" + 
+			"	Name2 = \"2\",\r\n" + 
+			"	name3 = \"3\"\r\n" + 
+			"};";
+	
+	private static String mof2 =  "	[Version (\"1.0.0\"), Abstract, PackagePath(\"rsam::core\"),\r\n" + 
+			"		Description (\"RSAM_Entity is the base class for all RSAM entities.\")]\r\n" + 
+			"Structure RSAM_Entity {\r\n" + 
+			"    	[Key, Description ( \"The unique id of the entity.\")] \r\n" + 
+			"    String Id;\r\n" + 
+			"    	[Description ( \"Policies associated with this entity\")] \r\n" + 
+			"    RSAM_Policy ref AssociatedPolicies [];\r\n" + 
+			"};"
+			+ "	[Version (\"1.0.0\"), PackagePath(\"rsam::core\"), Description ( \"Types of policies\")]\r\n" + 
+			"Enumeration RSAM_PolicyType : String {\r\n" + 
+			"		[Description(\"Configuration policies\")]\r\n" + 
+			"	Configuration,\r\n" + 
+			"		[Description(\"Scheduling policies for activities\")]\r\n" + 
+			"	Scheduling,\r\n" + 
+			"		[Description(\"Constraint policies for designers\")]\r\n" + 
+			"	Constraint\r\n" + 
+			"};\r\n" + 
+			"\r\n" + 
+			"/*\r\n" + 
+			" * =============================================\r\n" + 
+			" * Policy Scope. A class-scoped policy applies to\r\n" + 
+			" * all instances of that type. An instance-scoped\r\n" + 
+			" * policy applies only to a given instance of an\r\n" + 
+			" * entity.\r\n" + 
+			" * =============================================\r\n" + 
+			"*/\r\n" + 
+			"\r\n" + 
+			"	[Version (\"1.0.0\"), PackagePath(\"rsam::core\"), Description ( \"Scope of policies\")]\r\n" + 
+			"Enumeration RSAM_PolicyScope : String {\r\n" + 
+			"		[Description(\"Class-scoped policies apply to all instances of the class or structure\")]\r\n" + 
+			"	Class,\r\n" + 
+			"		[Description(\"Instance-scoped policies apply only to the associated instance\")]\r\n" + 
+			"	Instance\r\n" + 
+			"};\r\n" + 
+			"\r\n" + 
+			"/*\r\n" + 
+			" * =================================================\r\n" + 
+			" * Policy Language. This enumeration can be extended\r\n" + 
+			" * to provide additional policy languages\r\n" + 
+			" * =================================================\r\n" + 
+			"*/\r\n" + 
+			"\r\n" + 
+			"	[Version (\"1.0.0\"), PackagePath(\"rsam::core\"), Description ( \"Types of policies\")]\r\n" + 
+			"Enumeration RSAM_PolicyLanguage : String {\r\n" + 
+			"		[Description(\"Cauldron policies\")]\r\n" + 
+			"	Cauldron\r\n" + 
+			"};\r\n" + 
+			"\r\n" + 
+			"/*\r\n" + 
+			" * ======================================================================\r\n" + 
+			" * Policy Definition. Note that one of the policy assertions must provide\r\n" + 
+			" * a reference to the appropriate class for class scoped policies.\r\n" + 
+			" * Instance-scoped policies are associated at the RSAM_Entity level to\r\n" + 
+			" * the appropriate instance\r\n" + 
+			" * ======================================================================\r\n" + 
+			"*/\r\n" + 
+			"\r\n" + 
+			"	[Version (\"1.0.0\"), Abstract, PackagePath(\"rsam::core\"), Description ( \"Base Class for policies\")]\r\n" + 
+			"Structure RSAM_Policy : RSAM_Entity {\r\n" + 
+			"		[Description(\"Type of policy\")]\r\n" + 
+			"	RSAM_PolicyType Type;\r\n" + 
+			"		[Description(\"Scope of policy. For class-scoped policies, one of the assertions must identify the corresponding class\")]\r\n" + 
+			"	RSAM_PolicyScope Scope;\r\n" + 
+			"		[Description(\"Specification language for the policy\")]\r\n" + 
+			"	RSAM_PolicyLanguage Language;\r\n" + 
+			"		[Description(\"Policy assertions defined in the policy language\"),Write]\r\n" + 
+			"	String [] Assertions;\r\n" + 
+			"};\r\n" + 
+			"\r\n" + 
+			"";
+	
 
-	private static String mof2 = "[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.EnumBindingClass\" }, Description(\"Integer Valued Enumeration\"), PackagePath(\"newPath1::newPath2\"), Version(\"1.0.0\")]\r\n" + 
+	private static String mofx = "[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.EnumBindingClass\" }, Description(\"Integer Valued Enumeration\"), PackagePath(\"newPath1::newPath2\"), Version(\"1.0.0\")]\r\n" + 
 			"Enumeration CimFusion_EnumBindingClass : SInt32 {\r\n" + 
 			"	NAME1 = 0,\r\n" + 
 			"	Name2 = 2,\r\n" + 
@@ -1016,8 +1150,20 @@ class JavaFeature {
 			"	[Write, Read(false)]\r\n" + 
 			"	Boolean intfMethod;\r\n" + 
 			"	Boolean BoolProp;\r\n" + 
+			"};\r\n" +
+			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingSuperClass\" }]\r\n"+
+			"Structure Cim_TestMethodsSup {\r\n"+
+			"String StringProperty = \"Something\";\r\n"+
 			"};\r\n" + 
-			"\r\n" + 
+			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingClass\" }]\n"+
+			"Class Cim_TestMethods : Cim_TestMethodsSup {\n"+
+			"[Key] String Key;\n"+
+			// "[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.PropertyBindingClass$EmbeddedStringEnum\" }]\n"+
+			"AIFusion_EmbeddedStringEnum enumValueToEnum(AIFusion_EmbeddedStringEnum arg0);\n"+
+			"String enumValueToString(AIFusion_EmbeddedStringEnum arg0);\n"+
+			"String concatStringToEnumValue(AIFusion_EmbeddedStringEnum arg0, String arg1);\n"+
+			"Void doSomething();\n};"+
+			
 			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.PropertyBindingClass\" }, Description(\"Structure to test property bindings\")]\r\n" + 
 			"Structure cim_test {\r\n" + 
 			"	[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.PropertyBindingClass$EmbeddedStringEnum\" }]\r\n" + 
