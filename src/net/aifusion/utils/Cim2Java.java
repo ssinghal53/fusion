@@ -279,6 +279,7 @@ public class Cim2Java {
 		System.out.println("\t-n nameSpace\tname space to use in repository (only if used with -r) [/root/local]");
 		System.out.println("\t-i [true|false] autogenerate standard qualifier types in repository [true]");
 		System.out.println("\t-m [2|3] input contains cim metamodel version 2 or 3 mof [3]");
+		System.out.println("\t-sv [true|false] Generate constructors with StructureValue argument [false]");
 		return;
 	}
 	
