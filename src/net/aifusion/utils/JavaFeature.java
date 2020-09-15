@@ -733,6 +733,7 @@ class JavaFeature {
 				if(!localImports.contains(ObjectPath.class.getName())) localImports.add(ObjectPath.class.getName());
 				if(!localImports.contains(ModelException.class.getName())) localImports.add(ModelException.class.getName());
 				if(!localImports.contains(ExceptionReason.class.getName())) localImports.add(ExceptionReason.class.getName());
+				if(!localImports.contains(CimStructure.class.getName())) localImports.add(CimStructure.class.getName());
 				b3.append(tab).append("\tprotected DataValue getPropertyValue(String pName) {\n");
 				b3.append(tab).append("\t\treturn sv.getPropertyValue(pName);\n");
 				b3.append(tab).append("\t}\n");
@@ -746,9 +747,18 @@ class JavaFeature {
 				b3.append(tab).append("\t\treturn sv.getObjectPath();\n");
 				b3.append(tab).append("\t}\n");
 				
+				b3.append(tab).append("\tpublic CimStructure getCimStructure() {\n");
+				b3.append(tab).append("\t\treturn sv.getCreationStruct();\n");
+				b3.append(tab).append("\t}\n");
+				
+				b3.append(tab).append("\tpublic String toString() {\n");
+				b3.append(tab).append("\t\treturn sv.toMOF();\n");
+				b3.append(tab).append("\t}\n\n");
+				
 				// TODO: add generic functions here to b2 if we do not have a superclass
 				// getStructureValue()
-				// getStructure()
+				// equals()
+				// hashcode()
 			}
 			
 		} else {
