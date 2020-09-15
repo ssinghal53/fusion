@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -160,7 +161,7 @@ public class Java2Cim {
     	// get the mof corresponding to the class being loaded, and parse it into the repository
     	String mof = getClassMOF(javaClass,superType == null ? null : superType.getName(), cls, path, repository);
     	// if(debug) System.out.println("Java2Cim: Parsing:\n"+b.toString());
-    	if(debug) System.out.println("Java2Cim: Parsing:\n"+mof);
+    	if(debug) System.out.println("Java2Cim: Parsing:----\n"+mof+"----");
     	try {
     		// ByteArrayInputStream in = new ByteArrayInputStream(b.toString().getBytes());
     		ByteArrayInputStream in = new ByteArrayInputStream(mof.getBytes());
@@ -186,6 +187,7 @@ public class Java2Cim {
      * @return - string containing the MOF rspresentation of the class
      */
     private static String getClassMOF(Class<?> javaClass, String superType, Export cls, ObjectPath path, Repository repository){
+    	List<Class<?>> dependentClasses = null;
     	// Now build the actual class definition.
     	StringBuilder b = new StringBuilder();
     	// add the MappingStrings qualifier (to linked class), and any declared qualifiers
@@ -249,12 +251,22 @@ public class Java2Cim {
     			b.append(superType);
     		}
     		b.append(" {\n");
-    		// add the content of this class definition
-    		addContent(javaClass,path,b,repository);
+    		// add the content of this class definition, and get any other classes that need resolution
+    		dependentClasses = addContent(javaClass,path,b,repository);
     		b.append("};\n");
     		break;
     	default:
     		throw new ModelException("Java2Cim: Data type "+path.getElementType()+" not yet handled.");
+    	}
+    	if(dependentClasses != null) {
+    		for(Class<?> dc : dependentClasses) {
+    			if(debug) System.out.println("Java2Cim: Adding dependency "+dc.getName());
+    			Export dce = dc.getAnnotation(Export.class);
+    			ObjectPath dcPath = JavaModelMapper.getObjectPathFromClass(dc);
+    			String mof = getClassMOF(dc,path.getName(),dce,dcPath,repository);
+    			if(debug) System.out.println("Java2Cim: Dependency Class MOF: "+mof);
+    			b.append(mof);
+    		}
     	}
     	return b.toString();
     }
@@ -265,8 +277,9 @@ public class Java2Cim {
 	 * @param path - path to the CIM element being constructed
 	 * @param b - current CIM contents
 	 * @param repository - repository to be used for resolving names
+	 * @return - list of other classes that are necessary for resolution. Null if none
 	 */
-    private static void addContent(Class<? extends Object> javaClass, ObjectPath path, StringBuilder b, Repository repository) {
+    private static List<Class<?>> addContent(Class<? extends Object> javaClass, ObjectPath path, StringBuilder b, Repository repository) {
     	// locate exported fields (structures or enumerations)
     	for(Class<?> c : javaClass.getDeclaredClasses()){
     		if(!Modifier.isPublic(Modifier.PUBLIC)) continue;
@@ -279,22 +292,39 @@ public class Java2Cim {
     	
     	// locate exported public methods
     	Map<String, FeatureBinding> locatedFeatures = getFeatures(javaClass);
-    	if(locatedFeatures.size() == 0) return;
+    	if(locatedFeatures.size() == 0) return null;
     	
     	String currentClass = path.getName();
+    	List<Class<?>> dependentClasses = null;
     	for(String key : locatedFeatures.keySet()){
     		FeatureBinding binding = locatedFeatures.get(key);
     		// check if this method is a property (or reference) declaration
-    		if(debug) System.out.println("Java2Cim: Checking Java Method "+key+" : "+binding.toMOF());
+    		if(debug) System.out.println("Java2Cim: Checking Java Method "+key+" :: "+binding.toMOF()+" ::");
     		
     		// TODO -- we are here
     		
     		Map<String,Class<?>> refTypes = binding.getReferencedTypes();
     		for(String r : refTypes.keySet()){
+    			if(debug) System.out.println("Java2Cim: Check "+r);
     			Class<?> c = refTypes.get(r);
-    			if(javaClass.isAssignableFrom(c)) continue;	// skip self and subclass references
+    			if(javaClass.equals(c)) {
+    				// skip self-references
+    				continue;
+    			} else if(javaClass.isAssignableFrom(c)) {
+    				if(debug) System.out.println("Java2Cim: "+javaClass.getName()+" is assignable from "+c.getName());
+    				// Check if dependency exists in the repository
+    				ObjectPath p = JavaModelMapper.getObjectPathFromClass(c);
+    				if(repository.contains(p)) {
+    					if(debug) System.out.println("Java2Cim: "+c.getName()+" "+p+" found in repository" );
+    					continue;
+    				}
+    				if(dependentClasses == null) dependentClasses = new Vector<Class<?>>();
+    				if(debug) System.out.println("Java2Cim: "+c.getName()+" added to dependency classes");
+    				dependentClasses.add(c);
+    				continue;	// skip self and subclass references
+    			}
     			ElementType t = JavaModelMapper.getCimElementType(c);
-    			if(debug) System.out.println(c.getName()+" "+t);
+    			if(debug) System.out.println("Java2Cim: Locate "+c.getName()+" "+t);
     			ObjectPath p = new ObjectPath(t,r,path.getNameSpacePath(),null, null);
     			if(!repository.contains(p)){
     				if(debug) System.out.println("Java2Cim: Loading required class "+r+" : "+c.getName());
@@ -304,7 +334,7 @@ public class Java2Cim {
     		}
     		b.append("\t").append(binding.toMOF());
     	}
-    	return;
+    	return dependentClasses;
     }
     
     /**
@@ -338,17 +368,27 @@ public class Java2Cim {
 			// validate that the incoming java class is an enum, and cast it into an enum
 			if(!javaClass.isEnum()) throw new ModelException("Class "+javaClass.getName()+" is not an enumeration");
 			Class<? extends Enum> javaEnum = (Class<? extends Enum>) javaClass;
-
+			if(debug) System.out.println("Java Class Name: "+javaEnum.getName());
+			
 			// get the name of the CIM enumeration (ensures that it is exported)
 			String cimEnumName = JavaModelMapper.getCimClassName(javaEnum);
 			if(cimEnumName == null) throw new ModelException("Class "+javaClass.getName()+" is not an exported class");
-
-			// get the data type for the enumeration, and validate that it is a singleton String or Integer type
-			Method enumMethod = javaEnum.getMethod("value", (Class<?>[])null);
-			if(enumMethod == null) throw new ModelException("value() method is not defined");
-			DataType cimType = DataType.getTypeForClass(enumMethod.getReturnType());
-			if(!(cimType.isInteger() || cimType.isString()) || cimType.isArray())
-				throw new ModelException(ExceptionReason.INVALID_ENUMERATION_CONTEXT,javaClass.getName()+": Enumerations must be of type string or integer");
+			if(debug) System.out.println("Cim Class Name: "+cimEnumName);
+			
+			boolean hasValueMethod = false;
+			DataType cimType = DataType.STRING;
+			
+			// Check if the Enum has a "value()" method declared in it, and if so locate the type of value
+			for(Method m : javaEnum.getDeclaredMethods()) {
+				if(debug) System.out.println("Java method: "+m.toString()+" "+m.getName());
+				if("value".equals(m.getName())) {
+					hasValueMethod = true;
+					cimType = DataType.getTypeForClass(m.getReturnType());
+					if(!(cimType.isInteger() || cimType.isString()) || cimType.isArray())
+						throw new ModelException(ExceptionReason.INVALID_ENUMERATION_CONTEXT,javaClass.getName()+": Enumerations must be of type string or integer");
+					break;
+				}
+			}
 			
 			// add any declared qualifiers (Note that MappingStrings has already been added before this method is called)
 			String declaredQualifiers = javaClass.getAnnotation(Export.class).qualifiers();
@@ -363,14 +403,17 @@ public class Java2Cim {
 			// get defined constants within the enumeration, and their respective values
 			Object[] enumConstants = javaEnum.getEnumConstants();
 			for(Object o : enumConstants){
-				Class<?> sub = o.getClass();
-				Method valueMethod = sub.getDeclaredMethod("value");
-				Object val = valueMethod.invoke(o);
-				b.append("\n\t").append(o.toString()).append(" = ");
-				if(cimType == DataType.STRING)
-					b.append("\"").append(val).append("\"");
-				else 
-					b.append(val);
+				b.append("\n\t").append(o.toString());
+				if(hasValueMethod) {
+					Class<?> sub = o.getClass();
+					Method valueMethod = sub.getDeclaredMethod("value");
+					Object val = valueMethod.invoke(o);
+					b.append(" = ");
+					if(cimType == DataType.STRING)
+						b.append("\"").append(val).append("\"");
+					else 
+						b.append(val);
+				}
 				b.append(",");
 			}
 		} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
