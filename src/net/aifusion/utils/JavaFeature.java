@@ -538,8 +538,11 @@ class JavaFeature {
 			if(struct.getSuperType() != null) {
 				b3.append(tab).append("\t\tsuper(sv);\n");
 			} else {
+				b.append(tab).append("\tprivate StructureValue sv;\n");
 				b3.append(tab).append("\t\tthis.sv = sv;\n");
-				b.append(tab).append("\tStructureValue sv;\n");
+				b3.append(tab).append("\t\tif(!sv.isInstanceOf(\"").append(struct.getName()).append("\")){\n");
+				b3.append(tab).append("\t\t\tthrow new ModelException(ExceptionReason.INVALID_PARAMETER,\"Only ").append(struct.getName());
+				b3.append(" or its subclasses can be used. found \"+sv.getName());\n\t\t}\n");
 			}
 		} else {
 			b3.append(tab).append("\tpublic ").append(getJavaName(struct)).append("(Map<String,Object> args){\n");
@@ -727,6 +730,9 @@ class JavaFeature {
 			// if we do not have a superType, add getter/setter methods used in superclasses
 			// and ObjectPath getter
 			if(struct.getSuperType() == null) {
+				if(!localImports.contains(ObjectPath.class.getName())) localImports.add(ObjectPath.class.getName());
+				if(!localImports.contains(ModelException.class.getName())) localImports.add(ModelException.class.getName());
+				if(!localImports.contains(ExceptionReason.class.getName())) localImports.add(ExceptionReason.class.getName());
 				b3.append(tab).append("\tprotected DataValue getPropertyValue(String pName) {\n");
 				b3.append(tab).append("\t\treturn sv.getPropertyValue(pName);\n");
 				b3.append(tab).append("\t}\n");
@@ -735,7 +741,7 @@ class JavaFeature {
 				b3.append(tab).append("\t\tsv.setPropertyValue(pName,value);\n");
 				b3.append(tab).append("\t\treturn;\n");
 				b3.append(tab).append("\t}\n");
-				if(!localImports.contains(ObjectPath.class.getName())) localImports.add(ObjectPath.class.getName());
+				
 				b3.append(tab).append("\tpublic ObjectPath getObjectPath() {\n");
 				b3.append(tab).append("\t\treturn sv.getObjectPath();\n");
 				b3.append(tab).append("\t}\n");
