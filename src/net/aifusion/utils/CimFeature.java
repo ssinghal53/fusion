@@ -41,7 +41,7 @@ import net.aifusion.metamodel.JavaModelMapper;
 import net.aifusion.metamodel.ModelException;
 
 /**
- * Class to represent a single CIM Feature bound to a method
+ * Class to represent a single CIM Feature bound to a java method
  * This class is used in Java2Cim
  * @author Sharad Singhal
  */

@@ -37,17 +37,17 @@ import net.aifusion.metamodel.JavaModelMapper;
 import net.aifusion.metamodel.ModelException;
 
 /**
- * Class to represent a binding between multiple features to
+ * Class to represent a binding between multiple CimFeatures to
  * create a CIM property or method
  * @author Sharad Singhal
  *
  */
 class FeatureBinding {
-	/** Name of the feature */
+	/** Name of the CIM feature */
 	private String featureName = null;
 	/** features linked to this name */
 	private CimFeature method, getter, setter, isGetter;
-	/** binding configuration */
+	/** binding configuration:: 0-method, 1-isGetter 2-setter 3-isGetter+setter 4-Getter 5-getter+isGetter 6-getter+setter 7-getter+isGetter+setter  */
 	private int conf = 0;
 	
 	/**
