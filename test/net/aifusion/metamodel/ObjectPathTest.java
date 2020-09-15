@@ -213,7 +213,7 @@ public class ObjectPathTest {
 		p = new ObjectPath(ElementType.INSTANCE,"cim_class", "$abc");
 		assertEquals("cim_class",p.getName());
 		p = new ObjectPath(ElementType.QUALIFIERTYPE,"Abstract",new NameSpacePath("/cimv3"), null, null);
-		assertEquals("abstract",p.getName());
+		assertEquals("Abstract",p.getName());
 	}
 
 	/**
@@ -318,7 +318,7 @@ public class ObjectPathTest {
 		assertEquals("http://user:pass@localhost:80/instance/root/cim_class?k1,boolean=false&k2,boolean=true",uri.toString());
 		
 		p = new ObjectPath(ElementType.QUALIFIERTYPE,"Abstract",new NameSpacePath("/cimv3"), null, null);
-		assertEquals("http://localhost:8085/qualifiertype/cimv3/abstract",p.toURL().toString());
+		assertEquals("http://localhost:8085/qualifiertype/cimv3/Abstract",p.toURL().toString());
 		
 	}
 	

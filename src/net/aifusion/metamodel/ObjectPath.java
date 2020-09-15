@@ -73,7 +73,8 @@ public class ObjectPath {
 		if(type == ElementType.INSTANCE && (keys == null || keys.isEmpty())) throw new ModelException(ExceptionReason.INVALID_PARAMETER,
 				"Instance paths must declare key values");
 		this.type = type;
-		this.objectName = objectName.toLowerCase();
+		// this.objectName = objectName.toLowerCase();
+		this.objectName = objectName;
 		this.nameSpacePath = path;
 		this.alias = alias;
 		if(keys != null && !keys.isEmpty()){
