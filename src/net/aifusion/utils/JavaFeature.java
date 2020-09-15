@@ -751,14 +751,28 @@ class JavaFeature {
 				b3.append(tab).append("\t\treturn sv.getCreationStruct();\n");
 				b3.append(tab).append("\t}\n");
 				
+				b3.append(tab).append("\tpublic int hashCode() {\n");
+				b3.append(tab).append("\t\treturn sv.hashCode();\n");
+				b3.append(tab).append("\t}\n");
+				
+				b3.append(tab).append("\tpublic boolean equals(Object o) {\n");
+				b3.append(tab).append("\t\tif(o == null || !(o instanceof ").append(getJavaName(struct)).append(")) return false;\n");
+				b3.append(tab).append("\t\t").append(getJavaName(struct)).append(" other = (").append(getJavaName(struct)).append(") o;\n");
+				b3.append(tab).append("\t\treturn sv.equals(other.sv);\n");
+				b3.append(tab).append("\t}\n");
+				
+				
 				b3.append(tab).append("\tpublic String toString() {\n");
 				b3.append(tab).append("\t\treturn sv.toMOF();\n");
 				b3.append(tab).append("\t}\n\n");
 				
 				// TODO: add generic functions here to b2 if we do not have a superclass
 				// getStructureValue()
-				// equals()
-				// hashcode()
+			} else {
+				b3.append(tab).append("\tpublic boolean equals(Object o) {\n");
+				b3.append(tab).append("\t\tif(!super.equals(o) || !(o instanceof ").append(getJavaName(struct)).append(")) return false;\n");
+				b3.append(tab).append("\t\treturn true;\n");
+				b3.append(tab).append("\t}\n\n");
 			}
 			
 		} else {
