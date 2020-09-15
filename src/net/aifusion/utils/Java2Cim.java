@@ -63,12 +63,12 @@ import net.aifusion.metamodel.Repository;
 public class Java2Cim {
 	private static final Logger logger = Logger.getLogger(Java2Cim.class.getName());
     /** Tool version **/
-    private static String toolVersion = "0.0.4";
+    private static String toolVersion = "0.0.5";
 	/** Date for this version */
-	private static String dated = "July 17, 2016";
+	private static String dated = "September 15, 2020";
 	/** Header inserted at the top of the generated CIM output */
 	private static String header = "/*\n * Java to CIM Generator Version "+toolVersion+" dated "+dated+"\n"+
-							" * Copyright 2016, Sharad Singhal\n"+
+							" * Copyright 2016-2020, Sharad Singhal\n"+
 							" * All Rights Reserved\n"+
 							" * Definition generated at "+
 							DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(new Date())+
