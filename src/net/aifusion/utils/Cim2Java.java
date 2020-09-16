@@ -65,7 +65,7 @@ public class Cim2Java {
 	private static String dated = "September 14, 2020";
 	/** Header inserted at the top of the generated java class */
 	private static String copyRightHeader = "/*\n * CIM to Java Stub Generator Version "+version+" dated "+dated+"\n"+
-							" * Copyright (c) 2014-2020, Sharad Singhal\n"+
+							" * Copyright (c) 2016-2020, Sharad Singhal\n"+
 							" * Copyright (c) 2020, Hewlett Packard Enterprise Development LP\n"+
 							" * Stubs may be used without restriction except for retaining this comment in source code\n */\n";
 	

@@ -152,11 +152,13 @@ class JavaFeature {
 
 		// known imports that all features use
 		localImports.add(Export.class.getName());
-		if(cimConstructor) {
-			localImports.add(StructureValue.class.getName());
-			localImports.add(DataValue.class.getName());
-		} else if(featureType != ElementType.ENUMERATION){
-			localImports.add(Map.class.getName());
+		if(featureType != ElementType.ENUMERATION){	
+			if(cimConstructor) {
+				localImports.add(StructureValue.class.getName());
+				localImports.add(DataValue.class.getName());
+			} else {
+				localImports.add(Map.class.getName());
+			}
 		}
 
 		// import for superType, if any
@@ -195,6 +197,7 @@ class JavaFeature {
 						String imp = pkg + "." + getJavaName(e);
 						if(!localImports.contains(imp)) localImports.add(imp);
 					}
+					if(!localImports.contains(ObjectPath.class.getName())) localImports.add(ObjectPath.class.getName());
 				} else if(t.isEnumerationValue()){
 					CimEnumeration en = c.getReferencedEnum(mName);
 					String pkg = getJavaPackageName(en);
@@ -229,6 +232,7 @@ class JavaFeature {
 							String imp = pkg + "." + getJavaName(e);
 							if(!localImports.contains(imp)) localImports.add(imp);
 						}
+						if(!localImports.contains(ObjectPath.class.getName())) localImports.add(ObjectPath.class.getName());
 					} else if(t.isEnumerationValue()){
 						CimEnumeration en = p.getEnum();
 						String pkg = getJavaPackageName(en);
@@ -269,6 +273,7 @@ class JavaFeature {
 						String imp = pkg + "." + getJavaName(e);
 						if(!localImports.contains(imp)) localImports.add(imp);
 					}
+					if(!localImports.contains(ObjectPath.class.getName())) localImports.add(ObjectPath.class.getName());
 				} else if(t.isEnumerationValue()){
 					CimEnumeration en = s.getReferencedEnum(pName);
 					String pkg = getJavaPackageName(en);
@@ -506,7 +511,7 @@ class JavaFeature {
 		StringBuilder b2 = new StringBuilder();	// local property definitions
 		StringBuilder b3 = new StringBuilder();	// constructor
 		b.append("\n");
-		b.append(getExport(struct.getQualifiers(),true, struct.getNameSpacePath().getLocalPath()));
+		b.append(getExport(struct.getQualifiers(),true, struct.getNameSpacePath().getLocalPath(), null));
 		if(isTrue(struct.getQualifierValue("DEPRECATED"))) b.append("@Deprecated\n");
 		b.append("public ");
 		if(isTrue(struct.getQualifierValue("ABSTRACT"))) b.append("abstract ");
@@ -552,11 +557,11 @@ class JavaFeature {
 		}
 		// properties if any
 		for(String pName : struct.getPropertyNames()) {
-			if(debug) System.out.println("-- Checking Property "+pName);
 			DataType dt = struct.getPropertyType(pName);
 			if(debug) System.out.println("-- Checking Property "+pName+" type "+dt);
 			String refClass = null;
 			NamedElement refElement = null;
+			// TODO: Need to handle annotated classes here once DataType is fixed
 			if(!dt.isPrimitive()) {
 				switch(dt.getComponentType()) {
 				case OBJECTPATH:
@@ -580,25 +585,14 @@ class JavaFeature {
 			}
 			String jName = toLowerCase(pName);
 			boolean isStatic = (Boolean) struct.getPropertyQualifierValue(pName, "STATIC").getValue();
-			// prop declaration
-			// if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b.append("\t@Deprecated\n");
-			// b.append("\tprivate ");
-			// if(isStatic) b.append("static ");
-			// b.append(getJavaType(dt,refClass)).append(" ");
-			// b.append(jName).append(";\n");
-			// update constructor
-			if(cimConstructor) {
-				// CimConstructor does not require any additional property-specific code for
-				// fields
-				// throw new ModelException("Not yet implemented");
-			} else {
-				// prop declaration
+			if(!cimConstructor) {
+				// add property to class fields
 				if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b.append("\t@Deprecated\n");
 				b.append("\tprivate ");
 				if(isStatic) b.append("static ");
 				b.append(getJavaType(dt,refClass)).append(" ");
 				b.append(jName).append(";\n");
-				// constructor case statement addition
+				// add property to constructor case statement
 				b3.append(tab).append("\t\t\tcase \"").append(pName).append("\":\n");
 				b3.append(tab).append("\t\t\t\t").append(jName).append(" = (").append(getJavaType(dt,refClass)).append(") args.get(\"").append(pName).append("\");\n");
 				b3.append(tab).append("\t\t\t\tbreak;\n");
@@ -607,7 +601,7 @@ class JavaFeature {
 			// readable property
 			if((Boolean)struct.getPropertyQualifierValue(pName, "READ").getValue()) {
 				if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b2.append("\t@Deprecated\n");
-				b2.append("\t").append(getExport(struct.getPropertyQualifiers(pName), false, struct.getNameSpacePath().getLocalPath()));
+				b2.append("\t").append(getExport(struct.getPropertyQualifiers(pName), false, struct.getNameSpacePath().getLocalPath(), dt.isReference() ? refClass : null));
 				b2.append("\tpublic ");
 				if(isStatic) b2.append("static ");
 				b2.append(getJavaType(dt,refClass)).append(" ");
@@ -649,11 +643,13 @@ class JavaFeature {
 				DataType dt = c.getMethodReturnType(mName);
 				String refClass = null;
 				NamedElement refElement = null;
+				boolean returnIsObjectPath = false;
 				if(!dt.isPrimitive()) {
 					switch(dt.getComponentType()) {
 					case OBJECTPATH:
 						refClass = c.getReferencedClass(mName);
 						refElement = locate(refClass,cimNameSpacePath);
+						returnIsObjectPath = true;
 						break;
 					case ENUMERATIONVALUE:
 						refElement = c.getReferencedEnum(mName);
@@ -684,11 +680,13 @@ class JavaFeature {
 					DataType pt = p.getDataType();
 					refClass = null;
 					refElement = null;
+					boolean pIsObjectPath = false;
 					if(!pt.isPrimitive()) {
 						switch(pt.getComponentType()) {
 						case OBJECTPATH:
 							refClass = p.getRefClassName();
 							refElement = locate(refClass,cimNameSpacePath);
+							pIsObjectPath = true;
 							break;
 						case ENUMERATIONVALUE:
 							refElement = p.getEnum();
@@ -709,7 +707,7 @@ class JavaFeature {
 					b2.append("\n\t\t@Export(name=\"");
 					b2.append(p.getName()).append("\"");
 					if(p.getQualifiers().size() > 0) {
-						b2.append(", qualifiers =\"").append(getQualifiers(p.getQualifiers())).append("\"");
+						b2.append(", qualifiers =\"").append(getQualifiers(p.getQualifiers(), null)).append("\"");
 					}
 					b2.append(") ");
 					b2.append(getJavaType(pt,refClass));
@@ -726,7 +724,7 @@ class JavaFeature {
 		if(cimConstructor) {
 			// finish constructor
 			b3.append(tab).append("\t\treturn;\n");
-			b3.append(tab).append("\t}\n");
+			b3.append(tab).append("\t}\n\n");
 			// if we do not have a superType, add getter/setter methods used in superclasses
 			// and ObjectPath getter
 			if(struct.getSuperType() == null) {
@@ -734,45 +732,45 @@ class JavaFeature {
 				if(!localImports.contains(ModelException.class.getName())) localImports.add(ModelException.class.getName());
 				if(!localImports.contains(ExceptionReason.class.getName())) localImports.add(ExceptionReason.class.getName());
 				if(!localImports.contains(CimStructure.class.getName())) localImports.add(CimStructure.class.getName());
-				b3.append(tab).append("\tprotected DataValue getPropertyValue(String pName) {\n");
-				b3.append(tab).append("\t\treturn sv.getPropertyValue(pName);\n");
-				b3.append(tab).append("\t}\n");
+				b2.append(tab).append("\n\tprotected DataValue getPropertyValue(String pName) {\n");
+				b2.append(tab).append("\t\treturn sv.getPropertyValue(pName);\n");
+				b2.append(tab).append("\t}\n");
 				
-				b3.append(tab).append("\tprotected void setPropertyValue(String pName, DataValue value) {\n");
-				b3.append(tab).append("\t\tsv.setPropertyValue(pName,value);\n");
-				b3.append(tab).append("\t\treturn;\n");
-				b3.append(tab).append("\t}\n");
+				b2.append(tab).append("\tprotected void setPropertyValue(String pName, DataValue value) {\n");
+				b2.append(tab).append("\t\tsv.setPropertyValue(pName,value);\n");
+				b2.append(tab).append("\t\treturn;\n");
+				b2.append(tab).append("\t}\n");
 				
-				b3.append(tab).append("\tpublic ObjectPath getObjectPath() {\n");
-				b3.append(tab).append("\t\treturn sv.getObjectPath();\n");
-				b3.append(tab).append("\t}\n");
+				b2.append(tab).append("\tpublic ObjectPath getObjectPath() {\n");
+				b2.append(tab).append("\t\treturn sv.getObjectPath();\n");
+				b2.append(tab).append("\t}\n");
 				
-				b3.append(tab).append("\tpublic CimStructure getCimStructure() {\n");
-				b3.append(tab).append("\t\treturn sv.getCreationStruct();\n");
-				b3.append(tab).append("\t}\n");
+				b2.append(tab).append("\tpublic CimStructure getCimStructure() {\n");
+				b2.append(tab).append("\t\treturn sv.getCreationStruct();\n");
+				b2.append(tab).append("\t}\n");
 				
-				b3.append(tab).append("\tpublic int hashCode() {\n");
-				b3.append(tab).append("\t\treturn sv.hashCode();\n");
-				b3.append(tab).append("\t}\n");
+				b2.append(tab).append("\tpublic int hashCode() {\n");
+				b2.append(tab).append("\t\treturn sv.hashCode();\n");
+				b2.append(tab).append("\t}\n");
 				
-				b3.append(tab).append("\tpublic boolean equals(Object o) {\n");
-				b3.append(tab).append("\t\tif(o == null || !(o instanceof ").append(getJavaName(struct)).append(")) return false;\n");
-				b3.append(tab).append("\t\t").append(getJavaName(struct)).append(" other = (").append(getJavaName(struct)).append(") o;\n");
-				b3.append(tab).append("\t\treturn sv.equals(other.sv);\n");
-				b3.append(tab).append("\t}\n");
+				b2.append(tab).append("\tpublic boolean equals(Object o) {\n");
+				b2.append(tab).append("\t\tif(o == null || !(o instanceof ").append(getJavaName(struct)).append(")) return false;\n");
+				b2.append(tab).append("\t\t").append(getJavaName(struct)).append(" other = (").append(getJavaName(struct)).append(") o;\n");
+				b2.append(tab).append("\t\treturn sv.equals(other.sv);\n");
+				b2.append(tab).append("\t}\n");
 				
 				
-				b3.append(tab).append("\tpublic String toString() {\n");
-				b3.append(tab).append("\t\treturn sv.toMOF();\n");
-				b3.append(tab).append("\t}\n\n");
+				b2.append(tab).append("\tpublic String toString() {\n");
+				b2.append(tab).append("\t\treturn sv.toMOF();\n");
+				b2.append(tab).append("\t}\n");
 				
 				// TODO: add generic functions here to b2 if we do not have a superclass
 				// getStructureValue()
 			} else {
-				b3.append(tab).append("\tpublic boolean equals(Object o) {\n");
-				b3.append(tab).append("\t\tif(!super.equals(o) || !(o instanceof ").append(getJavaName(struct)).append(")) return false;\n");
-				b3.append(tab).append("\t\treturn true;\n");
-				b3.append(tab).append("\t}\n\n");
+				b2.append(tab).append("\tpublic boolean equals(Object o) {\n");
+				b2.append(tab).append("\t\tif(!super.equals(o) || !(o instanceof ").append(getJavaName(struct)).append(")) return false;\n");
+				b2.append(tab).append("\t\treturn true;\n");
+				b2.append(tab).append("\t}\n\n");
 			}
 			
 		} else {
@@ -796,7 +794,7 @@ class JavaFeature {
 	private String enumFeature(CimEnumeration cimEnum) {
 		String javaName = getJavaName(cimEnum);
 		StringBuilder b = new StringBuilder();
-		b.append(getExport(cimEnum.getQualifiers(),true, cimEnum.getNameSpacePath().getLocalPath()));
+		b.append(getExport(cimEnum.getQualifiers(),true, cimEnum.getNameSpacePath().getLocalPath(), null));
 		if(isTrue(cimEnum.getQualifierValue("DEPRECATED"))) b.append("@Deprecated\n");
 		b.append("public ");
 		if(isTrue(cimEnum.getQualifierValue("STATIC"))) b.append("static ");
@@ -856,11 +854,12 @@ class JavaFeature {
 	 * @param q - qualified element for which export is needed
 	 * @param showVersion - show version in the export
 	 * @param localNameSpace - local namespace to use
+	 * @param refClass - referenced class to add in export, if not null
 	 * @return - string containing export annotation
 	 */
-	private String getExport(List<Qualifier> q, boolean showVersion, String localNameSpace) {
+	private String getExport(List<Qualifier> q, boolean showVersion, String localNameSpace, String refClass) {
 		// parse the qualifiers on the feature
-		String qualifiers = getQualifiers(q);
+		String qualifiers = getQualifiers(q, null);
 		// create the export statement
 		StringBuilder b = new StringBuilder(tab);
 		b.append("@Export(");
@@ -879,6 +878,9 @@ class JavaFeature {
 				
 			}
 		}
+		if(refClass != null) {
+			b.append("refClass=\"").append(refClass).append("\",");
+		}
 		if(qualifiers != null && !qualifiers.isEmpty()) {
 			b.append("qualifiers=\"");
 			b.append(qualifiers).append("\"");
@@ -892,9 +894,11 @@ class JavaFeature {
 	/**
 	 * Get the code corresponding to a qualifier list
 	 * @param qualifiers - list of qualifiers
+	 * @param javaMapping - java class name to add as a MappingString {} qualifier
 	 * @return - string to include in Export annotation.
 	 */
-	private String getQualifiers(List<Qualifier> qualifiers) {
+	private String getQualifiers(List<Qualifier> qualifiers, String javaMapping) {
+		String refClass = javaMapping;
 		StringBuilder quals = new StringBuilder();		
 		for(Qualifier q : qualifiers) {
 			// handle special cases
@@ -907,13 +911,24 @@ class JavaFeature {
 			case "static":
 				break;
 			case "mappingstrings":
+				// TODO: Check this logic
 				if(q.hasNonNullValue()) {
+					StringBuilder qv = new StringBuilder("MappingStrings {");
 					String [] vals = (String []) q.getValue().getValue();
 					for(String v : vals) {
 						if(v.startsWith(Constants.fusionMap)) {
-							// have a named java class associated with this feature
-							throw new ModelException("In progress - 1");
+							if(refClass != null) throw new ModelException(ExceptionReason.ALREADY_EXISTS,"RefClass already exists "+refClass+" attempted to add "+v);
+							refClass = v.substring(Constants.fusionMap.length());
+						} else {
+							qv.append(ModelUtilities.quote(v)).append(",");
 						}
+					}
+					if(qv.charAt(qv.length()-1) == ',') {
+						qv.setLength(qv.length()-1);
+					}
+					if(qv.length() > 16) {
+						qv.append("}");
+						quals.append(qv.toString()).append(",");
 					}
 				}
 				break;
@@ -939,6 +954,9 @@ class JavaFeature {
 			}
 		}
 		if(quals.length() > 0) quals.setLength(quals.length()-1);
+		if(refClass != null) {
+			throw new ModelException(ExceptionReason.NOT_SUPPORTED,feature.getName()+" refClass "+refClass+ " not yet handled");
+		}
 		return ModelUtilities.escape(quals.toString());
 	}
 
@@ -960,6 +978,8 @@ class JavaFeature {
 	 * @return java type to include in code
 	 */
 	public String getJavaType(DataType dt,String refClass) {
+		// TODO: This needs to understand annotated classes
+		// Currently we map them to complex classes-- needs fixing
 		StringBuilder b = new StringBuilder();
 		DataType ct = dt.getComponentType();
 		if(ct.isVoid()) {
@@ -969,14 +989,18 @@ class JavaFeature {
 			Class<?> javaClass = dt.getClassForType();
 			b.append(javaClass.getSimpleName());
 		} else if(ct.isComplex()){
-			// complex types
+			// complex types -- needs fixing once we fix data types
 			NamedElement e = locate(refClass,cimNameSpacePath);
 			b.append(getJavaName(e));
 			if(dt.isArray()) b.append("[]");
 		} else {
 			// reference types
-			NamedElement e = locate(refClass,cimNameSpacePath);
-			b.append(getJavaName(e));
+			// if(needObjectPath) {
+				b.append("ObjectPath");
+			// } else {
+			//	NamedElement e = locate(refClass,cimNameSpacePath);
+			//	b.append(getJavaName(e));
+			// }
 			if(dt.isArray()) b.append("[]");
 		}
 		return b.toString();
