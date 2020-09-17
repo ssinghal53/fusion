@@ -119,8 +119,7 @@ public class DataValue {
 	}
 
 	/**
-	 * Get the java value in this dataValue. Note that for array values, a shallow copy of the underlying array
-	 * is returned to prevent modification of this dataValue
+	 * Get the java value in this dataValue. Note that for array values, a shallow copy of the underlying array is returned
 	 * @return - value encapsulated in this dataValue
 	 */
 	public Object getValue(){

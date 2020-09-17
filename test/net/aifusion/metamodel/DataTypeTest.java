@@ -24,6 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Apr 19, 2014 by Sharad Singhal
+ * Last Modified Sep 15, 2020 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
@@ -55,7 +56,6 @@ public class DataTypeTest {
 	static StructureValue sv;
 	static Map<String,DataValue> propertyValues;
 	static Map<String,DataValue> classPropertyValues;
-	
 	
 	static {
 		CimProperty keyProperty = null;
@@ -734,6 +734,8 @@ public class DataTypeTest {
 	@Test
 	public final void testExported(){
 		// annotated classes
+		assertEquals(DataType.STRUCTUREVALUE,DataType.getTypeForClass(DefinedClass.class));
+		assertEquals(DataType.STRUCTUREVALUE_ARRAY,DataType.getTypeForClass(DefinedClass[].class));
 		assertEquals(DataType.ENUMERATIONVALUE,DataType.getTypeForClass(EnumBindingClass.class));
 		assertEquals(DataType.ENUMERATIONVALUE_ARRAY,DataType.getTypeForClass(EnumBindingClass[].class));
 		assertEquals(DataType.STRUCTUREVALUE,DataType.getTypeForClass(PropertyBindingClass.class));
@@ -811,7 +813,5 @@ public class DataTypeTest {
 		for(int i = 0; i < isUnsigned.length; i++){
 			assertEquals(isUnsigned[i],type[i].isUnsigned());
 		}
-
 	}
-
 }

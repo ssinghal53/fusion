@@ -27,7 +27,12 @@
  */
 package net.aifusion.metamodel;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Array;
 import java.util.Date;
@@ -78,7 +83,6 @@ public class DataValueTest {
 	}
 
 	// TODO: This test contains empty enumerations, structures, and instance values. Needs to be fixed once those are done
-	// TODO: This test needs to be extended to check for annotated java classes (enums, Maps, and classes)
 	
 	// data objects
 	private static Object [] obj = {null, new UInt8((short)8), (byte) -12, new UInt16(22), (short)55,
@@ -251,7 +255,6 @@ public class DataValueTest {
 		for(int i=0; i < type.length; i++){
 			DataValue v = new DataValue(type[i],obj[i]);
 			assertEquals(type[i],v.getType());
-			
 		}
 	}
 
@@ -311,6 +314,22 @@ public class DataValueTest {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Test method to check for defined values {@link net.aifusion.metamodel.DataType#isDefinedValue()}.
+	 */
+	@Test
+	public final void testDefinedValues() {
+		DefinedClass c = new DefinedClass();
+		DataValue v = new DataValue(DataType.STRUCTUREVALUE,c);
+		assertNotNull(v);
+		assertEquals(DataType.STRUCTUREVALUE,v.getType());
+		assertEquals(c,v.getValue());
+		assertEquals("TEST_DefinedClass",JavaModelMapper.getCimClassName(c.getClass()));
+		assertEquals(ElementType.STRUCTURE,JavaModelMapper.getCimElementType(c.getClass()));
+		assertEquals(new ObjectPath("/structure/aifusion:test_definedclass"),JavaModelMapper.getObjectPathFromClass(c.getClass()));
+		return;
 	}
 
 }

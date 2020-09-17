@@ -59,14 +59,14 @@ public class JavaModelMapper {
 		return;
 	}
 	
+	// TODO: This class needs to be re-factored to accommodate DataType.DEFINEDVALUE types
+	
 	/*
 	 * *************************************
 	 * Internal helper methods
 	 * *************************************
 	 */
-	
-	// TODO: Once debugged, helper methods in this section should be made private
-	
+		
 	/**
 	 * Get all annotated methods from a class (or superclasses/interfaces)
 	 * @param c - class to introspect
@@ -527,6 +527,7 @@ public class JavaModelMapper {
 	 * @return - Element type for the class
 	 */
 	public static ElementType getCimElementType(Class<?> javaClass) {
+		// TODO: Thiis needs repair-- these should be annotated classes
 		if(javaClass.isEnum()){
 			return ElementType.ENUMERATION;
 		} else if(javaClass.isInterface()){
@@ -552,8 +553,6 @@ public class JavaModelMapper {
 		Vector<Method> methods = getAnnotatedMethods(javaClass);
 		for(Method m : methods){
 			if(!isPropertyMethod(m)) return false;	// found a non-property method
-			
-			// TODO: Test if the property method is a key-- if so must be a class
 			
 		}
 		// we possibly have a structure; check if forceClass() is present

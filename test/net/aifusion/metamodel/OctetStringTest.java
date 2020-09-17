@@ -83,6 +83,7 @@ public class OctetStringTest {
 	public final void testOctetString() {
 		OctetString o = new OctetString("0x3fff7AB6");
 		assertNotNull(o);
+		// does not start with 0x, odd number of nibbles, illegal character
 		String [] invalids = new String [] {"3fff7AB6", "0x3fff7AB", "0x3fff7ABZ" };
 		for(String s : invalids){
 			try {

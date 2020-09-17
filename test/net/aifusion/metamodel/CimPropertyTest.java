@@ -63,6 +63,8 @@ public class CimPropertyTest {
 	static CimEnumeration enumeration;		// Enumeration with name "enum", that contains a single enumerationValue called "name"
 	static EnumerationValue enumValue, enumValue2;	// enumeration value (name)
 	
+	static DefinedClass defClass, defClass2;	// annotated class value
+	
 	static {
 
 		// create a CimStructure "Test_Struct" with a boolean key property labeled "kz" and true default value
@@ -81,6 +83,10 @@ public class CimPropertyTest {
 		structValue = StructureValue.createStructureValue(struct, propertyValues, "$as");
 		structValue2 = StructureValue.createStructureValue(struct, propertyValues, "$as2");
 		// System.out.println(structValue.toMOF());
+		
+		// create a defined class
+		defClass = new DefinedClass();
+		defClass2 = new DefinedClass();
 
 
 		// create a CimClass "Test_Class" that inherits from "Test_Struct" with a string property with default value p2Value
@@ -196,6 +202,7 @@ public class CimPropertyTest {
 		assertNotNull(instance);
 		assertNotNull(enumeration);
 		assertNotNull(enumValue);
+		assertNotNull(defClass);
 	}
 
 	@AfterClass

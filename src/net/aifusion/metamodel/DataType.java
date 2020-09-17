@@ -24,11 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Dec 29, 2013 by Sharad Singhal
+ * Last Modified Sep 15, 2020 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Vector;
 
 /**
  * This enum contains all known CIM data types, as well as commonly used methods for manipulating them
@@ -173,17 +176,24 @@ public enum DataType {
 		} else {
 			boolean isArray = javaClass.isArray();
 			Class<?> componentClass = isArray ? javaClass.getComponentType() : javaClass;
-			// check if the class is exported
 			if(componentClass.isAnnotationPresent(Export.class)){
-				switch(JavaModelMapper.getCimElementType(componentClass)){
-				case ENUMERATION:
+				if(componentClass.isEnum()) {	// annotated Enum class
 					return isArray ? ENUMERATIONVALUE_ARRAY : ENUMERATIONVALUE;
-				case STRUCTURE:
+				} else if(!componentClass.isInterface()){
+					boolean hasNonPropertyMethod = false;
+					for(Method m : componentClass.getMethods()) {
+						if(!m.isAnnotationPresent(Export.class)) continue;	// ignore non-property methods
+						if(JavaModelMapper.isPropertyMethod(m)) continue;
+						hasNonPropertyMethod = true;
+						break;
+					}
+					if(hasNonPropertyMethod) return isArray ? INSTANCEVALUE_ARRAY : INSTANCEVALUE;
+					// we possibly have a structure; check if forceClass() is present
+					Export cls = componentClass.getAnnotation(Export.class);
+					if(cls.forceClass()) {
+						return isArray ? INSTANCEVALUE_ARRAY : INSTANCEVALUE;
+					}
 					return isArray ? STRUCTUREVALUE_ARRAY : STRUCTUREVALUE;
-				case CLASS:
-					return isArray ? INSTANCEVALUE_ARRAY : INSTANCEVALUE;
-				default:
-					break;
 				}
 			}
 		}
@@ -201,7 +211,7 @@ public enum DataType {
 		boolean isArray = javaClass.isArray();
 		Class<?> componentClass = isArray ? javaClass.getComponentType() : javaClass;
 		// check if the class is exported
-		if(componentClass.isAnnotationPresent(Export.class)) return true;
+		if(componentClass.isAnnotationPresent(Export.class) && !componentClass.isInterface()) return true;
 		return false;
 	}
 
@@ -264,7 +274,7 @@ public enum DataType {
 		if(o == null) return true;	// all types match null values
 		Class <?> oc = o.getClass();
 		for(Class<?> c : accepted){
-			if(oc == c) return true;
+			if(oc == c) return true; // we do NOT use equals(). class must match exactly
 		}
 		// this allows annotated classes handled by getTypeForClass() to be matched
 		return getTypeForClass(o.getClass()) == this ? true : false;
@@ -280,12 +290,12 @@ public enum DataType {
 		try {
 			switch(this){
 			case CHAR16:
-				if(value.length() != 1) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected single character string, found "+value);
+				if(value.length() != 1) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected string with single character, found "+value);
 				return Character.valueOf(value.charAt(0));
 			case ENUMERATIONVALUE:
 			case STRUCTUREVALUE:
 			case INSTANCEVALUE:
-				// This requires access to the repository and the mof parser
+				// These require access to the repository and the mof parser
 				throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Conversion of strings to complex types currently not supported");
 			default:
 				return generated.getConstructor(String.class).newInstance(value);
@@ -393,7 +403,7 @@ public enum DataType {
 	}
 	
 	/**
-	 * Check if this data type is a complex value type (Instance, StructureValue, EnumerationValue, or their arrays)
+	 * Check if this data type is a complex value type (Instance, StructureValue, EnumerationValue or their arrays)
 	 * @return - true if this data type is a complex value type 
 	 */
 	public boolean isComplex(){
@@ -453,8 +463,8 @@ public enum DataType {
 	 * @return - true if this data type is a dateTime value
 	 */
 	public boolean isDateTime() {
-		return this == DATETIME || this == DataType.DATETIME_ARRAY;
+		return this == DATETIME || this == DATETIME_ARRAY;
 	}
 	
-	// END of class DataType
+	// END of enumeration DataType
 }

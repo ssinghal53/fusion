@@ -86,7 +86,7 @@ public class ExportTest {
 			String value = (String) m.getDefaultValue();
 			assertEquals("",value);
 		} catch (NoSuchMethodException e) {
-			fail("name is not declared in Export");
+			fail("name() is not declared in Export");
 		}
 		return;
 	}
@@ -102,7 +102,7 @@ public class ExportTest {
 			String value = (String) m.getDefaultValue();
 			assertEquals(Constants.defaultLocalPath,value);
 		} catch (NoSuchMethodException e) {
-			fail("name() is not declared in Export");
+			fail("nameSpace() is not declared in Export");
 		}
 		return;
 	}

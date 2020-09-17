@@ -187,7 +187,7 @@ public class ModelUtilities {
 	public static String toMOFString(DataType type, Object value){
 		if(value == null) return "null";
 		if(!type.matches(value)) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Type "+type+" does not match "+value);
-		// TODO: This must be completed for DataTypes EnumerationValue, StructureValue, CimInstance, and annotated java classes
+		// TODO: This must be completed for DataTypes EnumerationValue, StructureValue, CimInstance, and annotated (Defined) java classes
 		switch(type){
 		case OBJECTPATH:
 			if(value.toString().startsWith("$")) return value.toString();
