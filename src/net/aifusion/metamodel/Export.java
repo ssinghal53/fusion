@@ -42,19 +42,19 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Export {
 	/**
-	 * Name of the model class. By default, the name of the underlying java class or method is used
+	 * Name of the CIM model class. By default, the name of the underlying java class or method is used
 	 * @return name of the model class
 	 */
 	String name() default "";
 	
 	/**
-	 * Namespace within which this element resides. 
+	 * CIM Namespace within which this element resides. 
 	 * @return - namespace within which the element resides.
 	 */
 	String nameSpace() default Constants.defaultLocalPath;
 	
     /**
-     * Model Schema used when annotating classes. Default is "CimFusion". Schema names must be of the form "[a-zA-Z]\\w*_\\w+"
+     * CIM Model Schema used when annotating classes. Default is "CimFusion". Schema names must be of the form "[a-zA-Z]\\w*_\\w+"
      * @return schema associated with the model class
      * */
     String schema() default Constants.defaultSchema;
@@ -66,9 +66,9 @@ public @interface Export {
     boolean forceClass() default false;
     
     /**
-     * referenced class, used to the name of the corresponding NamedElement for methods/properties that return
+     * Referenced Java class, used to the name of the corresponding NamedElement for methods/properties that return
      * ObjectPath/EnumValue/StructureValue/CimInstance etc. Empty by default.
-     * @return name of referenced class. Empty by default
+     * @return fully qualified name of referenced Java class. Empty by default
      */
     String refClass() default "";
     
