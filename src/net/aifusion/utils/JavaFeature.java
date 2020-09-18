@@ -591,7 +591,20 @@ class JavaFeature {
 				b.append("\tprivate ");
 				if(isStatic) b.append("static ");
 				b.append(getJavaType(dt,refClass)).append(" ");
-				b.append(jName).append(";\n");
+				b.append(jName);
+				DataValue pv = struct.getDefaultPropertyValue(pName);
+				if(pv != null) {
+					b.append(" = ");
+					switch(dt) {
+					case ENUMERATIONVALUE:
+						b.append(getJavaType(dt,refClass)).append(".").append(pv.getValue());
+						break;
+					default:
+						b.append(pv.getValue());
+						break;
+					}
+				}
+				b.append(";\n");
 				// add property to constructor case statement
 				b3.append(tab).append("\t\t\tcase \"").append(pName).append("\":\n");
 				b3.append(tab).append("\t\t\t\t").append(jName).append(" = (").append(getJavaType(dt,refClass)).append(") args.get(\"").append(pName).append("\");\n");
@@ -601,6 +614,7 @@ class JavaFeature {
 			// readable property
 			if((Boolean)struct.getPropertyQualifierValue(pName, "READ").getValue()) {
 				if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b2.append("\t@Deprecated\n");
+				// TODO: add defaultValue to Export if default value is present
 				b2.append("\t").append(getExport(struct.getPropertyQualifiers(pName), false, struct.getNameSpacePath().getLocalPath(), dt.isReference() ? refClass : null));
 				b2.append("\tpublic ");
 				if(isStatic) b2.append("static ");
