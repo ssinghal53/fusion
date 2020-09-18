@@ -511,7 +511,7 @@ class JavaFeature {
 		StringBuilder b2 = new StringBuilder();	// local property definitions
 		StringBuilder b3 = new StringBuilder();	// constructor
 		b.append("\n");
-		b.append(getExport(struct.getQualifiers(),true, struct.getNameSpacePath().getLocalPath(), null));
+		b.append(getExport(struct.getQualifiers(),true, struct.getNameSpacePath().getLocalPath(), null, null));
 		if(isTrue(struct.getQualifierValue("DEPRECATED"))) b.append("@Deprecated\n");
 		b.append("public ");
 		if(isTrue(struct.getQualifierValue("ABSTRACT"))) b.append("abstract ");
@@ -615,7 +615,8 @@ class JavaFeature {
 			if((Boolean)struct.getPropertyQualifierValue(pName, "READ").getValue()) {
 				if(isTrue(struct.getPropertyQualifierValue(pName,"DEPRECATED"))) b2.append("\t@Deprecated\n");
 				// TODO: add defaultValue to Export if default value is present
-				b2.append("\t").append(getExport(struct.getPropertyQualifiers(pName), false, struct.getNameSpacePath().getLocalPath(), dt.isReference() ? refClass : null));
+				b2.append("\t").append(getExport(struct.getPropertyQualifiers(pName), false, struct.getNameSpacePath().getLocalPath(), dt.isReference() ? refClass : null,
+						struct.getDefaultPropertyValue(pName)));
 				b2.append("\tpublic ");
 				if(isStatic) b2.append("static ");
 				b2.append(getJavaType(dt,refClass)).append(" ");
@@ -808,7 +809,7 @@ class JavaFeature {
 	private String enumFeature(CimEnumeration cimEnum) {
 		String javaName = getJavaName(cimEnum);
 		StringBuilder b = new StringBuilder();
-		b.append(getExport(cimEnum.getQualifiers(),true, cimEnum.getNameSpacePath().getLocalPath(), null));
+		b.append(getExport(cimEnum.getQualifiers(),true, cimEnum.getNameSpacePath().getLocalPath(), null, null));
 		if(isTrue(cimEnum.getQualifierValue("DEPRECATED"))) b.append("@Deprecated\n");
 		b.append("public ");
 		if(isTrue(cimEnum.getQualifierValue("STATIC"))) b.append("static ");
@@ -869,9 +870,10 @@ class JavaFeature {
 	 * @param showVersion - show version in the export
 	 * @param localNameSpace - local namespace to use
 	 * @param refClass - referenced class to add in export, if not null
+	 * @param dataValue - default value, if not null
 	 * @return - string containing export annotation
 	 */
-	private String getExport(List<Qualifier> q, boolean showVersion, String localNameSpace, String refClass) {
+	private String getExport(List<Qualifier> q, boolean showVersion, String localNameSpace, String refClass, DataValue dataValue) {
 		// parse the qualifiers on the feature
 		String qualifiers = getQualifiers(q, null);
 		// create the export statement
@@ -896,6 +898,9 @@ class JavaFeature {
 			NamedElement e = locate(refClass,cimNameSpacePath);
 			String javaClass = getJavaPackageName(e) + "." + getJavaName(e);
 			b.append("refClass=\"").append(javaClass).append("\",");
+		}
+		if(dataValue != null) {
+			b.append("defaultValue=\"").append(ModelUtilities.escape(dataValue.toString())).append("\",");
 		}
 		if(qualifiers != null && !qualifiers.isEmpty()) {
 			b.append("qualifiers=\"");
