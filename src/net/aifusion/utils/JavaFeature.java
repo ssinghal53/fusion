@@ -879,7 +879,9 @@ class JavaFeature {
 			}
 		}
 		if(refClass != null) {
-			b.append("refClass=\"").append(refClass).append("\",");
+			NamedElement e = locate(refClass,cimNameSpacePath);
+			String javaClass = getJavaPackageName(e) + "." + getJavaName(e);
+			b.append("refClass=\"").append(javaClass).append("\",");
 		}
 		if(qualifiers != null && !qualifiers.isEmpty()) {
 			b.append("qualifiers=\"");
