@@ -28,9 +28,11 @@
  */
 package net.aifusion.metamodel;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -103,6 +105,24 @@ public class StructureValue extends NamedElement {
 				structureProperties.put(p.getLowerCaseName(),p.createInstanceProperty(p.getDefaultValue()));
 		}
 		return new StructureValue(struct,keyValues,structureProperties, alias);
+	}
+	
+	/**
+	 * Bind this structure value to a Java implementation
+	 * @return - bound java object with all properties bound
+	 */
+	public Object bind() {
+		// Get the bound java class from the definition, and bind all static properties
+		Class<?> javaClass = getCreationStruct().bind(this);
+		// Construct a java object from the structure value
+		Object implObject = JavaModelMapper.createJavaObjectForCim(this,javaClass);
+		// bind all CIM properties (this class, or its superclasses)
+		for(CimProperty p : properties.values()) {
+			// validate the property in the object, and get the getter/setter methods
+			Method[] javaMethods = JavaModelMapper.validatePropertyBinding(p, implObject);
+			p.bind(javaMethods[0], javaMethods[1], implObject);
+		}
+		return implObject;
 	}
 
 	/**
@@ -186,7 +206,7 @@ public class StructureValue extends NamedElement {
 	 * @return - set containing names of all properties defined in this structure value
 	 */
 	public Set<String> getPropertyNames(){
-		return struct.getAllProperties().keySet();
+		return struct.getAllPropertyNames();
 	}
 
 	/**

@@ -42,6 +42,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -209,5 +210,14 @@ public class StructureValueTest {
 		}
 		// System.out.println(v.getObjectPath().getUUID());
 		assertEquals("e96dd3a0-3dfc-31a0-9734-63e37b04f689",v.getObjectPath().getUUID().toString());
+	}
+	
+	/**
+	 * Test method for {@link net.aifusion.metamodel.StructureValue#bind()}.
+	 */
+	@Ignore
+	@Test
+	public final void testBind() {
+		fail("Not yet implemented");
 	}
 }

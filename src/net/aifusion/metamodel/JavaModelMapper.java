@@ -27,6 +27,7 @@
  */
 package net.aifusion.metamodel;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -59,31 +60,12 @@ public class JavaModelMapper {
 		return;
 	}
 	
-	// TODO: This class needs to be re-factored to accommodate DataType.DEFINEDVALUE types
-	
 	/*
 	 * *************************************
 	 * Internal helper methods
 	 * *************************************
 	 */
 		
-	/**
-	 * Get all annotated methods from a class (or superclasses/interfaces)
-	 * @param c - class to introspect
-	 * @return - vector containing all annotated methods
-	 */
-	private static Vector<Method> getAnnotatedMethods(Class<?> c){
-		Vector<Method> v = new Vector<Method>();
-		// get annotated methods for this class, including those in interfaces and super classes
-		// TODO: the javadoc for getMethods() says that it will not return static methods from superTypes or interfaces
-		for(Method m : c.getMethods()){
-			Export cls = m.getAnnotation(Export.class);
-			if(cls == null) continue;
-			if(!v.contains(m)) v.add(m);
-		}
-		return v;
-	}
-	
 	/**
 	 * Check if a given java type matches a given CIM data type
 	 * @param javaClass - java type to check
@@ -503,6 +485,23 @@ public class JavaModelMapper {
 	 */
 	
 	/**
+	 * Get all annotated methods from a class (or superclasses/interfaces)
+	 * @param c - class to introspect
+	 * @return - vector containing all annotated methods
+	 */
+	public static Vector<Method> getAnnotatedMethods(Class<?> c){
+		Vector<Method> v = new Vector<Method>();
+		// get annotated methods for this class, including those in interfaces and super classes
+		// TODO: the javadoc for getMethods() says that it will not return static methods from superTypes or interfaces
+		for(Method m : c.getMethods()){
+			Export cls = m.getAnnotation(Export.class);
+			if(cls == null) continue;
+			if(!v.contains(m)) v.add(m);
+		}
+		return v;
+	}
+	
+	/**
 	 * Get the package path annotation needed on MOF to allow binding to a java class
 	 * @param javaClass - java class (must be non-null) to introspect
 	 * @return - string containing package path
@@ -845,14 +844,234 @@ public class JavaModelMapper {
 		return new NameSpacePath(exp.nameSpace());
 	}
 	
+	
+	/*
+	 * *********************************************************************
+	 * Methods to create java objects from CIM Instances and StructureValues
+	 * *********************************************************************
+	 */
+	/**
+	 * Create an instance of a java class based on values defined in a structure value.<br>
+	 * See Cim2Java for required constructor (use non-structurevalue constructor)
+	 * @param structureValue - structure value to use in the constructor
+	 * @param javaClass - java class to use for creating the object
+	 * @return - constructed object
+	 * @see net.aifusion.utils.Cim2Java
+	 */
+	public static Object createJavaObjectForCim(StructureValue structureValue, Class<?> javaClass) {
+		HashMap<String,Object> params = new HashMap<String,Object>();
+		for(String pName : structureValue.getPropertyNames()) {
+			DataValue v = structureValue.getPropertyValue(pName);
+			if(v != null) {
+				params.put(pName, v.getValue());
+			}
+		}
+		try {
+			Constructor<?> constructor = javaClass.getConstructor(Map.class);
+			Object javaObject = constructor.newInstance(params);
+			return javaObject;
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new ModelException(ExceptionReason.INVALID_CLASS,"Unable to instantiate an instance of "+javaClass.getName());
+		}
+	}
+	
+	/*
+	 * ***********************************************
+	 * Java bindings to Properties and property getters and setters
+	 * ***********************************************
+	 */
+	
+	/**
+	 * Validate that an implementation object implements the given CIM property
+	 * @param cimProperty - Cim Property to validate
+	 * @param implObject - java object to validate
+	 * @return - a two element Java Method array containing the getter[0] and the setter[1] methods
+	 */
+	public static Method[] validatePropertyBinding(CimProperty cimProperty, Object implObject) {
+		// get information about the property
+		Method [] accessors = new Method[2];	
+		boolean isReadable = (Boolean) cimProperty.getQualifierValue("READ").getValue();
+		boolean isWritable = (Boolean) cimProperty.getQualifierValue("WRITE").getValue();
+		String pName = cimProperty.getName();
+		char c[] = pName.toCharArray();
+		if(Character.isLowerCase(c[0])) {
+			c[0] -= 32;
+			pName = new String(c);
+		}
+		// locate the java methods required
+		Class<?> javaClass = implObject.getClass();
+		Vector<Method> javaMethods = getAnnotatedMethods(javaClass);
+		// iterate through the annotated methods
+		for(Method m : javaMethods) {
+			Export cls = m.getAnnotation(Export.class);
+			if(cls.name().isEmpty()) {
+				// no name annotation on the method
+				String name = m.getName();
+				// method name is getXXX or isXXX (for isGetters) and method signature indicates it is a getter
+				if(isReadable && ((name.startsWith("get") && pName.equals(name.substring(3))) || 
+						(name.startsWith("is") && pName.equals(name.substring(2)) && DataType.getTypeForClass(m.getReturnType()).isBoolean())) && isGetter(m)) {
+					accessors[0] = m;
+				}
+				// method name is setXXX and method signature indicates it is a setter 
+				if( isWritable && name.startsWith("set") && pName.equals(name.substring(3)) && isSetter(m)) {
+					accessors[1] = m;
+				}
+			} else if(pName.equalsIgnoreCase(cls.name())){
+				// have a matching name() annotation
+				if(isReadable && isGetter(m)) accessors[0] = m;
+				if(isWritable && isSetter(m)) accessors[1] = m;
+			}
+		}
+		validatePropertyBinding(cimProperty, accessors[0], accessors[1], implObject);
+		return accessors;
+	}
+	
 	// Tested to here in JavaModelMapperTest
 	/* TODO:  -------- we are here ------------ */
 	
+	/**
+	 * Validate that a java class implements the given static CIM Property
+	 * @param p - CimProperty to check
+	 * @param javaClass - java class to use
+	 * @return - a two element Java Method array containing the getter[0] and the setter[1] methods
+	 */
+	public static Method[] validateStaticPropertyBinding(CimProperty p, Class<?> javaClass) {
+		throw new ModelException("Not yet implemented");
+	}
+	
+	
+	/**
+	 * Validate that a pair of Java methods (getter and setter pair) can be bound to a cim property
+	 * @param cimProperty - CimProperty to be used for binding
+	 * @param getter - getter method to be bound
+	 * @param setter - setter method to be bound
+	 * @param implObject - Java implementation object to be used for invocation
+	 */
+	public static void validatePropertyBinding(CimProperty cimProperty, Method getter, Method setter, Object implObject){
+		String cimName = cimProperty.getOriginClass()+"#"+cimProperty.getName();
+		DataType dataType = cimProperty.getDataType();
+		// check the getter for match with the bindings given
+		if(getter != null){
+			Class<?>[] paramTypes = getter.getParameterTypes();
+			Class<?> javaReturnType = getter.getReturnType();
+			// getter method should not declare any parameters
+			if(paramTypes.length != 0) throw new ModelException(ExceptionReason.TYPE_MISMATCH,
+					cimName+": Error binding property getter. Expected 0 parameters, found "+paramTypes.length);
+			// validate that the java type can be converted to the expected cim type
+			if(!javaTypeMatchesCimType(javaReturnType,dataType, cimProperty.getRefClassName(), cimProperty.getStruct(), cimProperty.getEnum())){
+				throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
+							": Error binding property getter. Expected type "+dataType.toString()+" found "+javaReturnType.getName());
+			}
+		}
+		// check the setter against the bindings given
+		if(setter != null){
+			// property is writable, and method is available
+			Class<?>[] paramTypes = setter.getParameterTypes();
+			Class<?> javaReturnType = setter.getReturnType();
+			// setter must declare one matching parameter
+			if(paramTypes.length != 1) throw new ModelException(ExceptionReason.TYPE_MISMATCH,
+					cimName+": Error binding property setter. Expected 1 parameter, found "+paramTypes.length);
+			// setter must return void
+			if(javaReturnType != void.class) throw new ModelException(ExceptionReason.TYPE_MISMATCH,
+					cimName+": Error binding property setter. Expected void type found "+javaReturnType.getName());
+			
+			if(!javaTypeMatchesCimType(paramTypes[0],dataType,cimProperty.getRefClassName(),cimProperty.getStruct(),cimProperty.getEnum())){
+				throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
+						": Error binding property setter. Expected type "+dataType.toString()+" found "+paramTypes[0].getName());
+			}
+		}
+		// Check that STATIC methods map, and for non-static methods, the implementation object implements
+		// the desired method
+		boolean cimPropertyIsStatic = cimProperty.isStatic();
+		for(Method javaMethod : new Method[]{getter, setter}){
+			if(javaMethod == null) continue;
+			boolean javaMethodIsStatic = (javaMethod.getModifiers() & Modifier.STATIC) != 0;
+			if(javaMethodIsStatic != cimPropertyIsStatic){
+				throw new ModelException(ExceptionReason.TYPE_MISMATCH,
+						cimName+": Method "+javaMethod.getName()+" does not match in its STATIC modifiers");
+			} else if(!javaMethodIsStatic){
+				// have a instance method, check that we can bind to the implementation
+				if(implObject == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,
+						cimName+": Implementation object cannot be null for non-static properties");
+				// check that the implObject implements the method
+				Class<?> javaClass = implObject.getClass();
+				try {
+					Method implMethod = javaClass.getMethod(javaMethod.getName(), javaMethod.getParameterTypes());
+					if(!implMethod.equals(javaMethod)){
+					throw new ModelException(ExceptionReason.METHOD_NOT_FOUND,
+							cimName+": Implementation class "+javaClass.getName()+" does not implement method "+javaMethod.getName());
+					}
+				} catch (SecurityException e) {
+					throw new ModelException(ExceptionReason.METHOD_NOT_AVAILABLE,
+							cimName+": Method "+javaMethod.getName()+" is not accessible in implementation class "+javaClass.getName());
+				} catch (NoSuchMethodException e) {
+					throw new ModelException(ExceptionReason.METHOD_NOT_FOUND,
+							cimName+": Implementation class "+javaClass.getName()+" does not implement method "+javaMethod.getName());
+				}
+			}
+		}
+		return;
+	}
+	
+	/**
+	 * Read a property value from a Java Object. Note that this method assumes that the getter has been validated when the property
+	 * was bound to the java object, and does not re-check the data types or method arguments
+	 * @param cimProperty - Cim property to use for reading value
+	 * @param getter - getter method associated with the property
+	 * @param javaObject - Java Implementation object bound to the property
+	 * @return - DataValue containing the property value
+	 */
+	public static DataValue readPropertyValue(CimProperty cimProperty, Method getter, Object javaObject) {
+		try {
+			Object javaReturn = getter.invoke(javaObject, (Object[])null);
+			DataType type = cimProperty.getDataType();
+			return convertJavaValueToCimValue(javaReturn,type,cimProperty.getRefClassName(),cimProperty.getStruct(),cimProperty.getEnum());
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new ModelException(cimProperty.getFullName()+": Error reading bound property",e);
+		}
+	}
+
+	/**
+	 * Write a property value to a java object. Note that this method assumes that the setter has been validated when
+	 * the property was bound to the java object, and does not re-check the data types or method arguments
+	 * @param cimProperty - Cim Property bound to this setter
+	 * @param setter - setter method in the java object
+	 * @param javaObject - java implementation object
+	 * @param value - Cim DataValue to write to the object
+	 */
+	public static void writePropertyValue(CimProperty cimProperty, Method setter, Object javaObject, DataValue value) {
+		try {
+			setter.invoke(javaObject, getInvocationParameter(setter.getParameterTypes()[0], value.getValue()));
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new ModelException(cimProperty.getFullName()+": Error writing data value to bound java object "+value,e);
+		}
+	}
+
     /*
      * ***********************************************
      * Java bindings to CIM Methods and method invocation
      * ***********************************************
      */
+
+	/**
+	 * Validate that a java class implements the given static CIM Method
+	 * @param m - CimMethod to check
+	 * @param javaClass - java class to use
+	 * @return - corresponding class method
+	 */
+	public static Method validateStaticMethodBinding(CimMethod m, Class<?> javaClass) {
+		throw new ModelException("Not yet implemented");
+	}
+	
+	/**
+	 * Validate that a java object implements the given CIM Method
+	 * @param cimMethod - Cim Method to validate
+	 * @param implObject - java object to validate
+	 * @return - Java Method mapped to the Cim Method in the implementation object
+	 */
+	public static Method validateMethodBinding(CimMethod cimMethod, Object implObject) {
+		throw new ModelException("Not yet implemented");
+	}
 	
 	/**
 	 * Validate that a java method can be bound to a CIM Method
@@ -966,119 +1185,6 @@ public class JavaModelMapper {
     	}
     }
 
-	/*
-	 * ***********************************************
-	 * Java bindings to Properties and property getters and setters
-	 * ***********************************************
-	 */
-	
-	
-	/**
-	 * Validate that a pair of Java methods (getter and setter pair) can be bound to a cim property
-	 * @param cimProperty - CimProperty to be used for binding
-	 * @param getter - getter method to be bound
-	 * @param setter - setter method to be bound
-	 * @param implObject - Java implementation object to be used for invocation
-	 */
-	public static void validatePropertyBinding(CimProperty cimProperty, Method getter, Method setter, Object implObject){
-		String cimName = cimProperty.getOriginClass()+"#"+cimProperty.getName();
-		DataType dataType = cimProperty.getDataType();
-		// check the getter for match with the bindings given
-		if(getter != null){
-			Class<?>[] paramTypes = getter.getParameterTypes();
-			Class<?> javaReturnType = getter.getReturnType();
-			// getter method should not declare any parameters
-			if(paramTypes.length != 0) throw new ModelException(ExceptionReason.TYPE_MISMATCH,
-					cimName+": Error binding property getter. Expected 0 parameters, found "+paramTypes.length);
-			// validate that the java type can be converted to the expected cim type
-			if(!javaTypeMatchesCimType(javaReturnType,dataType, cimProperty.getRefClassName(), cimProperty.getStruct(), cimProperty.getEnum())){
-				throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
-							": Error binding property getter. Expected type "+dataType.toString()+" found "+javaReturnType.getName());
-			}
-		}
-		// check the setter against the bindings given
-		if(setter != null){
-			// property is writable, and method is available
-			Class<?>[] paramTypes = setter.getParameterTypes();
-			Class<?> javaReturnType = setter.getReturnType();
-			// setter must declare one matching parameter
-			if(paramTypes.length != 1) throw new ModelException(ExceptionReason.TYPE_MISMATCH,
-					cimName+": Error binding property setter. Expected 1 parameter, found "+paramTypes.length);
-			// setter must return void
-			if(javaReturnType != void.class) throw new ModelException(ExceptionReason.TYPE_MISMATCH,
-					cimName+": Error binding property setter. Expected void type found "+javaReturnType.getName());
-			
-			if(!javaTypeMatchesCimType(paramTypes[0],dataType,cimProperty.getRefClassName(),cimProperty.getStruct(),cimProperty.getEnum())){
-				throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
-						": Error binding property setter. Expected type "+dataType.toString()+" found "+paramTypes[0].getName());
-			}
-		}
-		// Check that STATIC methods map, and for non-static methods, the implementation object implements
-		// the desired method
-		boolean cimPropertyIsStatic = cimProperty.isStatic();
-		for(Method javaMethod : new Method[]{getter, setter}){
-			if(javaMethod == null) continue;
-			boolean javaMethodIsStatic = (javaMethod.getModifiers() & Modifier.STATIC) != 0;
-			if(javaMethodIsStatic != cimPropertyIsStatic){
-				throw new ModelException(ExceptionReason.TYPE_MISMATCH,
-						cimName+": Method "+javaMethod.getName()+" does not match in its STATIC modifiers");
-			} else if(!javaMethodIsStatic){
-				// have a instance method, check that we can bind to the implementation
-				if(implObject == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,
-						cimName+": Implementation object cannot be null for non-static properties");
-				// check that the implObject implements the method
-				Class<?> javaClass = implObject.getClass();
-				try {
-					Method implMethod = javaClass.getMethod(javaMethod.getName(), javaMethod.getParameterTypes());
-					if(!implMethod.equals(javaMethod)){
-					throw new ModelException(ExceptionReason.METHOD_NOT_FOUND,
-							cimName+": Implementation class "+javaClass.getName()+" does not implement method "+javaMethod.getName());
-					}
-				} catch (SecurityException e) {
-					throw new ModelException(ExceptionReason.METHOD_NOT_AVAILABLE,
-							cimName+": Method "+javaMethod.getName()+" is not accessible in implementation class "+javaClass.getName());
-				} catch (NoSuchMethodException e) {
-					throw new ModelException(ExceptionReason.METHOD_NOT_FOUND,
-							cimName+": Implementation class "+javaClass.getName()+" does not implement method "+javaMethod.getName());
-				}
-			}
-		}
-		return;
-	}
-	
-	/**
-	 * Read a property value from a Java Object. Note that this method assumes that the getter has been validated when the property
-	 * was bound to the java object, and does not re-check the data types or method arguments
-	 * @param cimProperty - Cim property to use for reading value
-	 * @param getter - getter method associated with the property
-	 * @param javaObject - Java Implementation object bound to the property
-	 * @return - DataValue containing the property value
-	 */
-	public static DataValue readPropertyValue(CimProperty cimProperty, Method getter, Object javaObject) {
-		try {
-			Object javaReturn = getter.invoke(javaObject, (Object[])null);
-			DataType type = cimProperty.getDataType();
-			return convertJavaValueToCimValue(javaReturn,type,cimProperty.getRefClassName(),cimProperty.getStruct(),cimProperty.getEnum());
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new ModelException(cimProperty.getFullName()+": Error reading bound property",e);
-		}
-	}
-
-	/**
-	 * Write a property value to a java object. Note that this method assumes that the setter has been validated when
-	 * the property was bound to the java object, and does not re-check the data types or method arguments
-	 * @param cimProperty - Cim Property bound to this setter
-	 * @param setter - setter method in the java object
-	 * @param javaObject - java implementation object
-	 * @param value - Cim DataValue to write to the object
-	 */
-	public static void writePropertyValue(CimProperty cimProperty, Method setter, Object javaObject, DataValue value) {
-		try {
-			setter.invoke(javaObject, getInvocationParameter(setter.getParameterTypes()[0], value.getValue()));
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new ModelException(cimProperty.getFullName()+": Error writing data value "+value,e);
-		}
-	}
 	
 	
 	/*
@@ -1256,7 +1362,8 @@ public class JavaModelMapper {
     		return enumValue.toString();
     	}
     }
-	
+
+
     /*
      * Check if a CimParameter matches a given java type
      * @param p - CimParameter to be matched

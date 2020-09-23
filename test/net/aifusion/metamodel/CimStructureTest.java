@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -278,6 +279,15 @@ public class CimStructureTest {
 		for(String key : cimStructure.getPropertyNames()){
 			assertEquals(types.get(key),cimStructure.getPropertyType(key));
 		}
+	}
+	
+	/**
+	 * Test method for {@link net.aifusion.metamodel.CimStructure#bind(StructureValue)};
+	 */
+	@Ignore
+	@Test
+	public final void testBind() {
+		fail("Not yet implemented");
 	}
 
 }

@@ -137,7 +137,7 @@ public class HttpConfiguration {
 				DataValue v = configuration.getPropertyValue(pName);
 				// System.out.println(pName+" ["+v+"]");
 				if(v == null) continue;
-				switch(pName){
+				switch(pName.toLowerCase()){
 				case "id":
 					id = v.toString();
 					break;

@@ -27,6 +27,7 @@
  */
 package net.aifusion.metamodel;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -116,9 +117,26 @@ public class CimInstance extends StructureValue {
 		if(creationClass.hasListener(CimEventType.CREATED, null)){
 			creationClass.generateEvent(new CimIndication(CimEventType.CREATED,creationClass,instance.toMOF()));
 		}
-		// TODO: Bind the instance to a java object if that is provided
-
 		return instance;
+	}
+	
+	/**
+	 * Bind this Cim Instance to a java object, and return the corresponding java object
+	 * @return Java Object bound to this CIM Instance
+	 */
+	@Override
+	public Object bind() {
+		// bind any properties defined in this class or its superclasses
+		Object implObject = super.bind();
+		
+		// bind methods defined in this CimInstance
+		for(CimMethod cimMethod : methods.values()) {
+			// validate the method against the object
+			Method javaMethod = JavaModelMapper.validateMethodBinding(cimMethod, implObject);
+			cimMethod.bind(javaMethod, implObject);
+		}
+		// return the implementation object
+		return implObject;
 	}
 
 	/**

@@ -28,12 +28,16 @@
  */
 package net.aifusion.metamodel;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import java.util.Set;
 import java.util.Vector;
 
@@ -51,7 +55,9 @@ public class CimStructure extends NamedElement {
 	private LinkedHashMap<String,CimEnumeration> enumerations = new LinkedHashMap<String,CimEnumeration>();
 	/** Interfaces implemented by this structure. Indexed by lower case name */
 	private LinkedHashMap<String,CimInterface> interfaces = new LinkedHashMap<String,CimInterface>();
-	
+	/** Bound java class, if any */
+	private Class<?> boundJavaClass = null;
+
 	/**
 	 * Create a CimClass, CimStructure, or CimInterface
 	 * @param elementType - type of this structure. Must be one of STRUCTURE, CLASS, INTERFACE 
@@ -97,13 +103,13 @@ public class CimStructure extends NamedElement {
 		// TODO: Validate that the IMPLEMENTS qualifier matches values in interfaces
 		return;
 	}
-	
+
 	/* 
 	 * **********************************
 	 * Embedded Interface related methods
 	 * **********************************
 	 */
-	
+
 	/**
 	 * Get the names of all interfaces locally defined in this structure
 	 * @return - set containing names of all defined interfaces. Empty if none defined
@@ -118,7 +124,7 @@ public class CimStructure extends NamedElement {
 		}
 		return names;
 	}
-	
+
 	/**
 	 * Get names of interfaces defined in this structure or its superTypes.
 	 * @return - set containing names of defined interfaces. Empty if none defined
@@ -131,7 +137,7 @@ public class CimStructure extends NamedElement {
 		if(s != null) names.addAll(s.getAllInterfaceNames());
 		return names;
 	}
-	
+
 	/**
 	 * Check if this structure or it's superTypes implement a given interface
 	 * @param interfaceName - name of the property
@@ -150,7 +156,7 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure)getSuperType();
 		return s != null ? s.implementsInterface(interfaceName) : false;
 	}
-	
+
 	/**
 	 * get an interface defined within this structure or one of its supertypes
 	 * @param interfaceName - name of the local interface
@@ -169,13 +175,13 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure) getSuperType();
 		return s != null ? s.getInterface(interfaceName) : null;
 	}
-	
+
 	/* 
 	 * **********************************
 	 * Embedded Structure related methods
 	 * **********************************
 	 */
-	
+
 	/**
 	 * Get the names of structures locally defined in this structure or interfaces implemented by it
 	 * @return - set containing names of all locally defined structures. Empty if none defined
@@ -191,7 +197,7 @@ public class CimStructure extends NamedElement {
 		}
 		return names;
 	}
-	
+
 	/**
 	 * Get the names of locally defined structures in this structure, or its supertypes
 	 * @return - names of locally defined structures
@@ -202,7 +208,7 @@ public class CimStructure extends NamedElement {
 		if(s != null) names.addAll(s.getAllStructureNames());
 		return names;
 	}
-	
+
 	/**
 	 * Check if this structure (or one of its supertypes) defines a structure
 	 * @param structureName - name of the structure
@@ -220,7 +226,7 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure) getSuperType();
 		return s != null ? s.hasStructure(structureName) : false;
 	}
-	
+
 	/**
 	 * get a structure defined within this structure, or one of its supertypes
 	 * @param structureName - name of the structure
@@ -239,13 +245,13 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure) getSuperType();
 		return s != null ? s.getStructure(structureName) : null;
 	}
-	
+
 	/* 
 	 * ************************************
 	 * Embedded Enumeration related methods
 	 * ************************************
 	 */
-	
+
 	/**
 	 * Get the names of all enumerations locally defined in this structure
 	 * @return - name of all defined enumerations. Empty if none defined
@@ -261,7 +267,7 @@ public class CimStructure extends NamedElement {
 		}
 		return names;
 	}
-	
+
 	/**
 	 * Get the names of all enumerations defined in this structure (or its supertypes)	
 	 * @return - name of all defined enumerations. Empty if none defined
@@ -272,7 +278,7 @@ public class CimStructure extends NamedElement {
 		if(s != null) names.addAll(s.getAllEnumerationNames());
 		return names;
 	}
-	
+
 	/**
 	 * Check if this structure defines a local Enumeration
 	 * @param enumerationName - name of the local Enumeration
@@ -290,7 +296,7 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure) getSuperType();
 		return s != null ? s.hasEnumeration(enumerationName) : false;
 	}
-	
+
 	/**
 	 * get a local Enumeration defined in this structure
 	 * @param enumerationName - name of the local Enumeration
@@ -309,13 +315,13 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure) getSuperType();
 		return s != null ? s.getEnumeration(enumerationName) : null;
 	}
-	
+
 	/* 
 	 * *********************************
 	 * Embedded Property related methods
 	 * *********************************
 	 */
-	
+
 	/**
 	 * Get names of all properties defined in this structure
 	 * @return - mixed case names of all properties defined locally in this structure
@@ -333,7 +339,7 @@ public class CimStructure extends NamedElement {
 		}
 		return names;
 	}
-	
+
 	/**
 	 * Get names of all properties defined in this structure or its supertypes
 	 * @return - mixed case names of all properties defined in this structure
@@ -344,7 +350,7 @@ public class CimStructure extends NamedElement {
 		if(s != null) names.addAll(s.getAllPropertyNames());
 		return names;
 	}
-	
+
 	/**
 	 * Check if this structure has a given property
 	 * @param propertyName - name of the property
@@ -362,7 +368,7 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure)getSuperType();
 		return s != null ? s.hasProperty(propertyName) : false;
 	}
-	
+
 	/**
 	 * Get the origin class for a property defined in this structure
 	 * @param propertyName - name of the property
@@ -372,7 +378,7 @@ public class CimStructure extends NamedElement {
 		CimProperty p = getProperty(propertyName);
 		return p == null ? null : p.getOriginClass();
 	}
-	
+
 	/**
 	 * Get the qualifiers declared on a property
 	 * @param propertyName - name of the property
@@ -385,7 +391,7 @@ public class CimStructure extends NamedElement {
 		quals.addAll(p.getQualifiers());
 		return quals;
 	}
-	
+
 	/**
 	 * get a property defined in this structure
 	 * @param propertyName - name of the property
@@ -404,7 +410,7 @@ public class CimStructure extends NamedElement {
 		CimStructure s = (CimStructure)getSuperType();
 		return s != null ? s.getProperty(propertyName) : null;
 	}
-	
+
 	/**
 	 * Get all properties exposed by this Cim Structure
 	 * @return - all properties defined in (or inherited by) this CIM Structure (indexed by lowercase name)
@@ -412,7 +418,7 @@ public class CimStructure extends NamedElement {
 	protected Map<String,CimProperty> getAllProperties(){
 		return getProperties(null);
 	}
-	
+
 	/**
 	 * Get all exposed properties for this structure, and its superTypes if any
 	 * @param allProperties - collection containing all properties for this structure, and its superTypes
@@ -438,13 +444,13 @@ public class CimStructure extends NamedElement {
 		}
 		return allProperties;
 	}
-	
+
 	/*
 	 * ****************************************
 	 * Delegate methods for property operations
 	 * ****************************************
 	 */
-	
+
 	/**
 	 * Check if this structure (or its superType hierarchy) has at least one key property defined
 	 * @return - true if this structure has a key property in it, false otherwise
@@ -461,7 +467,7 @@ public class CimStructure extends NamedElement {
 		CimStructure superType = (CimStructure) getSuperType();
 		return superType != null ? superType.hasKeys() : false;
 	}
-	
+
 	/**
 	 * Return the value of a property defined in this structure
 	 * @param propertyName - name of the property to be checked
@@ -475,7 +481,7 @@ public class CimStructure extends NamedElement {
 				" is not a static property, and cannot be read at class/structure level");
 		return p.isReadable() ? p.getValue() : p.getDefaultValue();
 	}
-	
+
 	/**
 	 * Get the default value of a property
 	 * @param propertyName - name of the property to be checked
@@ -486,7 +492,7 @@ public class CimStructure extends NamedElement {
 		if(p == null) return null;
 		return p.getDefaultValue();
 	}
-	
+
 	/**
 	 * Set the value of a property in this structure
 	 * @param propertyName - name of the property
@@ -506,7 +512,7 @@ public class CimStructure extends NamedElement {
 		}
 		return;
 	}
-	
+
 	/**
 	 * Get the structure associated with a structureValue property
 	 * @param propertyName - name of the property
@@ -516,7 +522,7 @@ public class CimStructure extends NamedElement {
 		CimProperty p = getProperty(propertyName);
 		return p != null && (p.getDataType().isStructureValue() || p.getDataType().isInstanceValue()) ? p.getStruct() : null;
 	}
-	
+
 	/**
 	 * Get the Enumeration associated with a EnumerationValue property
 	 * @param propertyName - name of the properfy
@@ -526,7 +532,7 @@ public class CimStructure extends NamedElement {
 		CimProperty p = getProperty(propertyName);
 		return p != null && p.getDataType().isEnumerationValue() ? p.getEnum() : null;
 	}
-	
+
 	/**
 	 * Get the name of the class referenced by a reference property
 	 * @param propertyName - name of the property
@@ -536,7 +542,7 @@ public class CimStructure extends NamedElement {
 		CimProperty p = getProperty(propertyName);
 		return p != null && p.getDataType().isReference() ? p.getRefClassName() : null;
 	}
-	
+
 	/**
 	 * Get the data type associated with a given property
 	 * @param propertyName - name of the property
@@ -546,7 +552,7 @@ public class CimStructure extends NamedElement {
 		CimProperty p = getProperty(propertyName);
 		return p == null ? null : p.getDataType();
 	}
-	
+
 	/**
 	 * Get the value of a property qualifier 
 	 * @param propertyName - name of the property
@@ -558,7 +564,7 @@ public class CimStructure extends NamedElement {
 		if(p == null) return null;
 		return p.getQualifierValue(qualifierName);
 	}
-	
+
 	/**
 	 * Test if a property has a given qualifier
 	 * @param propertyName - name of the property to test
@@ -570,7 +576,7 @@ public class CimStructure extends NamedElement {
 		if(p == null) return false;
 		return p.hasQualifier(qualifierName);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see net.aifusion.metamodel.QualifiedElement#toMOF()
@@ -628,6 +634,73 @@ public class CimStructure extends NamedElement {
 	}
 
 	/*
+	 * *************************
+	 * Bindings to java objects
+	 * *************************
+	 */
+
+	/**
+	 * Bind a java class to this Cim Structure, using the defined values as the key values
+	 * @param values - structureValues containing keys during construction
+	 * @return - java class bound to this CimStructure
+	 */
+	protected Class<?> bind(StructureValue value) {
+		
+		// TODO: May need to recurse up to the superclasses here
+		
+		if(value == null || value.getCreationStruct() != this) {
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER,getName()+" requires a non-null matching value, found "+value);
+		}
+		if(boundJavaClass != null) return boundJavaClass;	// Structure/Instance has already been bound
+
+		// locate the java class based on the MappingStrings qualifier
+		String boundClassName = null;
+		DataValue mappingString = getQualifierValue("MappingStrings");
+		if(mappingString != null && mappingString.getValue() != null) {
+			String [] mappings = (String []) mappingString.getValue();
+			for(String c : mappings) {
+				if(c.startsWith(Constants.fusionMap)) {
+					boundClassName = c.substring(Constants.fusionMap.length());
+					break;
+				}
+			}
+		}
+		if(boundClassName == null) {
+			throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Qualifier MappingStrings not declared in "+getName());
+		}
+		ClassLoader loader = CimStructure.class.getClassLoader();
+		try {
+			Class<?> javaClass = loader.loadClass(boundClassName);
+			// the corresponding method and property bindings
+			switch(getElementType()) {
+			case CLASS:
+				// bind methods. All methods are static, so an implementation object is not needed.
+				Map<String,CimMethod> allMethods = ((CimClass)this).getAllMethods();
+				for(CimMethod m : allMethods.values()) {
+					if(!m.isStatic()) continue;
+					Method accessMethod = JavaModelMapper.validateStaticMethodBinding(m, javaClass);
+					m.bind(accessMethod, null);
+				}
+			case STRUCTURE:
+				// bind properties. Note that all properties are static, so an implementation object is not needed.
+				Map<String, CimProperty> allProperties = getAllProperties();
+				for(CimProperty p : allProperties.values()) {
+					if(!p.isStatic()) continue;
+					Method [] accessMethods = JavaModelMapper.validateStaticPropertyBinding(p, javaClass);
+					p.bind(accessMethods[0], accessMethods[1], null);
+				}
+				break;
+			default:
+				throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Only CLASS or STRUCTURE can be bound: found "+getElementType());
+			}
+			boundJavaClass = javaClass;
+		} catch (ClassNotFoundException e) {
+			throw new ModelException(ExceptionReason.NOT_FOUND,getName()+" : Could not locate Java Class "+boundClassName);
+		}
+		return boundJavaClass;
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see net.aifusion.metamodel.NamedElement#equals(java.lang.Object)
 	 */
@@ -672,7 +745,7 @@ public class CimStructure extends NamedElement {
 			}
 			return true;
 		} else return other.properties == null;
-		
+
 		// TODO: This only compares locally defined elements. Do we need to check interface hierarchies as well?
 	}
 }

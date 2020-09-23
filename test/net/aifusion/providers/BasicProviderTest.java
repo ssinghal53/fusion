@@ -218,7 +218,7 @@ public class BasicProviderTest implements CimListener {
 		names = p.getPropertyNames(path);
 		assertNotNull(names);
 		assertEquals(1,names.size());
-		assertTrue(names.contains("integerproperty"));
+		assertTrue(names.contains("integerProperty"));
 		
 		// locate some class in a child provider
 		path = new ObjectPath(ElementType.CLASS,"test_classb",nameSpacePath[child1],null, null);

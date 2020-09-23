@@ -30,6 +30,7 @@ package net.aifusion.metamodel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -48,18 +49,19 @@ import org.junit.Test;
 
 import net.aifusion.metamodel.PropertyBindingClass.EmbeddedStringEnum;
 import net.aifusion.utils.GetSetClass;
+import net.aifusion.utils.Java2Cim;
 
 /**
  * Tests to check Java to CIM mappings
  * @author Sharad Singhal
  */
 public class JavaModelMapperTest {
-	
+
 	private InMemoryCache cache;
 	private MOFParser parser;
-	
+
 	private String[] mofClasses = {	};
-	
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("JavaModelMapper ");
@@ -105,7 +107,7 @@ public class JavaModelMapperTest {
 		assertEquals("net::aifusion::metamodel",JavaModelMapper.getPackagePath(MethodBindingClass.class));
 		assertEquals("net::aifusion::utils",JavaModelMapper.getPackagePath(GetSetClass.class));
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getCimElementType(Class)}.
 	 */
@@ -137,8 +139,8 @@ public class JavaModelMapperTest {
 		// interface class
 		assertFalse(JavaModelMapper.isStructure(InterfaceBindingClass.class));
 	}
-	
-	
+
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getCimClassName(String)}.
 	 */
@@ -162,7 +164,7 @@ public class JavaModelMapperTest {
 		assertEquals("CIM_TestClass",JavaModelMapper.getCimClassName(GetSetClass.class));
 		assertEquals("AIFusion_EmbeddedStringEnum",JavaModelMapper.getCimClassName(PropertyBindingClass.EmbeddedStringEnum.class));
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getCimSuperClassName(Class)}.
 	 */
@@ -174,7 +176,7 @@ public class JavaModelMapperTest {
 		assertEquals(null,JavaModelMapper.getCimSuperClassName(GetSetClass.class));
 		assertEquals(null,JavaModelMapper.getCimSuperClassName(PropertyBindingClass.EmbeddedStringEnum.class));
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getFeatureName(Method)}.
 	 */
@@ -186,7 +188,7 @@ public class JavaModelMapperTest {
 		names.put("concatStringToEnumValue","concatStringToEnumValue");
 		names.put("enumValueToEnum","enumValueToEnum");
 		names.put("doSomething","doSomething");
-		
+
 		MethodBindingClass c = new MethodBindingClass();
 		assertNotNull(c);
 		Method [] methods = c.getClass().getDeclaredMethods();
@@ -197,7 +199,7 @@ public class JavaModelMapperTest {
 			assertEquals(names.get(methods[i].getName()),JavaModelMapper.getFeatureName(methods[i]));
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getFeatureType(Method)}.
 	 */
@@ -209,7 +211,7 @@ public class JavaModelMapperTest {
 		types.put("concatStringToEnumValue",String.class);
 		types.put("enumValueToEnum",EnumerationValue.class);
 		types.put("doSomething",void.class);
-		
+
 		MethodBindingClass c = new MethodBindingClass();
 		assertNotNull(c);
 		Method [] methods = c.getClass().getDeclaredMethods();
@@ -220,7 +222,7 @@ public class JavaModelMapperTest {
 			assertEquals(types.get(methods[i].getName()),JavaModelMapper.getFeatureType(methods[i]));
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getRefCimClass(Method)}. 
 	 */
@@ -232,7 +234,7 @@ public class JavaModelMapperTest {
 		quals.put("concatStringToEnumValue","");
 		quals.put("enumValueToEnum","AIFusion_EmbeddedStringEnum");
 		quals.put("doSomething","");
-		
+
 		MethodBindingClass c = new MethodBindingClass();
 		assertNotNull(c);
 		Method [] methods = c.getClass().getDeclaredMethods();
@@ -243,7 +245,7 @@ public class JavaModelMapperTest {
 			assertEquals(quals.get(JavaModelMapper.getFeatureName(methods[i])),JavaModelMapper.getRefCimClass(methods[i]));
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getRefCimClass(Parameter)}. 
 	 */
@@ -261,8 +263,8 @@ public class JavaModelMapperTest {
 			fail(e.toString());
 		}
 	}
-	
-	
+
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getMappedJavaClassName(Method)}. 
 	 */
@@ -274,7 +276,7 @@ public class JavaModelMapperTest {
 		quals.put("concatStringToEnumValue","");
 		quals.put("enumValueToEnum","net.aifusion.metamodel.PropertyBindingClass$EmbeddedStringEnum");
 		quals.put("doSomething","");
-		
+
 		MethodBindingClass c = new MethodBindingClass();
 		assertNotNull(c);
 		Method [] methods = c.getClass().getDeclaredMethods();
@@ -285,7 +287,7 @@ public class JavaModelMapperTest {
 			assertEquals(quals.get(JavaModelMapper.getFeatureName(methods[i])),JavaModelMapper.getMappedJavaClassName(methods[i]));
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getMappedJavaClassName(Parameter)}. 
 	 */
@@ -304,8 +306,8 @@ public class JavaModelMapperTest {
 			fail(e.toString());
 		}
 	}
-	
-	
+
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getMappingString(Method)}. 
 	 */
@@ -317,7 +319,7 @@ public class JavaModelMapperTest {
 		quals.put("concatStringToEnumValue","");
 		quals.put("enumValueToEnum","MappingStrings{\"Bind.CF|net.aifusion.metamodel.PropertyBindingClass$EmbeddedStringEnum\"}");
 		quals.put("doSomething","");
-		
+
 		MethodBindingClass c = new MethodBindingClass();
 		assertNotNull(c);
 		Method [] methods = c.getClass().getDeclaredMethods();
@@ -328,7 +330,7 @@ public class JavaModelMapperTest {
 			assertEquals(quals.get(JavaModelMapper.getFeatureName(methods[i])),JavaModelMapper.getMappingString(methods[i]));
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getMappingString(Parameter)}.
 	 */
@@ -347,7 +349,7 @@ public class JavaModelMapperTest {
 			fail(e.toString());
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getClassVersion(Class)}.
 	 */
@@ -356,9 +358,9 @@ public class JavaModelMapperTest {
 		assertEquals("0.0.1",JavaModelMapper.getClassVersion(PropertyBindingClass.class));	// nothing defined
 		assertEquals("6.0.0",JavaModelMapper.getClassVersion(MethodBindingClass.class));	// version annotation
 		assertEquals("1.0.0",JavaModelMapper.getClassVersion(EnumBindingClass.class));		// version qualifier
-		
+
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#isPropertyMethod(Method)}.
 	 */
@@ -377,7 +379,7 @@ public class JavaModelMapperTest {
 			}
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#isGetter(Method)}.
 	 */
@@ -396,7 +398,7 @@ public class JavaModelMapperTest {
 			}
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#isSetter(Method)}.
 	 */
@@ -415,7 +417,7 @@ public class JavaModelMapperTest {
 			}
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getObjectPathFromClass(java.lang.Class)}.
 	 */
@@ -431,7 +433,7 @@ public class JavaModelMapperTest {
 	}
 
 
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#javaEnumMatchesCimEnum(java.lang.Class, net.aifusion.metamodel.CimEnumeration)}.
 	 */
@@ -445,7 +447,7 @@ public class JavaModelMapperTest {
 		assertNotNull(cimEnumType);
 		assertTrue(JavaModelMapper.javaEnumMatchesCimEnum(EnumBindingClass.class, cimEnumType));
 	}
-	
+
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#JavaEnumValueMatches(Enum, EnumerationValue)}.
 	 */
@@ -462,14 +464,85 @@ public class JavaModelMapperTest {
 		assertTrue(JavaModelMapper.JavaEnumValueMatches(EnumBindingClass.NAME1, v));
 	}
 	
-	// TODO: ------- We are here --------
+	/**
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#createJavaObjectForCim(StructureValue, Class)}.
+	 */
+	@Test
+	public final void testcreateJavaObjectForCim() {
+		// create a structure value by introspection of the test java class
+		InMemoryCache c = new InMemoryCache();
+		NamedElement e = Java2Cim.getModelForClass(StructureValueClass.class, c);
+		assertEquals(ElementType.STRUCTURE,e.getElementType());
+		CimStructure s = (CimStructure)e;
+		HashMap<String,DataValue> props = new HashMap<String,DataValue>();
+		props.put("Id", new DataValue(DataType.STRING,"myId"));
+		StructureValue sv = StructureValue.createStructureValue(s, props, null);
+
+		// create a java object from the structure value
+		Object javaObject = JavaModelMapper.createJavaObjectForCim(sv, StructureValueClass.class);
+		assertNotNull(javaObject);
+
+		// validate that the java object contains the proper properties
+		assertTrue(javaObject instanceof StructureValueClass);
+		StructureValueClass cl = (StructureValueClass) javaObject;
+		assertEquals("DIGEST",cl.getP1());
+		assertEquals("myId",cl.getId());
+		return;
+	}
 	
+	/**
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#validatePropertyBinding(CimProperty, Object)}.
+	 */
+	@Test
+	public final void testvalidatePropertyBinding() {
+		// create a structure value by introspection of the test java class
+		InMemoryCache c = new InMemoryCache();
+		NamedElement e = Java2Cim.getModelForClass(StructureValueClass.class, c);
+		assertEquals(ElementType.STRUCTURE,e.getElementType());
+		CimStructure s = (CimStructure)e;
+		HashMap<String,DataValue> props = new HashMap<String,DataValue>();
+		props.put("Id", new DataValue(DataType.STRING,"myId"));
+		StructureValue sv = StructureValue.createStructureValue(s, props, null);
+
+		// create a java object from the structure value
+		Object javaObject = JavaModelMapper.createJavaObjectForCim(sv, StructureValueClass.class);
+		assertNotNull(javaObject);
+
+		for(CimProperty p : s.getAllProperties().values()) {
+			Method [] accessors = JavaModelMapper.validatePropertyBinding(p, javaObject);
+			assertEquals(2,accessors.length);
+			switch(p.getName()) {
+			case "Id":	// readable property
+				assertNotNull(accessors[0]);
+				assertNull(accessors[1]);
+				break;
+			case "P1":	// writable property
+				assertNotNull(accessors[0]);
+				assertNotNull(accessors[1]);
+				break;
+			default:
+				fail("Property "+p.getName()+" not yet handled in the test case");
+			}
+		}
+		
+		// TODO - these tests should go into StructureValueTest.java (#testBind) once we are done with JavaModelMapper 
+		Object o2 = sv.bind();
+		assertNotNull(o2);
+		StructureValueClass cl = (StructureValueClass) o2;
+		assertEquals("myId DIGEST", cl.toString());
+		sv.setPropertyValue("P1", new DataValue(DataType.STRING,"SOME"));
+		assertEquals("myId SOME", cl.toString());
+		return;
+	}
+
+	// TODO: ------- We are here --------
+
 	@Ignore
 	@Test
 	public final void testStructureValueMatches(){
 		fail("Not yet implemented"); // TODO
 	}
-	
+
 
 	/**
 	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#getInvocationParameter(java.lang.Class, java.lang.Object)}.
@@ -533,4 +606,35 @@ public class JavaModelMapperTest {
 	public final void testInvokeOperation() {
 		fail("Not yet implemented"); // TODO
 	}
+
+	/**
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#validateStaticMethodBinding(CimMethod, Class)}.
+	 */
+	@Ignore
+	@Test
+	public final void testValidateStaticMethodBinding() {
+		fail("Not yet implemented");
+	}
+
+	/**
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#validateMethodBinding(CimMethod, Object)}.
+	 */
+	@Ignore
+	@Test
+	public final void testvalidateMethodBinding() {
+		fail("Not yet implemented");
+	}
+
+	/**
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#validateStaticPropertyBinding(CimProperty, Class)}.
+	 */
+	@Ignore
+	@Test
+	public final void testvalidateStaticPropertyBinding() {
+		fail("Not yet implemented");
+	}
+
+
+
+
 }
