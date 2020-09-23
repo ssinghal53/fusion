@@ -75,11 +75,11 @@ public class Java2CimTest {
 			"name3 = 3\n"+
 			"};\n"+
 
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingSuperClass\" }]\n"+
+			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingSuperClass\" }, Version(\"6.0.0\")]\n"+
 			"Structure Cim_TestMethodsSup {\n"+
 			"\tString StringProperty = \"Something\";\n};\n"+
 			
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingClass\" }]\n"+
+			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingClass\" }, Version(\"6.0.0\")]\n"+
 			"Class Cim_TestMethods : Cim_TestMethodsSup {\n"+
 			"[Key] String Key;\n"+
 			// "[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.PropertyBindingClass$EmbeddedStringEnum\" }]\n"+

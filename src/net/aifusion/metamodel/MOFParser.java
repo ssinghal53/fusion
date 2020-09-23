@@ -1383,17 +1383,27 @@ public class MOFParser implements Parser {
 					// have a self-reference. Note self-references cannot have initial values
 					return referencePropertyDeclaration(structureName, enumOrRefClassName, featureQualifiers);
 				} else {
+					// TODO: this creates an infinite loop if a persistent repository is used, the expected
+					// elements are in the backing store on media, and the referenced element is a subclass of
+					// the current element, e.g.,
+					//
+					// Structure A { B ref x; }; Structure B : A { ...};
+					//
+					// When A is parsed, it looks for B. B is in the backing store, so needs A for its
+					// superclass, which is then again fetched (and parsed) to get its definition.
+					// for the moment, we just disallow initial values on reference properties.
+					
 					// attempt to locate the referenced class or structure
-					CimStructure expected = (CimStructure) locateStructureOrEnum(enumOrRefClassName, superType, enclosingStructureFeatures);
-					if(expected != null){
+					// CimStructure expected = (CimStructure) locateStructureOrEnum(enumOrRefClassName, superType, enclosingStructureFeatures);
+					// if(expected != null){
 						// add the property
-						return referencePropertyDeclaration(structureName, featureQualifiers, expected);
-					} else {
+					// 	return referencePropertyDeclaration(structureName, featureQualifiers, expected);
+					// } else {
 						// could not find the referenced class or structure
 						// assume forward reference, and disallow initial values
 						return referencePropertyDeclaration(structureName,enumOrRefClassName, featureQualifiers);
 						// error("Undefined class or structure "+enumOrRefClassName);
-					}
+					// }
 				}	
 			} else {
 				requested.add(ElementType.ENUMERATION);
