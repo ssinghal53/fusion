@@ -192,6 +192,8 @@ public class Java2Cim {
     	StringBuilder b = new StringBuilder();
     	// add the MappingStrings qualifier (to linked class), and any declared qualifiers
     	b.append("[").append("MappingStrings{\"").append(Constants.fusionMap).append(javaClass.getName()).append("\"}");
+    	String version = javaClass.getAnnotation(Export.class).version();
+    	if(!Constants.defaultVersion.equals(version)) b.append(",Version(\"").append(version).append("\")");
     	switch(path.getElementType()){
     	case ENUMERATION:
     		b.append(addEnumeration(javaClass));
