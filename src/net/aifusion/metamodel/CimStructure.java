@@ -641,16 +641,10 @@ public class CimStructure extends NamedElement {
 
 	/**
 	 * Bind a java class to this Cim Structure, using the defined values as the key values
-	 * @param values - structureValues containing keys during construction
 	 * @return - java class bound to this CimStructure
 	 */
-	protected Class<?> bind(StructureValue value) {
+	protected Class<?> bind() {
 		
-		// TODO: May need to recurse up to the superclasses here
-		
-		if(value == null || value.getCreationStruct() != this) {
-			throw new ModelException(ExceptionReason.INVALID_PARAMETER,getName()+" requires a non-null matching value, found "+value);
-		}
 		if(boundJavaClass != null) return boundJavaClass;	// Structure/Instance has already been bound
 
 		// locate the java class based on the MappingStrings qualifier

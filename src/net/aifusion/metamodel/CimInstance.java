@@ -125,9 +125,9 @@ public class CimInstance extends StructureValue {
 	 * @return Java Object bound to this CIM Instance
 	 */
 	@Override
-	public Object bind() {
+	public Object bind(Object implObject) {
 		// bind any properties defined in this class or its superclasses
-		Object implObject = super.bind();
+		implObject = super.bind(implObject);
 		
 		// bind methods defined in this CimInstance
 		for(CimMethod cimMethod : methods.values()) {

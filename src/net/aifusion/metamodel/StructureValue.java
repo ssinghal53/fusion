@@ -109,13 +109,16 @@ public class StructureValue extends NamedElement {
 	
 	/**
 	 * Bind this structure value to a Java implementation
+	 * @param implObject - implementation object. If null, a new object is created
 	 * @return - bound java object with all properties bound
 	 */
-	public Object bind() {
+	public Object bind(Object implObject) {
 		// Get the bound java class from the definition, and bind all static properties
-		Class<?> javaClass = getCreationStruct().bind(this);
+		Class<?> javaClass = getCreationStruct().bind();
 		// Construct a java object from the structure value
-		Object implObject = JavaModelMapper.createJavaObjectForCim(this,javaClass);
+		if(implObject == null) {
+			implObject = JavaModelMapper.createJavaObjectForCim(this,javaClass);
+		}
 		// bind all CIM properties (this class, or its superclasses)
 		for(CimProperty p : properties.values()) {
 			// validate the property in the object, and get the getter/setter methods
