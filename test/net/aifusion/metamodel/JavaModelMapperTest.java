@@ -526,7 +526,7 @@ public class JavaModelMapperTest {
 		}
 		
 		// TODO - these tests should go into StructureValueTest.java (#testBind) once we are done with JavaModelMapper 
-		Object o2 = sv.bind();
+		Object o2 = sv.bind(null);
 		assertNotNull(o2);
 		StructureValueClass cl = (StructureValueClass) o2;
 		assertEquals("myId DIGEST", cl.toString());
@@ -536,6 +536,15 @@ public class JavaModelMapperTest {
 	}
 
 	// TODO: ------- We are here --------
+	
+	/**
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#createCimValueForJavaObject(CimStructure, Object)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateCimValueForJavaObject() {
+		fail("Not yet implemented"); // TODO
+	}
 
 	@Ignore
 	@Test

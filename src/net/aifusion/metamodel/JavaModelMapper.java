@@ -875,6 +875,29 @@ public class JavaModelMapper {
 		}
 	}
 	
+	/**
+	 * Create a StructureValue by introspection of a java object
+	 * @param cimStruct - expected CimStructure for the object
+	 * @param javaObject - java object to convert
+	 * @return StructureValue based on the java object
+	 */
+	public static StructureValue createCimValueForJavaObject(CimStructure cimStruct, Object javaObject) {
+		HashMap<String,DataValue> props = new HashMap<String,DataValue>();
+		for(Method javaMethod : JavaModelMapper.getAnnotatedMethods(javaObject.getClass())) {
+			if(JavaModelMapper.isGetter(javaMethod)) {
+				String pName = JavaModelMapper.getFeatureName(javaMethod);
+				DataType pType = DataType.getTypeForClass(JavaModelMapper.getFeatureType(javaMethod));
+				try {
+					Object v = javaMethod.invoke(javaObject, (Object[])null);
+					if(v != null) props.put(pName, new DataValue(pType,v));
+				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					throw new ModelException(ExceptionReason.INVALID_CLASS,"Unable to create StructureValue from "+javaObject.getClass().getName());
+				}
+			}
+		}
+		return StructureValue.createStructureValue(cimStruct, props, null);
+	}
+	
 	/*
 	 * ***********************************************
 	 * Java bindings to Properties and property getters and setters
