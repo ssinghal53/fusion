@@ -105,7 +105,7 @@ class Function extends Node {
 			break;
 		case ReferenceToString:
 			if(children.size() != 1) throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+": Only one child expected, found "+children.size());
-			if(!children.get(0).getType().isReference()) throw new ModelException(ExceptionReason.INVALID_PARAMETER,toString()+": expected numeric argument, found "+children.get(0).getType());
+			if(!children.get(0).getType().isReference()) throw new ModelException(ExceptionReason.INVALID_PARAMETER,toString()+": expected reference argument, found "+children.get(0).getType());
 			setValue(new DataValue(fType,children.get(0).getStringValue()));
 			break;
 		case ClassPath:
