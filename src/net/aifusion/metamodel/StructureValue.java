@@ -48,6 +48,8 @@ public class StructureValue extends NamedElement {
 	private String alias = null;
 	/** Structure used to define this StructureValue */
 	private CimStructure struct;
+	/** bound object, if any */
+	private Object boundObject;
 
 	/**
 	 * Create a new StructureValue
@@ -109,25 +111,22 @@ public class StructureValue extends NamedElement {
 	
 	/**
 	 * Bind this structure value to a Java implementation
-	 * @param implObject - implementation object. If null, a new object is created
 	 * @return - bound java object with all properties bound
 	 */
-	public Object bind(Object implObject) {
-		// Get the bound java class from the definition, and bind all static properties
+	public Object bind() {
+		if(boundObject != null) return boundObject;
 		Class<?> javaClass = getCreationStruct().bind();
 		// Construct a java object from the structure value
-		if(implObject == null) {
-			implObject = JavaModelMapper.createJavaObjectForCim(this,javaClass);
-		}
+		boundObject = JavaModelMapper.createJavaObjectForCim(this,javaClass);
 		// bind all CIM properties (this class, or its superclasses)
 		for(CimProperty p : properties.values()) {
 			// validate the property in the object, and get the getter/setter methods
-			Method[] javaMethods = JavaModelMapper.validatePropertyBinding(p, implObject);
-			p.bind(javaMethods[0], javaMethods[1], implObject);
+			Method[] javaMethods = JavaModelMapper.validatePropertyBinding(p, boundObject);
+			p.bind(javaMethods[0], javaMethods[1], boundObject);
 		}
-		return implObject;
+		return boundObject;
 	}
-
+	
 	/**
 	 * Get the alias value associated with this structure value, if any
 	 * @return - alias value, if any. Null if no alias was defined
