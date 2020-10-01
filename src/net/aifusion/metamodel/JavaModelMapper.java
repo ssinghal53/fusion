@@ -50,7 +50,7 @@ public class JavaModelMapper {
 	/** Logger for this class */
 	private static Logger logger = Logger.getLogger(JavaModelMapper.class.getName());	
 	/** Pattern to parse qualifiers for package path */
-    private static Pattern packagePattern = Pattern.compile("(?i)^.*PackagePath\\s*\\(\\s*\\\"([^\"]+)(.*)$");
+	private static Pattern packagePattern = Pattern.compile("(?i)^.*PackagePath\\s*\\(\\s*\\\"([^\"]+)(.*)$");
 	/** flag for debugging */
 	private static boolean debug = false;
 	/**
@@ -59,13 +59,13 @@ public class JavaModelMapper {
 	private JavaModelMapper() {
 		return;
 	}
-	
+
 	/*
 	 * *************************************
 	 * Internal helper methods
 	 * *************************************
 	 */
-		
+
 	/**
 	 * Check if a given java type matches a given CIM data type
 	 * @param javaClass - java type to check
@@ -86,7 +86,8 @@ public class JavaModelMapper {
 			cimType = cimType.getComponentType();
 			javaType = javaType.getComponentType();
 		}
-		// validate the type
+		if(cimType == javaType) return true;
+		// validate the special cases
 		switch(cimType){
 		case OBJECTPATH:
 			if(refClass == null) throw new ModelException("RefClass cannot be null in JavaModelMapper#javaTypeMatches");
@@ -108,11 +109,10 @@ public class JavaModelMapper {
 			}
 			return javaClassMatchesCimClass(javaClass,(CimClass) struct);
 		default:
-			// all other types
-			return cimType == javaType;
+			throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Internal error-- Type "+cimType+" not yet handled for comparison against "+javaType);
 		}
 	}
-	
+
 	/**
 	 * Check if a java class (or array of classes) matches a CimClass
 	 * @param javaClass - the java class to be matched
@@ -121,38 +121,38 @@ public class JavaModelMapper {
 	 */
 	private static boolean javaClassMatchesCimClass(Class<?> javaClass, CimClass struct) {
 		if(debug) System.out.println("Check "+struct.toMOF()+" against "+javaClass.getName());
-    	// get the java type (in case incoming type is array type)
-    	Class<?> javaType = javaClass.isArray() ? javaClass.getComponentType() : javaClass;
-    	if(debug) System.out.println("Check if Java type is a class "+javaType.getName());
-    	if(isStructure(javaType)) return false;
-    	if(debug) System.out.println("Check if class names match "+javaType.getName()+" "+struct.getName());
-    	if(!struct.getName().equalsIgnoreCase(getCimClassName(javaType))) return false;
-    	// validate that all features in the CIM class are present in the Java Class
-    	HashMap<String,DataType> features = new HashMap<String,DataType>();
-    	for(Method m : getAnnotatedMethods(javaType)){
-    		String featureName = getFeatureName(m);
-    		if(featureName == null) continue;
-    		if(features.containsKey(featureName)) continue; // we will see duplicates for property getter/setters
-    		Class<?> featureType = getFeatureType(m);
-    		DataType dt = DataType.getTypeForClass(featureType);
-    		features.put(featureName, dt);
-    	}
-    	// TODO: currently we only check property/method names -- should do a deeper inspection
-    	// check that all CIM properties are defined in the java class
-    	Map<String,CimProperty> props = struct.getAllProperties();
-    	for(String key : props.keySet()){
-    		if(features.containsKey(key)) continue;
-    		if(debug) System.out.println("Did not find feature "+key);
-    		return false;
-    	}
-    	// check that all CIM methods are defined in the java class
-    	Map<String,CimMethod> methods = struct.getAllMethods();
-    	for(String key : methods.keySet()){
-    		if(features.containsKey(key)) continue;
-    		if(debug) System.out.println("did not find feature "+key);
-    		return false;    		
-    	}
-    	return true;
+		// get the java type (in case incoming type is array type)
+		Class<?> javaType = javaClass.isArray() ? javaClass.getComponentType() : javaClass;
+		if(debug) System.out.println("Check if Java type is a class "+javaType.getName());
+		if(isStructure(javaType)) return false;
+		if(debug) System.out.println("Check if class names match "+javaType.getName()+" "+struct.getName());
+		if(!struct.getName().equalsIgnoreCase(getCimClassName(javaType))) return false;
+		// validate that all features in the CIM class are present in the Java Class
+		HashMap<String,DataType> features = new HashMap<String,DataType>();
+		for(Method m : getAnnotatedMethods(javaType)){
+			String featureName = getFeatureName(m);
+			if(featureName == null) continue;
+			if(features.containsKey(featureName)) continue; // we will see duplicates for property getter/setters
+			Class<?> featureType = getFeatureType(m);
+			DataType dt = DataType.getTypeForClass(featureType);
+			features.put(featureName, dt);
+		}
+		// TODO: currently we only check property/method names -- should do a deeper inspection
+		// check that all CIM properties are defined in the java class
+		Map<String,CimProperty> props = struct.getAllProperties();
+		for(String key : props.keySet()){
+			if(features.containsKey(key)) continue;
+			if(debug) System.out.println("Did not find feature "+key);
+			return false;
+		}
+		// check that all CIM methods are defined in the java class
+		Map<String,CimMethod> methods = struct.getAllMethods();
+		for(String key : methods.keySet()){
+			if(features.containsKey(key)) continue;
+			if(debug) System.out.println("did not find feature "+key);
+			return false;    		
+		}
+		return true;
 	}
 
 	/**
@@ -163,77 +163,77 @@ public class JavaModelMapper {
 	 */
 	private static boolean javaStructureMatchesCimStruct(Class<?> javaClass, CimStructure struct) {
 		if(debug) System.out.println("Check "+struct.toMOF()+" against "+javaClass.getName());
-    	// get the java type (in case incoming type is array type)
-    	Class<?> javaType = javaClass.isArray() ? javaClass.getComponentType() : javaClass;
-    	if(debug) System.out.println("Check if Java type is a structure "+javaType.getName());
-    	if(!isStructure(javaType)) return false;
-    	if(debug) System.out.println("Check if structure names match "+javaType.getName()+" "+struct.getName());
-    	if(!struct.getName().equalsIgnoreCase(getCimClassName(javaType))) return false;
-    	// validate that all features in the CIM structure are present in the Java Class
-    	HashMap<String,DataType> features = new HashMap<String,DataType>();
-    	for(Method m : getAnnotatedMethods(javaType)){
-    		String featureName = getFeatureName(m);
-    		if(featureName == null) continue;
-    		if(features.containsKey(featureName)) continue;
-    		Class<?> featureType = getFeatureType(m);
-    		DataType dt = DataType.getTypeForClass(featureType);
-    		features.put(featureName, dt);
-    	}
-    	// TODO: currently we only check names-- should do a deeper inspection
-    	Map<String,CimProperty> props = struct.getAllProperties();
-    	for(String key : props.keySet()){
-    		if(features.containsKey(key)) continue;
-    		if(debug) System.out.println("Did not find feature "+key);
-    		return false;
-    	}
-    	return true;
+		// get the java type (in case incoming type is array type)
+		Class<?> javaType = javaClass.isArray() ? javaClass.getComponentType() : javaClass;
+		if(debug) System.out.println("Check if Java type is a structure "+javaType.getName());
+		if(!isStructure(javaType)) return false;
+		if(debug) System.out.println("Check if structure names match "+javaType.getName()+" "+struct.getName());
+		if(!struct.getName().equalsIgnoreCase(getCimClassName(javaType))) return false;
+		// validate that all features in the CIM structure are present in the Java Class
+		HashMap<String,DataType> features = new HashMap<String,DataType>();
+		for(Method m : getAnnotatedMethods(javaType)){
+			String featureName = getFeatureName(m);
+			if(featureName == null) continue;
+			if(features.containsKey(featureName)) continue;
+			Class<?> featureType = getFeatureType(m);
+			DataType dt = DataType.getTypeForClass(featureType);
+			features.put(featureName, dt);
+		}
+		// TODO: currently we only check names-- should do a deeper inspection
+		Map<String,CimProperty> props = struct.getAllProperties();
+		for(String key : props.keySet()){
+			if(features.containsKey(key)) continue;
+			if(debug) System.out.println("Did not find feature "+key);
+			return false;
+		}
+		return true;
 	}
 
 	/**
-     * Check if a java enum type (or array of enums) matches a CIM Enumeration. A match is declared if the Java enum is exported, and
-     * all fields declared in the java enum are present in the CIM enumeration and vice versa, and the corresponding enum values match.
+	 * Check if a java enum type (or array of enums) matches a CIM Enumeration. A match is declared if the Java enum is exported, and
+	 * all fields declared in the java enum are present in the CIM enumeration and vice versa, and the corresponding enum values match.
 	 * @param javaType - java type to match. Must be enum or enum[] with the @Export annotation
 	 * @param cimEnumType - CIM Enumeration to match
-     * @return - true if match, false if not matched
-     */
+	 * @return - true if match, false if not matched
+	 */
 	protected static boolean javaEnumMatchesCimEnum(Class<? extends Object> javaType, CimEnumeration cimEnumType){
-    	if(debug) System.out.println("Check "+cimEnumType.toMOF()+" against "+javaType.getName());
-    	// get the java type (in case incoming type is array type)
-    	Class<?> javaEnumType = javaType.isArray() ? javaType.getComponentType() : javaType;
-    	if(debug) System.out.println("Check if Java type is Enum: "+javaType.getName());
-    	if(!javaEnumType.isEnum()) return false;
-    	if(debug) System.out.println("Check if Java type is exported "+javaType.getName());
-    	if(!javaEnumType.isAnnotationPresent(Export.class)) return false;
-    	if(debug) System.out.println("Check enum data type matches");
-    	// get the data type for the enumeration, and validate that it matches the cimEnumType
-    	try {
-    		Method enumMethod = javaEnumType.getMethod("value", (Class<?>[])null);
-    		DataType cimType = DataType.getTypeForClass(enumMethod.getReturnType());
-    		if(!cimType.equals(cimEnumType.getDataType())){
-    			if(debug) System.out.println(javaType.getName()+" Expected Enum Type "+cimEnumType.getDataType()+", found "+enumMethod.getReturnType());
-    			return false;
-    		}
-    	} catch (NoSuchMethodException | SecurityException e) {
-    		throw new ModelException(ExceptionReason.INVALID_ENUMERATION_CONTEXT,"JavaModelMapper#JavaEnumMatches unable to locate value() method in "+javaType.getName());
-    	}
-    	if(debug) System.out.println("Check all Java enum fields are present in CIM enum, and they match");
-    	Enum<?>[] fields = (Enum[]) javaEnumType.getEnumConstants();
-    	HashSet<String> seen = new HashSet<String>();
-    	for(Enum<?> f : fields){
-    		if(!cimEnumType.hasKey(f.name())) return false;
-    		EnumerationValue cv = cimEnumType.getValue(f.name());
-    		if(!JavaEnumValueMatches(f,cv)) return false;
-    		seen.add(f.name());
-    	}
-    	if(debug) System.out.println("Check all CIM enum keys are are present in Java Enum");
-    	for(String key : cimEnumType.getKeys()){
-    		if(seen.contains(key)) continue;
-    		return false;
-    	}
-    	if(debug) System.out.println("Enum Matched");
-    	return true;
-    }
-	
+		if(debug) System.out.println("Check "+cimEnumType.toMOF()+" against "+javaType.getName());
+		// get the java type (in case incoming type is array type)
+		Class<?> javaEnumType = javaType.isArray() ? javaType.getComponentType() : javaType;
+		if(debug) System.out.println("Check if Java type is Enum: "+javaType.getName());
+		if(!javaEnumType.isEnum()) return false;
+		if(debug) System.out.println("Check if Java type is exported "+javaType.getName());
+		if(!javaEnumType.isAnnotationPresent(Export.class)) return false;
+		if(debug) System.out.println("Check enum data type matches");
+		// get the data type for the enumeration, and validate that it matches the cimEnumType
+		try {
+			Method enumMethod = javaEnumType.getMethod("value", (Class<?>[])null);
+			DataType cimType = DataType.getTypeForClass(enumMethod.getReturnType());
+			if(!cimType.equals(cimEnumType.getDataType())){
+				if(debug) System.out.println(javaType.getName()+" Expected Enum Type "+cimEnumType.getDataType()+", found "+enumMethod.getReturnType());
+				return false;
+			}
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new ModelException(ExceptionReason.INVALID_ENUMERATION_CONTEXT,"JavaModelMapper#JavaEnumMatches unable to locate value() method in "+javaType.getName());
+		}
+		if(debug) System.out.println("Check all Java enum fields are present in CIM enum, and they match");
+		Enum<?>[] fields = (Enum[]) javaEnumType.getEnumConstants();
+		HashSet<String> seen = new HashSet<String>();
+		for(Enum<?> f : fields){
+			if(!cimEnumType.hasKey(f.name())) return false;
+			EnumerationValue cv = cimEnumType.getValue(f.name());
+			if(!JavaEnumValueMatches(f,cv)) return false;
+			seen.add(f.name());
+		}
+		if(debug) System.out.println("Check all CIM enum keys are are present in Java Enum");
+		for(String key : cimEnumType.getKeys()){
+			if(seen.contains(key)) continue;
+			return false;
+		}
+		if(debug) System.out.println("Enum Matched");
+		return true;
+	}
+
 	/**
 	 * Check if a java enum value matches a CIM Enumeration value
 	 * @param javaEnumValue - java enumeration value to match
@@ -265,7 +265,7 @@ public class JavaModelMapper {
 		if(debug) System.out.println("Enum Value Matched");
 		return true;
 	}
-	
+
 	/**
 	 * Convert a java object to a CIM dataValue
 	 * @param javaObject - java object to be converted 
@@ -307,7 +307,7 @@ public class JavaModelMapper {
 			}
 		}
 	}
-	
+
 	/**
 	 * Transform an incoming method parameter to an expected parameter type. Handles conversions
 	 * of primitive types (e.g., boolean <-> Boolean or Boolean[] <-> boolean[]) as needed.
@@ -475,15 +475,25 @@ public class JavaModelMapper {
 				return a;
 			}
 		}
+		// handle annotated classes
+		// TODO: This may need additional checks to ensure that the expected value matches the given value
+		// at the moment, this is a surface check
+		Class<?> eType = expectedType.isArray() ? expectedType.getComponentType() : expectedType;
+		Class<?> gType = givenType.isArray() ? givenType.getComponentType() : givenType;
+		if(eType == EnumerationValue.class) {
+			if(gType.isAnnotationPresent(Export.class) && gType.isEnum()) return givenParam;
+		} else if(eType == CimInstance.class || eType == StructureValue.class) {
+			if(gType.isAnnotationPresent(Export.class)) return givenParam;
+		}
 		throw new ModelException(ExceptionReason.TYPE_MISMATCH,"JavaModelMapper#getInvocationParameter: Parameter expected "+expectedType.getName()+" found "+givenType.getName());
 	}
-	
+
 	/*
 	 * **************************************
 	 * Methods to introspect Java annotations to bind to MOF elements
 	 * **************************************
 	 */
-	
+
 	/**
 	 * Get all annotated methods from a class (or superclasses/interfaces)
 	 * @param c - class to introspect
@@ -500,7 +510,7 @@ public class JavaModelMapper {
 		}
 		return v;
 	}
-	
+
 	/**
 	 * Get the package path annotation needed on MOF to allow binding to a java class
 	 * @param javaClass - java class (must be non-null) to introspect
@@ -519,7 +529,7 @@ public class JavaModelMapper {
 		// no annotation, or no matching qualifier, construct the package path from the java class path
 		return javaClass.getPackage().getName().replaceAll("\\.", "::");
 	}
-	
+
 	/**
 	 * Get the CIM element type (Enumeration, Interface, Structure or Class) corresponding to a java class
 	 * @param javaClass - class to introspect
@@ -536,7 +546,7 @@ public class JavaModelMapper {
 		} 
 		return ElementType.CLASS;
 	}
-	
+
 	/**
 	 * Check if a class can map to a CIM Structure
 	 * @param javaClass - java class to check
@@ -552,12 +562,12 @@ public class JavaModelMapper {
 		Vector<Method> methods = getAnnotatedMethods(javaClass);
 		for(Method m : methods){
 			if(!isPropertyMethod(m)) return false;	// found a non-property method
-			
+
 		}
 		// we possibly have a structure; check if forceClass() is present
 		return annotation.forceClass() ? false : true;
 	}
-	
+
 	/**
 	 * Get the CIM class name corresponding to an annotated java class
 	 * @param javaClassName - name of the java class to introspect
@@ -573,7 +583,7 @@ public class JavaModelMapper {
 			throw new ModelException(ExceptionReason.NOT_FOUND,"Unable to load java class "+javaClassName,e);
 		}
 	}
-	
+
 	/**
 	 * Obtain the CIM class name corresponding to some annotated java class.
 	 * @param javaClass - java class to introspect
@@ -594,7 +604,7 @@ public class JavaModelMapper {
 		String schema = !cls.schema().isEmpty() ? cls.schema() : Constants.defaultSchema;
 		return schema + "_" + className;
 	}
-	
+
 	/**
 	 * Get the CIM name of the superType of a java class. The java class hierarchy is traversed to find the nearest annotated
 	 * superclass, and its CIM name is returned.
@@ -622,25 +632,25 @@ public class JavaModelMapper {
 		Export cls = javaMethod.getAnnotation(Export.class);
 		// non-exported method returns null
 		if(cls == null) return null;
-		
+
 		// if method is annotated with name, return it
 		String name = cls.name();
 		if(!name.isEmpty()) return name;	
-		
+
 		// get the name of the java method
 		name = javaMethod.getName();
 		// handle getXXX() and setXXX() methods
 		if(name.startsWith("get") && isGetter(javaMethod) ||
 				name.startsWith("set") && isSetter(javaMethod)) return name.substring(3);	
-		
+
 		// handle isXXX() method
 		if(name.startsWith("is") && isGetter(javaMethod) &&
 				DataType.getTypeForClass(javaMethod.getReturnType()).isBoolean()) return name.substring(2);
-		
+
 		// method name is the feature name
 		return name;
 	}
-	
+
 	/**
 	 * Get the java type for a CIM feature represented by an exported Java Method<br>
 	 * This is the java type for the property getter or setter, or type returned by a method
@@ -655,7 +665,7 @@ public class JavaModelMapper {
 		// getter and methods return type
 		return returnType;
 	}
-	
+
 	/**
 	 * Get the CIM class referenced by a java method defining a complex property or method	
 	 * @param m - java method to introspect
@@ -665,7 +675,7 @@ public class JavaModelMapper {
 		String className = getMappedJavaClassName(m);
 		return className.isEmpty() ? className : getCimClassName(className);
 	}
-	
+
 	/**
 	 * Get the CIM class referenced by a java parameter defining a complex property (or method)	
 	 * @param p - java parameter to introspect
@@ -675,7 +685,7 @@ public class JavaModelMapper {
 		String className = getMappedJavaClassName(p);
 		return className.isEmpty() ? className : getCimClassName(className);
 	}
-	
+
 	/**
 	 * Get the name of the java class referenced by a property or returned by a method
 	 * @param m - Method to introspect
@@ -684,14 +694,14 @@ public class JavaModelMapper {
 	public static String getMappedJavaClassName(Method m){
 		Class<?> javaType = getFeatureType(m);
 		DataType cimType = DataType.getTypeForClass(javaType);
-		
+
 		// primitive or void types do not need mapping strings
 		if(cimType.isPrimitive() || cimType == DataType.VOID) return "";
 
 		// have a complex feature type, check if we can infer the class
 		Class<?> type = javaType.isArray() ? javaType.getComponentType() : javaType;
 		String mappedClass = type.getName();
-		
+
 		// refClass annotation must be present for java classes corresponding to CIM complex types
 		if(type == CimInstance.class || type == StructureValue.class || type == EnumerationValue.class || type == ObjectPath.class){
 			Export annotation = m.getAnnotation(Export.class);
@@ -701,7 +711,7 @@ public class JavaModelMapper {
 		}
 		return mappedClass;
 	}
-	
+
 	/**
 	 * Get the name of the java class referenced by method parameter
 	 * @param p - parameter to introspect
@@ -711,11 +721,11 @@ public class JavaModelMapper {
 		Class<?> javaType = p.getType();
 		DataType cimType = DataType.getTypeForClass(javaType);
 		if(cimType.isPrimitive() || cimType == DataType.VOID) return "";
-		
+
 		// have complex type; check if we can infer the class
 		Class<?> type = javaType.isArray() ? javaType.getComponentType() : javaType;
 		String mappedClass = type.getName();
-		
+
 		// if we have generic classes being returned, annotation must be present for mapping string
 		if(type == CimInstance.class || type == StructureValue.class || type == EnumerationValue.class || type == ObjectPath.class){
 			Export annotation = p.getAnnotation(Export.class);
@@ -725,7 +735,7 @@ public class JavaModelMapper {
 		}
 		return mappedClass;
 	}
-	
+
 	/**
 	 * Get the MappingString{} qualifier for an exported method that returns complex values or references
 	 * @param m - method to introspect
@@ -738,7 +748,7 @@ public class JavaModelMapper {
 		b.append(Constants.fusionMap).append(mappedClass).append("\"}");
 		return b.toString();
 	}
-		
+
 	/**
 	 * Get the MappingString{} qualifier for a method parameter that represents a complex value or reference
 	 * @param p - parameter to introspect
@@ -751,7 +761,7 @@ public class JavaModelMapper {
 		b.append(Constants.fusionMap).append(mappedClass).append("\"}");
 		return b.toString();
 	}
-	
+
 	/**
 	 * Get the version associated with with an annotated java class
 	 * @param javaClass - java class to introspect
@@ -775,7 +785,7 @@ public class JavaModelMapper {
 		// no version annotation or qualifier given
 		return Constants.defaultVersion;
 	}
-	
+
 	/**
 	 * Test if an exported method represents a CIM property
 	 * @param javaMethod - exported method to test
@@ -785,7 +795,7 @@ public class JavaModelMapper {
 		// a method is a property method if it is either a getter or a setter
 		return isGetter(javaMethod) || isSetter(javaMethod);
 	}
-	
+
 	/**
 	 * Test if an exported java method represents a property getter
 	 * @param javaMethod - exported method to test
@@ -797,7 +807,7 @@ public class JavaModelMapper {
 		Parameter [] parameters = javaMethod.getParameters();
 		return parameters.length == 0 && returnType != void.class && DataType.isCimType(returnType) ? true : false;
 	}
-	
+
 	/**
 	 * Test if an exported java method represents a property setter
 	 * @param javaMethod - java method to test
@@ -809,7 +819,7 @@ public class JavaModelMapper {
 		Parameter [] parameters = javaMethod.getParameters();
 		return returnType == void.class && parameters.length == 1 && DataType.isCimType(parameters[0].getType()) ? true : false;
 	}
-	
+
 	/**
 	 * Get the object path corresponding to a Java class. Note that the class must be bound to a CIM element to be accessible
 	 * via the object path
@@ -821,15 +831,15 @@ public class JavaModelMapper {
 		String cimClassName = getCimClassName(javaClass);
 		if(debug) System.out.println("JavaModelMapper#getObjectPathFromClass: cimClassName "+cimClassName);
 		if(cimClassName == null) return null;
-		
+
 		// get the Element Type corresponding to the class
 		ElementType elementType = getCimElementType(javaClass);
-		
+
 		// get the namespace path corresponding to the class
 		NameSpacePath path = getNameSpacePathFromClass(javaClass);
 		return new ObjectPath(elementType,cimClassName,path,null, null);
 	}
-	
+
 	/**
 	 * Get a namespace path from an annotated java class
 	 * @param javaClass - java class to be introspected
@@ -843,8 +853,8 @@ public class JavaModelMapper {
 		if(exp == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,javaClass.getName()+" is not an annotated class");
 		return new NameSpacePath(exp.nameSpace());
 	}
-	
-	
+
+
 	/*
 	 * *********************************************************************
 	 * Methods to create java objects from CIM Instances and StructureValues
@@ -874,7 +884,7 @@ public class JavaModelMapper {
 			throw new ModelException(ExceptionReason.INVALID_CLASS,"Unable to instantiate an instance of "+javaClass.getName());
 		}
 	}
-	
+
 	/**
 	 * Create a StructureValue by introspection of a java object
 	 * @param cimStruct - expected CimStructure for the object
@@ -897,13 +907,13 @@ public class JavaModelMapper {
 		}
 		return StructureValue.createStructureValue(cimStruct, props, null);
 	}
-	
+
 	/*
 	 * ***********************************************
 	 * Java bindings to Properties and property getters and setters
 	 * ***********************************************
 	 */
-	
+
 	/**
 	 * Validate that an implementation object implements the given CIM property
 	 * @param cimProperty - Cim Property to validate
@@ -948,10 +958,10 @@ public class JavaModelMapper {
 		validatePropertyBinding(cimProperty, accessors[0], accessors[1], implObject);
 		return accessors;
 	}
-	
+
 	// Tested to here in JavaModelMapperTest
 	/* TODO:  -------- we are here ------------ */
-	
+
 	/**
 	 * Validate that a java class implements the given static CIM Property
 	 * @param p - CimProperty to check
@@ -961,8 +971,8 @@ public class JavaModelMapper {
 	public static Method[] validateStaticPropertyBinding(CimProperty p, Class<?> javaClass) {
 		throw new ModelException("Not yet implemented");
 	}
-	
-	
+
+
 	/**
 	 * Validate that a pair of Java methods (getter and setter pair) can be bound to a cim property
 	 * @param cimProperty - CimProperty to be used for binding
@@ -983,7 +993,7 @@ public class JavaModelMapper {
 			// validate that the java type can be converted to the expected cim type
 			if(!javaTypeMatchesCimType(javaReturnType,dataType, cimProperty.getRefClassName(), cimProperty.getStruct(), cimProperty.getEnum())){
 				throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
-							": Error binding property getter. Expected type "+dataType.toString()+" found "+javaReturnType.getName());
+						": Error binding property getter. Expected type "+dataType.toString()+" found "+javaReturnType.getName());
 			}
 		}
 		// check the setter against the bindings given
@@ -997,7 +1007,7 @@ public class JavaModelMapper {
 			// setter must return void
 			if(javaReturnType != void.class) throw new ModelException(ExceptionReason.TYPE_MISMATCH,
 					cimName+": Error binding property setter. Expected void type found "+javaReturnType.getName());
-			
+
 			if(!javaTypeMatchesCimType(paramTypes[0],dataType,cimProperty.getRefClassName(),cimProperty.getStruct(),cimProperty.getEnum())){
 				throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
 						": Error binding property setter. Expected type "+dataType.toString()+" found "+paramTypes[0].getName());
@@ -1021,8 +1031,8 @@ public class JavaModelMapper {
 				try {
 					Method implMethod = javaClass.getMethod(javaMethod.getName(), javaMethod.getParameterTypes());
 					if(!implMethod.equals(javaMethod)){
-					throw new ModelException(ExceptionReason.METHOD_NOT_FOUND,
-							cimName+": Implementation class "+javaClass.getName()+" does not implement method "+javaMethod.getName());
+						throw new ModelException(ExceptionReason.METHOD_NOT_FOUND,
+								cimName+": Implementation class "+javaClass.getName()+" does not implement method "+javaMethod.getName());
 					}
 				} catch (SecurityException e) {
 					throw new ModelException(ExceptionReason.METHOD_NOT_AVAILABLE,
@@ -1035,7 +1045,7 @@ public class JavaModelMapper {
 		}
 		return;
 	}
-	
+
 	/**
 	 * Read a property value from a Java Object. Note that this method assumes that the getter has been validated when the property
 	 * was bound to the java object, and does not re-check the data types or method arguments
@@ -1070,11 +1080,11 @@ public class JavaModelMapper {
 		}
 	}
 
-    /*
-     * ***********************************************
-     * Java bindings to CIM Methods and method invocation
-     * ***********************************************
-     */
+	/*
+	 * ***********************************************
+	 * Java bindings to CIM Methods and method invocation
+	 * ***********************************************
+	 */
 
 	/**
 	 * Validate that a java class implements the given static CIM Method
@@ -1085,7 +1095,7 @@ public class JavaModelMapper {
 	public static Method validateStaticMethodBinding(CimMethod m, Class<?> javaClass) {
 		throw new ModelException("Not yet implemented");
 	}
-	
+
 	/**
 	 * Validate that a java object implements the given CIM Method
 	 * @param cimMethod - Cim Method to validate
@@ -1095,7 +1105,7 @@ public class JavaModelMapper {
 	public static Method validateMethodBinding(CimMethod cimMethod, Object implObject) {
 		throw new ModelException("Not yet implemented");
 	}
-	
+
 	/**
 	 * Validate that a java method can be bound to a CIM Method
 	 * @param cimMethod - CimMethod to be used for binding
@@ -1109,7 +1119,7 @@ public class JavaModelMapper {
 		if(!cimMethod.getName().equalsIgnoreCase(javaName)){
 			throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+": does not match java method name "+javaName);
 		}
-		
+
 		// validate that the java return type matches the CIM return type
 		DataType cimType = cimMethod.getReturnedType();
 		Class<?> javaType = javaMethod.getReturnType();
@@ -1117,7 +1127,7 @@ public class JavaModelMapper {
 			throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
 					": Error binding Method. Expected return type "+cimType.toString()+" found "+javaType.getName());
 		}
-		
+
 		// validate that the java parameters match
 		Class<?>[] paramTypes = javaMethod.getParameterTypes();
 		List<CimParameter> cimParameters = cimMethod.getParameters();
@@ -1131,10 +1141,10 @@ public class JavaModelMapper {
 			javaType = paramTypes[i];
 			if(!javaTypeMatchesCimType(javaType,cimType, cimMethod.getRefClassName(), cimMethod.getStruct(), cimMethod.getEnum())){
 				throw new ModelException(ExceptionReason.TYPE_MISMATCH,cimName+
-							": Error binding Parameter "+i+". Expected type "+cimType.toString()+" found "+javaType.getName());
+						": Error binding Parameter "+i+". Expected type "+cimType.toString()+" found "+javaType.getName());
 			}
 		}
-		
+
 		// Check that STATIC methods map, and for non-static methods, the implementation object implements
 		// the desired method
 		boolean cimMethodIsStatic = cimMethod.isStatic();
@@ -1173,65 +1183,65 @@ public class JavaModelMapper {
 	 * @param cimParameters - CIM parameters to be used in this method call
 	 * @return - Data Value returned from the method. Null if the method returns void
 	 */
-    public static DataValue invokeMethod(CimMethod cimMethod, Object boundObject, Method boundMethod,List<CimParameter> cimParameters) {
-    	DataType cimType = cimMethod.getReturnedType();
-    	if(boundMethod == null){
-    		throw new ModelException(ExceptionReason.METHOD_NOT_AVAILABLE,"JavaModelMapper: Method ["+cimMethod.getFullName()+"] is not available");
-    	}
-    	if(debug) System.out.println("Invoke: "+cimMethod.getFullName());
-    	// check the number of parameters declared and the number of parameters in the invocation
-    	Class<?>[] methParamTypes = boundMethod.getParameterTypes();
-    	int declParams = methParamTypes.length;											// number of parameters declared in java method
-    	int actualParams = cimParameters == null ? 0 : cimParameters.size();			// number of actual parameters passed to the invoker
-    	if(declParams != actualParams) throw new ModelException(ExceptionReason.INVALID_PARAMETER,cimMethod.getFullName()+
-    			" Expected "+declParams+" parameters, found "+actualParams);
-    	// get the invocation parameter list
-    	Object [] invocationParams = new Object[declParams];
-    	for(int i=0; i< declParams; i++){
-    		invocationParams[i] = getInvocationParameter(methParamTypes[i], cimParameters.get(i).getValue().getValue());
-    	}
-    	if(debug){
-    		for(int i = 0; i<invocationParams.length;i++){
-    			System.out.println("Invoked\t"+invocationParams[i].getClass().getName());
-    		}
-    	}
-    	try {    		
-    		// invoke the operation
-    		Object returnObject = boundMethod.invoke(boundObject, invocationParams);
-    		return cimType == DataType.VOID ? null : new DataValue(cimType,returnObject);
-    	} catch (Exception e) {
-    		if(!(e instanceof ModelException)){
-    			throw new ModelException(cimMethod.getFullName()+": Method invocation error ",e);
-    		} else {
-    			throw (ModelException) e;
-    		}
-    	}
-    }
+	public static DataValue invokeMethod(CimMethod cimMethod, Object boundObject, Method boundMethod,List<CimParameter> cimParameters) {
+		DataType cimType = cimMethod.getReturnedType();
+		if(boundMethod == null){
+			throw new ModelException(ExceptionReason.METHOD_NOT_AVAILABLE,"JavaModelMapper: Method ["+cimMethod.getFullName()+"] is not available");
+		}
+		if(debug) System.out.println("Invoke: "+cimMethod.getFullName());
+		// check the number of parameters declared and the number of parameters in the invocation
+		Class<?>[] methParamTypes = boundMethod.getParameterTypes();
+		int numDeclParams = methParamTypes.length;											// number of parameters declared in java method
+		int numActualParams = cimParameters == null ? 0 : cimParameters.size();			// number of actual parameters passed to the invoker
+		if(numDeclParams != numActualParams) throw new ModelException(ExceptionReason.INVALID_PARAMETER,cimMethod.getFullName()+
+				" Expected "+numDeclParams+" parameters, found "+numActualParams);
+		// get the invocation parameter list
+		Object [] invocationParams = new Object[numDeclParams];
+		for(int i=0; i< numDeclParams; i++){
+			invocationParams[i] = getInvocationParameter(methParamTypes[i], cimParameters.get(i).getValue().getValue());
+		}
+		if(debug){
+			for(int i = 0; i<invocationParams.length;i++){
+				System.out.println("Invoked\t"+invocationParams[i].getClass().getName());
+			}
+		}
+		try {    		
+			// invoke the operation
+			Object returnObject = boundMethod.invoke(boundObject, invocationParams);
+			return cimType == DataType.VOID ? null : new DataValue(cimType,returnObject);
+		} catch (Exception e) {
+			if(!(e instanceof ModelException)){
+				throw new ModelException(cimMethod.getFullName()+": Method invocation error ",e);
+			} else {
+				throw (ModelException) e;
+			}
+		}
+	}
 
-	
-	
+
+
 	/*
 	 * *******************************************
 	 * Left over code from earlier implementations
 	 * *******************************************
 	 *
-	
+
 	/**
-     * Check if the method signature on a CIM method matches a java method
-     * TODO: This needs revision to new version of the binding
-     * @param cimMethod - CimMethod to be matched
-     * @param javaMethod - java method to be used for matching
-     * @return - true if the CIM Method matches the java method, false otherwise
-     *
+	 * Check if the method signature on a CIM method matches a java method
+	 * TODO: This needs revision to new version of the binding
+	 * @param cimMethod - CimMethod to be matched
+	 * @param javaMethod - java method to be used for matching
+	 * @return - true if the CIM Method matches the java method, false otherwise
+	 *
     private static boolean methodSignatureMatches(CimMethod cimMethod, Method javaMethod){
     	if(debug) System.out.println("*******************\nCheck "+cimMethod.toMOF()+" against "+javaMethod.toGenericString());
-    	
+
     	if(debug) System.out.println("Check Parameters...");
-    	
+
 		// check that all java parameter types match
 		Class<?> javaParams[] = javaMethod.getParameterTypes();
 		List<CimParameter> cimParams = cimMethod.getParameters();
-		
+
 		boolean needMapForReturn = false;
 		boolean haveMapParameter = javaParams.length > 0 && Map.class.isAssignableFrom(javaParams[javaParams.length-1]) ? true : false;
 		for(int i=0, j=0; i < cimParams.size(); i++){
@@ -1247,7 +1257,7 @@ public class JavaModelMapper {
 				if(debug) System.out.println("Insufficient Java Parameters");
 				throw new ModelException(ExceptionReason.TYPE_MISMATCH,
 						cimMethod.getName()+": Error binding. Expected "+cimParams.size()+" parameters, found "+javaParams.length);
-				
+
 			}
 			if(j == javaParams.length && haveMapParameter) continue;	// all remaining parameters will map here
 			Class<?> jp = javaParams[j++];
@@ -1256,11 +1266,11 @@ public class JavaModelMapper {
 				throw new ModelException(ExceptionReason.INVALID_PARAMETER,
 						cimMethod.getName()+": Expected "+cp.getDataType()+" found "+jp.getName());
 		}
-		
+
 		if(debug) System.out.println((needMapForReturn ? "Map Required " : "")+"Check ReturnType...");
 		// check that the return type matches
 		Class<?> returnType = javaMethod.getReturnType();	// java return type
-		
+
 		// check if map is returned
 		if(Map.class.isAssignableFrom(returnType)){
 			if(debug) System.out.println("\tJava Method Returned Map\n...Matched");
@@ -1270,13 +1280,13 @@ public class JavaModelMapper {
 			throw new ModelException(ExceptionReason.INVALID_PARAMETER,
 					javaMethod.getName()+": Expected (java.util.Map) for return type found "+returnType);
 		}
-		
+
 		// actual types match
 		if(cimMethod.getReturnedType() == DataType.getTypeForClass(returnType)){
 			if(debug) System.out.println("...Matched");
 	    	return true;
 		}
-		
+
 		// Enums (or Enum arrays) returned in java match to strings (or string arrays) in CIM
 		// if(returnType.isEnum() && cimMethod.getReturnedType() == DataType.STRING && javaEnumMatches(cimMethod,returnType)) {
 		if(returnType.isEnum()){
@@ -1292,7 +1302,7 @@ public class JavaModelMapper {
 			// return;	
 			throw new ModelException("Not yet implmented");
 		}
-		
+
     	// known items did not match
 		if(debug) System.out.println("Expected "+cimMethod.getReturnedType()+" found "+returnType+"\n...NOT Matched");
 		return false;
@@ -1334,13 +1344,13 @@ public class JavaModelMapper {
     	if(debug) System.out.println("RefClass Matched");
     	return true;
 	}
-	
+
 	/*
 	 * *******************************************
 	 * Conversion methods to convert between types
 	 * *******************************************
 	 *
-	
+
 	/**
 	 * Given a parameter type that is an enum, or array of enums, and a corresponding string (or String []) object,
 	 * return an appropriate Enum (or array of Enum) values
@@ -1367,32 +1377,32 @@ public class JavaModelMapper {
 			return o;
 		}
 	}
-	
+
     /**
-     * Given a Enum (or Enum []) object, return a corresponding String (or String []) 
-     * @param enumValue - enum values
-     * @return - string (or string []) value
-     */
-    private static Object getStringForEnum(Object enumValue){
-    	if(enumValue.getClass().isArray()){
-    		Enum<?>[] input = (Enum<?>[])enumValue;
-    		String [] returnValue = new String[input.length];
-    		for(int i = 0; i< input.length; i++){
-    			returnValue[i] = input[i].toString();
-    		}
-    		return returnValue;
-    	} else {
-    		return enumValue.toString();
-    	}
-    }
+	 * Given a Enum (or Enum []) object, return a corresponding String (or String []) 
+	 * @param enumValue - enum values
+	 * @return - string (or string []) value
+	 */
+	private static Object getStringForEnum(Object enumValue){
+		if(enumValue.getClass().isArray()){
+			Enum<?>[] input = (Enum<?>[])enumValue;
+			String [] returnValue = new String[input.length];
+			for(int i = 0; i< input.length; i++){
+				returnValue[i] = input[i].toString();
+			}
+			return returnValue;
+		} else {
+			return enumValue.toString();
+		}
+	}
 
 
-    /*
-     * Check if a CimParameter matches a given java type
-     * @param p - CimParameter to be matched
-     * @param javaType - java type to be used for matching
-     * @return - true if CimParameter matches the given java type, false otherwise
-     *
+	/*
+	 * Check if a CimParameter matches a given java type
+	 * @param p - CimParameter to be matched
+	 * @param javaType - java type to be used for matching
+	 * @return - true if CimParameter matches the given java type, false otherwise
+	 *
     private static boolean paramTypeMatches(CimParameter p, Class<? extends Object> javaType){
     	// all types match a hashMap
     	// TODO: Must check generic arguments to match data type in the map here
@@ -1401,11 +1411,11 @@ public class JavaModelMapper {
     	DataType cType = p.getDataType();
     	// CIM data type corresponding to java type
 		DataType jType = DataType.getTypeForClass(javaType);
-		
+
 		if(debug) System.out.println("\t\tChecking Parameter Type "+p.getDataType()+" against type "+javaType.getCanonicalName());
 		// return true if CimParameter type matches computed java parameter type
 		if(cType.equals(jType)) return true;
-    	
+
     	// Handle enum types
 		if(javaType.isEnum()){
 			if(debug) System.out.println("\t\tChecking Parameter "+p.toMOF()+" against Enum "+javaType.getCanonicalName());
@@ -1416,10 +1426,10 @@ public class JavaModelMapper {
 			// return (cType == DataType.STRING_ARRAY && javaEnumMatches(p,javaType)) ? true : false;
 			throw new ModelException("Not yet implemented");
 		}
-		
+
 		// Check for reference parameter. Here pType will return INVALID, and getCimDataType will return
 		// either OBJECTPATH or OBJECTPATH_ARRAY
-		
+
 		if(p.isReference()){
 			if(debug) System.out.println("\t\tCheck array types match");
 			// Check that both are arrays (or neither one is)
@@ -1427,7 +1437,7 @@ public class JavaModelMapper {
 			if(debug) System.out.println("\t\tChecking Reference Type "+p.getRefClassName()+" against type "+javaType.getCanonicalName());
 			// get CIM reference class name for this parameter
 			String refCimName = p.getRefClassName();
-			
+
 		   	// if java class is annotated, check that the cimName,cimVersion matches the annotation
 	    	String cimClassName = getCimClassName(javaType);
 	    	if(cimClassName != null){
@@ -1438,7 +1448,7 @@ public class JavaModelMapper {
 	    		}
 	    		return false;
 	    	}
-	    	
+
 	    	// if CIM definition contains the REFCLASS annotation, check that java class name matches it
 	    	DataValue cn = p.getQualifierValue("REFCLASS");
 	    	if(cn != null && javaType.getName().equalsIgnoreCase((String)cn.getValue())){
@@ -1447,29 +1457,29 @@ public class JavaModelMapper {
 		}    	
     	return false;
     }
-    
+
     /**
-     * Invoke a java operation using java reflection methods
-     * @param targetImplementation - target java implementation to be used for the method
-     * @param operationName - name of the operation to be performed
-     * @param m - method to be invoked
-     * @param params - method parameters
-     * @return - object returned by the java method
-     * @throws ModelException - in case of errors
-     *
+	 * Invoke a java operation using java reflection methods
+	 * @param targetImplementation - target java implementation to be used for the method
+	 * @param operationName - name of the operation to be performed
+	 * @param m - method to be invoked
+	 * @param params - method parameters
+	 * @return - object returned by the java method
+	 * @throws ModelException - in case of errors
+	 *
     private synchronized Object invokeOperation(Object targetImplementation, String operationName, Method m, Object... params) {
     	try {
     		if(m == null){
     			throw new ModelException(ExceptionReason.ACCESS_DENIED,"JavaModelMapper["+operationName+"()]");
     		}
     		if(debug) System.out.println("Invoke: "+operationName);
-    		
+
     		// check the number of parameters declared and the number of parameters in the invocation
     		Class<?>[] methParamTypes = m.getParameterTypes();
     		int declParams = methParamTypes.length;											// number of parameters declared in java method
     		Class<?> lastParamType = declParams == 0 ? null : methParamTypes[declParams-1];	// last declared parameter type in the java method
     		int actualParams = params == null ? 0 : params.length;							// number of actual parameters passed to the invoker
-    		
+
     		if(debug){
     			System.out.println("Declared Parameters: "+declParams+" Received Parameters: "+actualParams);
     			System.out.println("Last Parameter Type: "+(declParams == 0 ? "NULL" : lastParamType.getName()));
@@ -1483,14 +1493,14 @@ public class JavaModelMapper {
     				}
     			}
     		}
-    		
+
     		// check number of parameters
     		if(actualParams < declParams || (declParams == 0 && actualParams > 0)){
     			// fewer than declared parameters received or parameters sent to a method that does not expect them. Throw exception
     			throw new ModelException(ExceptionReason.INVALID_PARAMETER,operationName+
     					" Expected "+declParams+" parameters, found "+actualParams);
     		}
-    		
+
     		// get the invocation parameter list
     		Object [] invocationParams = new Object[declParams];
     		for(int i=0; i< declParams-1; i++){
@@ -1525,23 +1535,23 @@ public class JavaModelMapper {
     				invocationParams[declParams-1] = getInvocationParameter(lastParamType, params[declParams-1]);
     			}
     		}
-    		
+
     		if(debug){
     			for(int i = 0; i<invocationParams.length;i++){
     				System.out.println("Invoked\t"+invocationParams[i].getClass().getName());
     			}
     		}
-    		
+
     		// invoke the operation
     		Object returnObject = m.invoke(targetImplementation, invocationParams);
-    		
+
     		// transform any returned enums (or enum arrays) back to String values
     		if(m.getReturnType().isEnum() || (m.getReturnType().isArray() && 
     				m.getReturnType().getComponentType().isEnum())){
     			returnObject = getStringForEnum(returnObject);
     		}
     		return returnObject;
-    		
+
     	} catch (Exception e) {
     		if(!(e instanceof ModelException)){
     		    	throw new ModelException(operationName+": Method invocation error ",e);
@@ -1550,6 +1560,6 @@ public class JavaModelMapper {
     		    }
     	}
     }
-    */
-    
+	 */
+
 }

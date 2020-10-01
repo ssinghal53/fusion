@@ -402,7 +402,7 @@ public class CimMethodTest {
 	@Test
 	public final void testBindAndInvoke() {
 		Object [] param = new Object[]{
-				null,new UInt8((short)4),Byte.valueOf((byte)6),(byte)7,new UInt16(30000),
+				null,new UInt8((short)4),Byte.valueOf((byte)6),(byte)7,new UInt16(30000),	// 0-4
 				Short.valueOf((short)22),(short)15,new UInt32(54000L),Integer.valueOf(22000),45,new UInt64("530000"),Long.valueOf(540L),(long)50,	// 5-12
 				"String arg",Boolean.valueOf(true),false,Float.valueOf((float) 54000D),(float)45.4,Double.valueOf(6400D),(double)4000,new DateTime(),	// 13-20
 				Character.valueOf('x'),'x',	new OctetString("0x3f"), // 21-22
@@ -485,8 +485,8 @@ public class CimMethodTest {
 									assertEquals(v,rv);
 								} catch (ModelException ez){
 									// we fail here if cimMethod#invoke() fails
-									assertEquals(1,ez.getReason().getCode());
 									if(verbose) System.out.println("\t Invocation failed");
+									assertEquals(1,ez.getReason().getCode());
 									continue;
 								}
 							} catch (ModelException ep){
