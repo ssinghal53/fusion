@@ -33,7 +33,9 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 /**
  * Class to test an enumerated value
@@ -42,6 +44,15 @@ import org.junit.Test;
  */
 public class EnumeratedValueTest {
 	private static int [] values = new int[] {0,1,Integer.MAX_VALUE};
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("EnumeratedValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

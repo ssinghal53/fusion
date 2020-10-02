@@ -33,7 +33,9 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -42,6 +44,15 @@ import org.junit.Test;
  */
 public class OctetStringValueTest {
 	static byte [] input = {-128,3,5,7,127};
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("OctetStringValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

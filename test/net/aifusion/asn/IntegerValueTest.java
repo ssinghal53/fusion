@@ -34,7 +34,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -44,6 +46,15 @@ import org.junit.Test;
  */
 public class IntegerValueTest {
 	private static long [] values = new long[] {0,1,Long.MAX_VALUE,Long.MIN_VALUE};
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("IntegerValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

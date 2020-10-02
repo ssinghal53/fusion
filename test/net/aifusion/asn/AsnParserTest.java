@@ -34,7 +34,9 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -309,6 +311,17 @@ public class AsnParserTest {
 			*/
 	};
 	
+	static boolean verbose = false;
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("AsnParserTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
+	
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
@@ -335,11 +348,11 @@ public class AsnParserTest {
 		for(TestCase s : tests0) {
 			AsnParser parser = new AsnParser();
 			try {
-				System.out.println(s);
+				if(verbose) System.out.println(s);
 				AsnNode r = parser.parse(s.test);
 				showTree(r,"");
-				System.out.println("\n");
-				System.out.flush();
+				if(verbose) System.out.println("\n");
+				if(verbose) System.out.flush();
 				assertEquals(s.nodes,countNodes(r));
 			} catch (ModelException e) {
 				e.printStackTrace();
@@ -358,15 +371,15 @@ public class AsnParserTest {
 			AsnParser parser = new AsnParser();
 			String s = "Tm DEFINITIONS ::= BEGIN "+t.test+" END";
 			try {
-				System.out.println(t);
+				if(verbose) System.out.println(t);
 				AsnNode r = parser.parse(s);
 				LinkedHashMap<String,Symbol> symbols = parser.getSymbolTable().getSymbolTable();
 				for(Entry<String, Symbol> e : symbols.entrySet()) {
-					System.out.println(e.getKey()+" "+e.getValue());
+					if(verbose) System.out.println(e.getKey()+" "+e.getValue());
 				}
 				showTree(r,"");
-				System.out.println("\n");
-				System.out.flush();
+				if(verbose) System.out.println("\n");
+				if(verbose) System.out.flush();
 				assertEquals(t.nodes,countNodes(r));
 			} catch (ModelException e) {
 				e.printStackTrace();
@@ -381,17 +394,17 @@ public class AsnParserTest {
 	public void testCases() {
 		// remaining tests
 		for(TestCase t : testCase) {
-			// System.out.println(t);
+			// if(verbose) System.out.println(t);
 			AsnParser parser = new AsnParser();
 			try {
 				AsnNode r = parser.parse(t.test);
 				// showTree(r,"");
-				// System.out.println("\n");
-				// System.out.flush();
+				// if(verbose) System.out.println("\n");
+				// if(verbose) System.out.flush();
 				assertEquals(t.nodes,countNodes(r));
 			} catch (ModelException e) {
-				System.out.println(t);
-				System.out.flush();
+				if(verbose) System.out.println(t);
+				if(verbose) System.out.flush();
 				e.printStackTrace();
 				fail("Test "+t.sequence);
 			}
@@ -414,14 +427,14 @@ public class AsnParserTest {
 	 * @return - string containing subtree
 	 */
 	private static void showTree(AsnNode n, String indent){
-		System.out.print(indent);
-		if(!indent.isEmpty()) System.out.print("-- ");
-		System.out.print(n.toString());
+		if(verbose) System.out.print(indent);
+		if(!indent.isEmpty()) if(verbose) System.out.print("-- ");
+		if(verbose) System.out.print(n.toString());
 		if(n.hasChildren()){
 			for(AsnNode c : n.getChildren()){
-				System.out.print("\n");
+				if(verbose) System.out.print("\n");
 				if(c == null) {
-					System.out.print("|-- Null");
+					if(verbose) System.out.print("|-- Null");
 				} else {
 					showTree(c,indent+"  |");
 				}

@@ -33,7 +33,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -71,6 +73,15 @@ public class AsnValueTest {
 			+ "a342311f61111a0552616c70681a01541a05536d697468a00a43083139353731313131"
 			+ "311f61111a05537573616e1a01421a054a6f6e6573a00a43083139353930373137").getValue();
 	
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("AsnValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

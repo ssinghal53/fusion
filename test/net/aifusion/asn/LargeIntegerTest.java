@@ -11,7 +11,9 @@ import static org.junit.Assert.assertNotNull;
 import java.math.BigInteger;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -20,6 +22,15 @@ import org.junit.Test;
  */
 public class LargeIntegerTest {
 	static BigInteger bigInt = new BigInteger("123456789012345678901234567890");
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("LargeIntegerValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

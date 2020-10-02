@@ -32,13 +32,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 /**
  * Test cases for IA5StringValue
  * @author Sharad Singhal
  */
 public class IA5StringValueTest {
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("IA5StringValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

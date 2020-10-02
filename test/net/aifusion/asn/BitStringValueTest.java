@@ -34,7 +34,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -43,6 +45,16 @@ import org.junit.Test;
  */
 public class BitStringValueTest {
 	static String [] input = {"'00001010001110110101111100101001000111001101'B","'0A3B5F291CD'H"};
+	
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("BitStringValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	
 	@Before
 	public void setUp() throws Exception {

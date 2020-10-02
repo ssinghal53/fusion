@@ -35,7 +35,9 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Arrays;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -48,7 +50,15 @@ public class OidValueTest {
 			{1,0,1,1},
 			{1,0,0,0}
 	};
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("OidValueTest");
+	}
 	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

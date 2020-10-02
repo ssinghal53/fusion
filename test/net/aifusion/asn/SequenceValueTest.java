@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,6 +49,15 @@ import net.aifusion.metamodel.OctetString;
  */
 public class SequenceValueTest {
 	static SequenceValue v1,v2;
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("SequenceValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

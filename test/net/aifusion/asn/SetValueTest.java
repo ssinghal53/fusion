@@ -36,6 +36,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,7 +48,12 @@ import net.aifusion.metamodel.OctetString;
  * @author Sharad Singhal
  */
 public class SetValueTest {
-	static SetValue v1,v2;	
+	static SetValue v1,v2;
+
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
@@ -64,6 +70,7 @@ public class SetValueTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		System.out.print("SetValueTest");
 		LinkedHashSet<AsnValue> values1 = new LinkedHashSet<AsnValue>();
 		LinkedHashSet<AsnValue> values2 = new LinkedHashSet<AsnValue>();
 		values1.add(new OidValue(new long[] {1L,2L,2950L,1L}));

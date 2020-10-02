@@ -62,6 +62,15 @@ public class UTCTimeValueTest {
 			ZonedDateTime.parse("1985-11-06T21:06:27.3+00:00"),
 			ZonedDateTime.parse("1985-11-06T21:06:27.3+05:00")
 	};
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("UTCTimeValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 
 	/**
 	 * @throws java.lang.Exception

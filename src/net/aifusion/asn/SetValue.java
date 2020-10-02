@@ -101,7 +101,7 @@ public class SetValue extends AsnValue {
 			v.values.add(c);
 			if(debug) System.out.println("\tAdded "+toHex(c.getEncodedValue())+" to Set "+v.setId);
 		} while(cursor < v.encodedValue.length);
-		System.out.println("\n");
+		if(debug) System.out.println("\n");
 		return v;
 	}
 

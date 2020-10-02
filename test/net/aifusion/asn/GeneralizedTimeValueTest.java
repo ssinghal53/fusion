@@ -35,6 +35,7 @@ import static org.junit.Assert.fail;
 import java.time.ZonedDateTime;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,6 +57,15 @@ public class GeneralizedTimeValueTest {
 			"19851106210627.3Z",
 			"19851106210627.3+0500"};
 	static boolean [] isValid = {true,true,true,true,true,true};
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("GeneralizedTimeValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

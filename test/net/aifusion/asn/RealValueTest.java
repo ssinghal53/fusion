@@ -35,7 +35,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.aifusion.metamodel.ModelException;
@@ -47,6 +49,15 @@ import net.aifusion.metamodel.ModelException;
  */
 public class RealValueTest {
 	private static double [] values = new double[] {0,1,Double.MAX_VALUE,Double.MIN_VALUE,Double.MIN_NORMAL, Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY};
+	@BeforeClass
+	public static void setupBefore() throws Exception {
+		System.out.print("RealValueTest");
+	}
+	
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		System.out.print("\n");
+	}
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
