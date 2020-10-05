@@ -538,7 +538,7 @@ public class JavaModelMapperTest {
 	// TODO: ------- We are here --------
 	
 	/**
-	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#createCimValueForJavaObject(CimStructure, Object)}.
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#createCimValueFromJavaObject(CimStructure, Object)}.
 	 */
 	@Ignore
 	@Test

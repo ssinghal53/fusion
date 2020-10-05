@@ -891,7 +891,7 @@ public class JavaModelMapper {
 	 * @param javaObject - java object to convert
 	 * @return StructureValue based on the java object
 	 */
-	public static StructureValue createCimValueForJavaObject(CimStructure cimStruct, Object javaObject) {
+	public static StructureValue createCimValueFromJavaObject(CimStructure cimStruct, Object javaObject) {
 		HashMap<String,DataValue> props = new HashMap<String,DataValue>();
 		for(Method javaMethod : JavaModelMapper.getAnnotatedMethods(javaObject.getClass())) {
 			if(JavaModelMapper.isGetter(javaMethod)) {
