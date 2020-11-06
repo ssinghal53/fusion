@@ -117,7 +117,7 @@ public class ModelUtilities {
 			default :
 				if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
 					String s = Integer.toString(ch, 16);
-					sb.append("\\x").append("0000".substring(s.length() - 4)).append(s);
+					sb.append("\\x").append("0000".substring(0,4-s.length())).append(s);
 				} else {
 					sb.append(ch);
 				}
