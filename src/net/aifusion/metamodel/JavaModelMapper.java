@@ -881,7 +881,7 @@ public class JavaModelMapper {
 			Object javaObject = constructor.newInstance(params);
 			return javaObject;
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new ModelException(ExceptionReason.INVALID_CLASS,"Unable to instantiate an instance of "+javaClass.getName());
+			throw new ModelException(ExceptionReason.INVALID_CLASS,"Unable to instantiate an instance of "+javaClass.getName(),e);
 		}
 	}
 
