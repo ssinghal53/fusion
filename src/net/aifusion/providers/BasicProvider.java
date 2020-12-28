@@ -238,11 +238,18 @@ public class BasicProvider implements Provider {
 					((CimInstance) element).setPropertyValue(propertyName,propertyValue);
 					repository.put(element);	// put the element back in the repository to ensure update
 					break;
+				case STRUCTUREVALUE:
+					((StructureValue) element).setPropertyValue(propertyName,propertyValue);
+					repository.put(element);	// put the element back in the repository to ensure update
+					break;
 				case CLASS:
 					((CimClass) element).setPropertyValue(propertyName,propertyValue);
 					repository.put(element);	// put the element back in the repository to ensure update
 					break;
-				default:	// structure values and interfaces do not support settable properties
+				case STRUCTURE:
+					((CimStructure) element).setPropertyValue(propertyName,propertyValue);
+					repository.put(element);	// put the element back in the repository to ensure update
+				default:	// interfaces do not support settable properties
 					throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Element Type "+element.getElementType()+" does not support settable properties");
 				}
 			}
