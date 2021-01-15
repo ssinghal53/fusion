@@ -27,9 +27,11 @@
  */
 package net.aifusion.metamodel;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -42,7 +44,9 @@ public class CimEnumeration extends NamedElement {
 	private DataType type;
 	/** Values for this enumeration. Indexed by lower case names */
 	private LinkedHashMap<String,EnumerationValue> values = new LinkedHashMap<String,EnumerationValue>();
-	
+	/** bound java Enum, if any */
+	Class<?> boundJavaEnum;
+
 	/**
 	 * Create a CIM Enumeration
 	 * @param name - name of this enumeration
@@ -70,6 +74,7 @@ public class CimEnumeration extends NamedElement {
 				throw new ModelException(ExceptionReason.INVALID_PARAMETER,name+": Enumeration value "+v.toMOF()+" does not match names, expected "+expectedValueName+
 						" found "+v.getFullName());
 			}
+			v.setEnumeration(this);
 			this.values.put(v.getLowerCaseName(), v);
 		}
 		// validate that inherited keys are not being re-declared
@@ -82,7 +87,7 @@ public class CimEnumeration extends NamedElement {
 		}
 		return;
 	}
-	
+
 	/**
 	 * Get the primitive data type for all values in this enumeration
 	 * @return - data type for all values in this enumeration
@@ -90,7 +95,7 @@ public class CimEnumeration extends NamedElement {
 	public DataType getDataType(){
 		return type;
 	}
-	
+
 	/**
 	 * Get the set of keys defined in this enumeration (or its superTypes)
 	 * @return - set of keys (mixed case) in the enumeration
@@ -104,7 +109,7 @@ public class CimEnumeration extends NamedElement {
 		if(superType != null) keys.addAll(superType.getKeys());
 		return keys;
 	}
-	
+
 	/**
 	 * Check if this enumeration (or one of its superTypes) declares a given key
 	 * @param key - key to check
@@ -117,7 +122,7 @@ public class CimEnumeration extends NamedElement {
 		if(superType != null) return superType.hasKey(key);
 		return false;
 	}
-	
+
 	/**
 	 * Get the primitive dataValue corresponding to a given key
 	 * @param key - name of the enumeration element
@@ -128,7 +133,7 @@ public class CimEnumeration extends NamedElement {
 		EnumerationValue v = getValue(key);
 		return v != null ? v.getDataValue() : null;
 	}
-	
+
 	/**
 	 * Get the enumeration value corresponding to a given key
 	 * @param key - name of the enumeration element
@@ -141,7 +146,7 @@ public class CimEnumeration extends NamedElement {
 		CimEnumeration superType = (CimEnumeration) getSuperType();
 		return superType == null ? null : superType.getValue(key);
 	}
-	
+
 	/**
 	 * Check if this enumeration has explicitly defined values
 	 * @return - true if the enumeration has explicit values defined
@@ -151,6 +156,39 @@ public class CimEnumeration extends NamedElement {
 			if(v.hasValue()) return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Bind this CimEnum to a java Enum
+	 * @return - bound java Enum
+	 */
+	public Class<?> bind() {
+		if(boundJavaEnum != null) return boundJavaEnum;
+		// locate the java class based on the MappingStrings qualifier
+		String boundClassName = null;
+		DataValue mappingString = getQualifierValue("MappingStrings");
+		if(mappingString != null && mappingString.getValue() != null) {
+			String [] mappings = (String []) mappingString.getValue();
+			for(String c : mappings) {
+				if(c.startsWith(Constants.fusionMap)) {
+					boundClassName = c.substring(Constants.fusionMap.length());
+					break;
+				}
+			}
+		}
+		if(boundClassName == null) {
+			throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Qualifier MappingStrings not declared in "+getName());
+		}
+		ClassLoader loader = CimStructure.class.getClassLoader();
+		try {
+			Class<?> javaClass = loader.loadClass(boundClassName);
+			if(!javaClass.isEnum()) throw new ModelException(ExceptionReason.INVALID_CLASS,getName()+": "+javaClass.getName()+" is not an Enum class");
+			JavaModelMapper.validateEnumBinding(this, javaClass);
+			boundJavaEnum = javaClass;
+		} catch (ClassNotFoundException e) {
+			throw new ModelException(ExceptionReason.NOT_FOUND,getName()+" : Could not locate Java Class "+boundClassName);
+		}
+		return boundJavaEnum;
 	}
 
 	/* (non-Javadoc)

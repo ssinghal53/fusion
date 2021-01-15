@@ -62,7 +62,8 @@ package net.aifusion.metamodel;
 	 net.aifusion.metamodel.InMemoryRepositoryTest.class,
 	 net.aifusion.metamodel.MOFParserTest.class,
 	 net.aifusion.metamodel.PersistentCacheTest.class,
-	 net.aifusion.metamodel.JavaModelMapperTest.class
+	 net.aifusion.metamodel.JavaModelMapperTest.class,
+	 net.aifusion.metamodel.JavaBindingTest.class
 
 	 // TODO: add test for CimClass, CimInstance
 	 // TODOD: Add tests for CimIndication

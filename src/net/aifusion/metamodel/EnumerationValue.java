@@ -40,6 +40,10 @@ public class EnumerationValue extends QualifiedElement {
 	private DataValue value;
 	/** Fully qualified name of the enumeration within which this value resides */
 	private String enumName;
+	/** Enumeration within which this value exists */
+	private CimEnumeration creationEnum;
+	/** Bound java Enum value, if any */
+	private Object boundEnum;
 
 	/**
 	 * Create an enumeration value
@@ -142,5 +146,41 @@ public class EnumerationValue extends QualifiedElement {
 			return other.value == null;
 		}
 		return value.equals(other.value);
+	}
+
+	/**
+	 * Set the enumeration within which this value exists
+	 * @param cimEnumeration - Enumeration within which this value exists
+	 */
+	protected void setEnumeration(CimEnumeration cimEnumeration) {
+		creationEnum = cimEnumeration;
+		return;
+	}
+	
+	/**
+	 * Get the Enumeration where this value exists
+	 * @return - Enumeration within which this value exists
+	 */
+	public CimEnumeration getEnumueration() {
+		return creationEnum;
+	}
+
+	/**
+	 * Bind this Enumeration value to a Java Enumeration
+	 * @return - The Java Enum value bound to this Enumeration value
+	 */
+	public Object bind() {
+		if(boundEnum != null) return boundEnum;
+		Class<?> javaEnum = creationEnum.bind();
+		String enumName = getName();
+		// System.out.println(getName()+" ["+enumName+"] "+javaEnum.getName());
+			for(Object o : javaEnum.getEnumConstants()) {
+				if(enumName.equals(o.toString())) {
+					boundEnum = o;
+					break;
+				}
+			}
+		if(boundEnum == null) throw new ModelException(ExceptionReason.TYPE_MISMATCH,"Unable to locate java enum for "+getFullName());
+		return boundEnum;
 	}
 }

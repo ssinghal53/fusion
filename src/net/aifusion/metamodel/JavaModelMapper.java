@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -250,7 +251,7 @@ public class JavaModelMapper {
 		if(!javaEnumValue.name().equalsIgnoreCase(cimEnumName)){
 			if(debug) System.out.println("Enum not Matched. Expected "+cimEnumName+" found "+javaEnumValue.name());
 			return false;
-		};
+		}
 		try {
 			Method valueMethod = javaEnumType.getDeclaredMethod("value");
 			Object val = valueMethod.invoke(javaEnumValue);
@@ -306,6 +307,33 @@ public class JavaModelMapper {
 				}
 			}
 		}
+	}
+	
+	private static Object convertCimEnumValueToJava(EnumerationValue v) {
+		CimEnumeration cimEnum = v.getEnumueration();
+		DataValue mapping = cimEnum.getQualifierValue("MappingString");
+		if(mapping != null) {
+			String [] maps = (String[]) mapping.getValue();
+			for(String m : maps) {
+				if(m.startsWith(Constants.fusionMap)) {
+					String javaEnumName = m.substring(Constants.fusionMap.length());
+					try {
+						Class<?> cls = JavaModelMapper.class.getClassLoader().loadClass(javaEnumName);
+						if(!cls.isEnum()) {
+							throw new ModelException(ExceptionReason.INVALID_CLASS,javaEnumName+" is not an Enum");
+						}
+						// TODO: locate the corresponding java Enum Constant from the class and return it
+						throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Not yet implemented");
+						
+						
+					} catch (ClassNotFoundException e) {
+						throw new ModelException(ExceptionReason.INVALID_CLASS,"CimEnumeration "+cimEnum.getFullName()+" unable to load java class "+javaEnumName);
+					}
+				}
+			}
+			
+		}
+		throw new ModelException(ExceptionReason.INVALID_CLASS,"CimEnumeration "+cimEnum.getFullName()+" does not define a java mapping");
 	}
 
 	/**
@@ -872,10 +900,30 @@ public class JavaModelMapper {
 		HashMap<String,Object> params = new HashMap<String,Object>();
 		for(String pName : structureValue.getPropertyNames()) {
 			DataValue v = structureValue.getPropertyValue(pName);
-			if(v != null) {
-				params.put(pName, v.getValue());
+			if(v != null && v.getValue() != null) {
+				DataType t = structureValue.getPropertyType(pName);
+				Object val = v.getValue();
+				
+				System.out.println("Name: "+pName+":"+t+"["+v.getValue()+"]");
+				switch(t) {
+				case ENUMERATIONVALUE:
+					if(val instanceof EnumerationValue) {
+						params.put(pName, ((EnumerationValue)val).bind());
+						break;
+					}
+				case ENUMERATIONVALUE_ARRAY:
+				case INSTANCEVALUE:
+				case INSTANCEVALUE_ARRAY:
+					throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Unable to instantiate an instance of "+javaClass.getName());
+				default:
+					params.put(pName, v.getValue());
+					break;
+				}
+				
+				
 			}
 		}
+		System.out.flush();
 		try {
 			Constructor<?> constructor = javaClass.getConstructor(Map.class);
 			Object javaObject = constructor.newInstance(params);
@@ -1106,6 +1154,36 @@ public class JavaModelMapper {
 		throw new ModelException("Not yet implemented");
 	}
 
+	/**
+	 * Validate that a java Enum can be bound to a CimEnumeration 
+	 * @param cimEnum - Cim Enumeration to validate
+	 * @param javaEnum - Java Enumeration to validate
+	 */
+	public static void validateEnumBinding(CimEnumeration cimEnum, Class<?> javaEnum) {
+		// validate that the java class is an Enum class
+		if(!javaEnum.isEnum()) throw new ModelException(ExceptionReason.TYPE_MISMATCH,"Java Class "+javaEnum.getName()+" is not an enum");
+		
+		// check that all Cim Enum keys are defined in the java enum
+		Set<String> keys = cimEnum.getKeys();
+		for(Object o : javaEnum.getEnumConstants()) {
+			if(!keys.contains(o.toString())) {
+				throw new ModelException(ExceptionReason.TYPE_MISMATCH,"Java Enum Constant "+o+" not declared in CimEnumeration "+cimEnum.getName());
+			}
+			keys.remove(o.toString());
+		}
+		if(!keys.isEmpty()) {
+			StringBuilder b = new StringBuilder();
+			for(String k : keys) {
+				b.append(k).append(" ");
+			}
+			b.setLength(b.length()-1);
+			throw new ModelException(ExceptionReason.TYPE_MISMATCH,"Java Enum "+javaEnum.getName()+" does not declare Cim Constants "+b.toString());
+		}
+		return;
+	}
+	
+	
+	
 	/**
 	 * Validate that a java method can be bound to a CIM Method
 	 * @param cimMethod - CimMethod to be used for binding
@@ -1382,7 +1460,7 @@ public class JavaModelMapper {
 	 * Given a Enum (or Enum []) object, return a corresponding String (or String []) 
 	 * @param enumValue - enum values
 	 * @return - string (or string []) value
-	 */
+	 *
 	private static Object getStringForEnum(Object enumValue){
 		if(enumValue.getClass().isArray()){
 			Enum<?>[] input = (Enum<?>[])enumValue;

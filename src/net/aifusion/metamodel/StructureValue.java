@@ -32,7 +32,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -185,7 +184,7 @@ public class StructureValue extends NamedElement {
 		}
 		String pName = propertyName.toLowerCase();
 		CimProperty p = properties.get(pName);
-		if(p == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,struct.getName()+" "+propertyName+" is not a settable property");
+		if(p == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,struct.getName()+":"+propertyName+" is not a settable property");
 		p.setValue(propertyValue);
 		if(hasListener(CimEventType.UPDATED, null)){
 			generateEvent(new CimIndication(CimEventType.UPDATED,this,p.toMOF()));
