@@ -75,7 +75,7 @@ import net.aifusion.utils.Java2Cim;
  */
 public class CimClientAndServerTest {
 	private static boolean verbose = false;
-	private static String repositoryLocation = "testrepository";
+	private static String repositoryLocation = "./testrepository";
 	private static CimServer server;
 	private static CimServer server2;
 
