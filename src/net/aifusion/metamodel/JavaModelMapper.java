@@ -904,7 +904,7 @@ public class JavaModelMapper {
 				DataType t = structureValue.getPropertyType(pName);
 				Object val = v.getValue();
 				
-				System.out.println("Name: "+pName+":"+t+"["+v.getValue()+"]");
+				if(debug) System.out.println("Name: "+pName+":"+t+"["+v.getValue()+"]");
 				switch(t) {
 				case ENUMERATIONVALUE:
 					if(val instanceof EnumerationValue) {
@@ -923,7 +923,7 @@ public class JavaModelMapper {
 				
 			}
 		}
-		System.out.flush();
+		if(debug) System.out.flush();
 		try {
 			Constructor<?> constructor = javaClass.getConstructor(Map.class);
 			Object javaObject = constructor.newInstance(params);
