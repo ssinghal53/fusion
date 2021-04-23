@@ -30,6 +30,8 @@ package net.aifusion.cimserver;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -90,9 +92,33 @@ class CimHandler implements HttpRequestHandler {
 	public CimHandler(HttpConfiguration config) {
 		this.config = config;
 		String r = config.getRepository();
+		String p = config.getProvider();
 		Repository repo = (r == null) ? new InMemoryCache() 
 				: new PersistentCache(r);
-		this.provider = new BasicProvider(repo);
+		if(p != null) {
+			try {
+				ClassLoader loader = CimHandler.class.getClassLoader();
+				Class<?> providerClass = loader.loadClass(p);
+				if(Provider.class.isAssignableFrom(providerClass)){
+					try {
+						Constructor<?> constructor = providerClass.getConstructor(Repository.class);
+						this.provider = (Provider) constructor.newInstance(repo);
+					} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
+						try {
+							this.provider =  (Provider) providerClass.getDeclaredConstructor().newInstance();
+						} catch (IllegalArgumentException | InvocationTargetException | SecurityException e1) {
+							throw new ModelException("Unable to locate a provider for "+p,e1);
+						}
+					}
+				} else {
+					throw new ModelException(p+" is not a Provider");
+				}
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
+				throw new ModelException("CimHandler: Unable to load class "+p, e);
+			}
+		} else {
+			this.provider = new BasicProvider(repo);
+		}
 		return;
 	}
 	

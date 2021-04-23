@@ -118,6 +118,8 @@ public class HttpConfiguration {
 	private String proxyHost = defaultHost;
 	/** proxy port, if any. 0 implies no proxy being used */
 	private int proxyPort = 0;
+	/** Provider to use in the CIM Handler */
+	private String providerName = null;
 
 	/**
 	 * Create a default configuration
@@ -185,6 +187,9 @@ public class HttpConfiguration {
 					break;
 				case "repository":
 					repositoryName = v.toString();
+					break;
+				case "provider":
+					providerName = v.toString();
 					break;
 				default:
 					throw new ModelException("HttpConfiguration- Property "+pName+" not yet handled");
@@ -372,6 +377,15 @@ public class HttpConfiguration {
 	}
 	
 	/**
+	 * Get the CIM provider used in CimHandler
+	 * @return - name of the class to use in CimHandler
+	 */
+	@Export(qualifiers="Description(\"Name of the provider to use in the handler class\")")
+	public String getProvider(){
+		return providerName;
+	}
+	
+	/**
 	 * Get a configuration corresponding to given id (must not be null)
 	 * @param id - identity for the configuration. Default is used if null
 	 * @param nameSpace - nameSpace for the configuration. Default is used if null
@@ -420,6 +434,7 @@ public class HttpConfiguration {
 		System.out.println("\t-truststorepassword pass	# truststore passord [null]");
 		System.out.println("\t-x500principal dn			# x500Principal DN for server [CN=localhost,OU=cimfusion.com,O=cimfusion,C=US,L=Cupertino,ST=California]");
 		System.out.println("\t-requesthandler className	# default request handler [CimHandler]");
+		System.out.println("\t-provider className		# default provider to use in the handler [BasicProvider]");
 		return;
 	}
 	/**
