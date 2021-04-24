@@ -112,8 +112,8 @@ class QueryParser {
 	}
 	
 	/**
-	 * SelectStatment = SELECT selectList FROM fromCriteria [WHERE searchCondition] 
-	 * 		| "(" SELECT selectList FROM fromCriteria [WHERE searchCondition] ")" AS result_class
+	 * SelectStatment = SELECT [FIRST uint] [DISTINCT] selectList FROM fromCriteria [WHERE searchCondition] 
+	 * 		| "(" SELECT selectList FROM fromCriteria [WHERE searchCondition] [ORDER BY SortList] ")" AS result_class
 	 * @param p - parser state
 	 * @return - select node
 	 */
@@ -129,10 +129,30 @@ class QueryParser {
 			advanceOver(p,TokenType.LPAREN);
 			haveResultSetName = true;
 		}
-
+		
 		advanceOver(p,TokenType.SELECT);
 		Node select = Operator.SELECT.getNode();
 		
+		// check if result set operations are defined
+		boolean limitRows = false;
+		int rowsToReturn = -1;
+		if(p.lookAheadToken.is(TokenType.FIRST)) {
+			advanceOver(p,TokenType.FIRST);
+			Token items = advanceOver(p,TokenType.INTEGER);
+			limitRows = true;
+			rowsToReturn = Integer.valueOf(items.value());
+			if(rowsToReturn <= 0) {
+				error(p,"Expected unsigned integer found "+rowsToReturn);
+			}
+		}
+		
+		// check if result set is distinct
+		boolean isDistinct = false;
+		if(p.lookAheadToken.is(TokenType.DISTINCT)) {
+			advanceOver(p,TokenType.DISTINCT);
+			isDistinct = true;
+		}
+
 		// select-list
 		select.addChild(selectList(p));
 		
@@ -146,6 +166,26 @@ class QueryParser {
 			Node where = Operator.WHERE.getNode();
 			select.addChild(where);
 			where.addChild(searchCondition(p));
+		}
+		OrderBy sort = null;
+		if(isDistinct || limitRows) {
+			sort = (OrderBy) Operator.ORDER_BY.getNode();
+			if(isDistinct) sort.setDistinct();
+			if(limitRows) sort.setFirst(rowsToReturn);
+		}
+		
+		// optional ORDER BY clause
+		if(p.lookAheadToken.is(TokenType.ORDER)) {
+			advanceOver(p,TokenType.ORDER);
+			advanceOver(p,TokenType.BY);
+			Node orderBy = sort != null ? sort : Operator.ORDER_BY.getNode();
+			select.addChild(orderBy);
+			// at least one sort-spec must exist
+			orderBy.addChild(sortSpec(p));
+			while(p.lookAheadToken.is(TokenType.COMMA)) {
+				advanceOver(p,TokenType.COMMA);
+				orderBy.addChild(sortSpec(p));
+			}
 		}
 		
 		// named select value
@@ -172,6 +212,31 @@ class QueryParser {
 		p.aliases = savedAlias;
 		if(debug) exiting(p,"selectStatement");
 		return select;
+	}
+
+	/**
+	 * SortSpec = expr (ASC | DSC)
+	 * @param p - parser state
+	 * @return - sortSpec node
+	 */
+	private Node sortSpec(ParserState p) {
+		Node exp = expr(p);
+		boolean isAscending = true;
+		switch(p.lookAheadToken.type()) {
+		case ASC:
+			advanceOver(p,TokenType.ASC);
+			break;
+		case DESC:
+			advanceOver(p,TokenType.DESC);
+			isAscending = false;
+			break;
+		default:
+			error(p,"Expected ASC | DESC",ExceptionReason.INVALID_QUERY);
+			break;
+		}
+		Node spec = Operator.SORT_BY.getNode(new DataValue(isAscending));
+		spec.addChild(exp);
+		return spec;
 	}
 
 	/**

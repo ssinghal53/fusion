@@ -93,11 +93,11 @@ public class OperatorTest {
 	@Test
 	public final void testGetNodeDataValue() {
 		for(Operator o : Operator.values()){
-			Node n = o.getNode(new DataValue(54));
+			Node n = Operator.SORT_BY.equals(o) ? o.getNode(new DataValue(false)) : o.getNode(new DataValue(54));
 			assertNotNull(n);
 			assertEquals(o,n.getOperator());
 			assertEquals(null,n.getName());
-			assertEquals(new DataValue(54),n.getValue());
+			assertEquals(Operator.SORT_BY.equals(o) ? new DataValue(false) : new DataValue(54),n.getValue());
 		}
 	}
 

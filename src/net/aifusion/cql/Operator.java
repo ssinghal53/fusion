@@ -113,7 +113,15 @@ enum Operator {
 	/** Node defining sign */
 	SIGN,
 	/** Node defining satisfies */
-	SATISFIES;
+	SATISFIES,
+	/** Node defining result-set order */
+	ORDER_BY,
+	/** Node defining result-set size */
+	FIRST,
+	/** Node defining distinct flag */
+	DISTINCT,
+	/** Node defining a sort Spec */
+	SORT_BY;
 	
 	/**
 	 * Get a generic branch node corresponding to this operator
@@ -161,6 +169,8 @@ enum Operator {
 			return new Index();
 		case RANGE:
 			return new Range();
+		case ORDER_BY:
+			return new OrderBy();
 		default:
 			return new Node(this,null,null);
 		}
@@ -203,10 +213,11 @@ enum Operator {
 		switch(this){
 		case CONSTANT:
 			return new Constant(value);
+		case SORT_BY:
+			return new SortSpec(value);
 		default:
 			return new Node(this,null,value);
 		}
-		
 	}
 	
 	/**
