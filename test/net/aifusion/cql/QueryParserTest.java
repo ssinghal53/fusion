@@ -261,7 +261,7 @@ public class QueryParserTest {
 					"AND MAR.MethodParameters.__MethodParameters::Pool = AFSP.Antecedent "+
 					"AND OBJECTPATH(SP) = AFSP.Dependent",false,13),
 			new TestQuery("Select * from cim_class where property = $var$",true,0),
-			new TestQuery("Select FIRST 3 DISTINCT * from cim_class where property1 > 5 Order by Property1 ASC, Property2 DESC",true,0)
+			new TestQuery("Select FIRST 3 DISTINCT * from cim_class where property1 > 5 Order by Property1+Property2 ASC, Property2 DESC",true,0)
 	};
 	
 	@BeforeClass

@@ -97,7 +97,7 @@ public class OperatorTest {
 			assertNotNull(n);
 			assertEquals(o,n.getOperator());
 			assertEquals(null,n.getName());
-			assertEquals(Operator.SORT_BY.equals(o) ? new DataValue(false) : new DataValue(54),n.getValue());
+			assertEquals(Operator.SORT_BY.equals(o) ? null : new DataValue(54),n.getValue());
 		}
 	}
 

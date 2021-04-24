@@ -258,4 +258,28 @@ public class CimQueryTest {
 			}
 		}
 	}
+	
+	@Test
+	public final void testResultSetOrder() {
+		CimQuery query = new CimQuery("Select FIRST 2 * from Test_Computer,Test_Disk ORDER BY rowId DESC");
+		assertNotNull(query);
+		if(verbose)
+			System.out.println(query.toString());
+		try {
+			List<StructureValue> found = query.executeQuery(cache);
+			if(verbose) {
+				System.out.println("**\t-------ResultSet-------");
+				for(StructureValue e : found){
+					System.out.println(e.getObjectPath()+"\n"+e.toMOF());
+				}
+			}
+			assertEquals(2,found.size());
+			for(int i = 0; i < found.size(); i++) {
+				StructureValue v = found.get(i);
+				assertEquals(new DataValue(5-i),v.getPropertyValue("rowId"));
+			}
+		} catch (ModelException ex){
+			System.out.println(ex.toString());
+		}
+	}
 }

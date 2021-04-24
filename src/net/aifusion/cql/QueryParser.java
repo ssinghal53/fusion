@@ -167,19 +167,18 @@ class QueryParser {
 			select.addChild(where);
 			where.addChild(searchCondition(p));
 		}
-		OrderBy sort = null;
+		OrderBy orderBy = null;
 		if(isDistinct || limitRows) {
-			sort = (OrderBy) Operator.ORDER_BY.getNode();
-			if(isDistinct) sort.setDistinct();
-			if(limitRows) sort.setFirst(rowsToReturn);
+			orderBy = (OrderBy) Operator.ORDER_BY.getNode();
+			if(isDistinct) orderBy.setDistinct();
+			if(limitRows) orderBy.setFirst(rowsToReturn);
 		}
 		
 		// optional ORDER BY clause
 		if(p.lookAheadToken.is(TokenType.ORDER)) {
 			advanceOver(p,TokenType.ORDER);
 			advanceOver(p,TokenType.BY);
-			Node orderBy = sort != null ? sort : Operator.ORDER_BY.getNode();
-			select.addChild(orderBy);
+			if(orderBy == null) orderBy = (OrderBy) Operator.ORDER_BY.getNode();
 			// at least one sort-spec must exist
 			orderBy.addChild(sortSpec(p));
 			while(p.lookAheadToken.is(TokenType.COMMA)) {
@@ -187,6 +186,8 @@ class QueryParser {
 				orderBy.addChild(sortSpec(p));
 			}
 		}
+		
+		if(orderBy != null) select.addChild(orderBy);
 		
 		// named select value
 		if(haveResultSetName){

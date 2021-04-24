@@ -49,7 +49,7 @@ class Select extends Node {
 		super(Operator.SELECT, null, null);
 		return;
 	}
-	
+
 	/**
 	 * Resolve aliases, if any, defined within this Select statement
 	 */
@@ -70,7 +70,7 @@ class Select extends Node {
 		}
 		return;
 	}
-	
+
 	@Override
 	protected void resolve(Alias aliases) {
 		// Sub-queries do not use aliases defined in enclosing queries
@@ -86,6 +86,7 @@ class Select extends Node {
 		ClassList classList = null;
 		Where where = null;
 		Alias alias = null;
+		OrderBy order = null;
 		for(Node child : getChildren()){
 			switch(child.getOperator()){
 			case SELECT_LIST:
@@ -99,6 +100,9 @@ class Select extends Node {
 				break;
 			case ALIAS:
 				alias = (Alias) child;
+				break;
+			case ORDER_BY:
+				order = (OrderBy) child;
 				break;
 			default:
 				throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+" does not support "+child.getOperator());
@@ -118,7 +122,7 @@ class Select extends Node {
 		LinkedHashMap<String,List<StructureValue>> workingSet = new LinkedHashMap<String,List<StructureValue>>();
 		// collect all candidate instances using classList
 		classList.evaluate(cache, workingSet);
-		
+
 		// process the candidate instances
 		Vector<String> headers = new Vector<String>();
 		headers.addAll(workingSet.keySet());
@@ -129,7 +133,7 @@ class Select extends Node {
 		}
 		// create the Result_Set definition
 		selectList.reset(cache,headers,alias, getAlias());
-		
+
 		// obtain the row-Set
 		// rowSet is indexed by row number, with each row containing matching instances from working set
 		// elements in the row set retain ordering defined by column headers
@@ -220,7 +224,7 @@ class Select extends Node {
 			if(debug) System.out.println(toString()+"(repository) - Exit "+0);
 			return new Vector<StructureValue>();
 		}
-		
+
 		// create the result set
 		Vector<StructureValue> resultSet = new Vector<StructureValue>();
 		for(List<StructureValue> instances : rowSet.values()){
@@ -230,6 +234,12 @@ class Select extends Node {
 				resultSet.add(e);
 			}
 		}
+
+		// need to order or sort the resultSet
+		if(order != null) {
+			order.evaluate(headers,resultSet);
+		}
+
 		if(debug) System.out.println(toString()+"(repository) - Exit "+resultSet.size());
 		return resultSet;
 	}
