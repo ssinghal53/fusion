@@ -127,6 +127,18 @@ public class StructureValue extends NamedElement {
 	}
 	
 	/**
+	 * Create a Java object with properties cloned from this structure value
+	 * Note that the returned object is not bound to this structure value
+	 * @return a java object initialized with properties from this structure value
+	 */
+	public Object createJavaObject() {
+		Class<?> javaClass = getCreationStruct().bind();
+		// initialize a java object from this structure value, but do not bind the
+		// properties in it to this structure value
+		return JavaModelMapper.createJavaObjectForCim(this,javaClass);
+	}
+	
+	/**
 	 * Get the alias value associated with this structure value, if any
 	 * @return - alias value, if any. Null if no alias was defined
 	 */
