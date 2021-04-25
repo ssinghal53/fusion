@@ -39,7 +39,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import net.aifusion.metamodel.CimInstance;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.InMemoryCache;

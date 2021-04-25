@@ -28,16 +28,11 @@
 package net.aifusion.cql;
 
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Vector;
 
-import net.aifusion.metamodel.BufferedCache;
 import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.DateTime;
-import net.aifusion.metamodel.ExceptionReason;
 import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.ObjectPath;
 import net.aifusion.metamodel.StructureValue;
@@ -127,8 +122,8 @@ public class OrderBy extends Node {
 			DataValue v1 = sort.getValue();
 			sort.evaluate(headers.get(i), s2);
 			DataValue v2 = sort.getValue();
-			if(v1 == null && v2 == null) return 0;
-			if(v1 == null && v2 != null) return sort.isAscending() ? 1 : -1;
+			if(v1 == null && v2 == null) continue;	// nulls are considered equal
+			if(v1 == null && v2 != null) return sort.isAscending() ? 1 : -1; // null > value
 			if(v1 != null && v2 == null) return sort.isAscending() ? -1 : 1;
 			int comp = compareValues(v1.getType(),v1.getValue(),v2.getType(),v2.getValue());
 			if(comp != 0) return sort.isAscending() ? comp : -comp;
