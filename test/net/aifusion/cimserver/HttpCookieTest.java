@@ -27,7 +27,11 @@
  */
 package net.aifusion.cimserver;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.time.ZoneId;
@@ -39,10 +43,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import net.aifusion.cimserver.HttpCookie;
-import net.aifusion.cimserver.HttpException;
-import net.aifusion.cimserver.HttpStatus;
 
 /**
  * Class to test an HTTP Cookie

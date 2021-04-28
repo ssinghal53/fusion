@@ -505,7 +505,9 @@ public class HttpConfiguration {
 		for(Entry<String,String> entry : options.entrySet()){
 			String key = entry.getKey();
 			String value = entry.getValue();
+			// System.out.println("<"+key+" ::= "+value+">");
 			if(configClass.hasProperty(key)){
+				// System.out.println("Add <"+key+" ::= "+value+">");
 				propertyValues.put(key.toLowerCase(), new DataValue(configClass.getPropertyType(key).toString(),value));
 			}
 		}
@@ -520,8 +522,8 @@ public class HttpConfiguration {
 		
 		CimInstance config = CimInstance.createInstance(configClass, propertyValues, null);
 		repository.put(config);
-		System.out.println(configClass.toMOF());
-		System.out.println(config.toMOF());
+	//	System.out.println(configClass.toMOF());
+	//	System.out.println(config.toMOF());
 		repository.shutdown();
 		return;
 	}
