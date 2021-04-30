@@ -55,7 +55,6 @@ import net.aifusion.metamodel.ObjectPath;
 import net.aifusion.metamodel.PersistentCache;
 import net.aifusion.metamodel.Repository;
 import net.aifusion.metamodel.StructureValue;
-
 import net.aifusion.providers.BasicProvider;
 import net.aifusion.providers.Provider;
 
@@ -95,6 +94,7 @@ class CimHandler implements HttpRequestHandler {
 		String p = config.getProvider();
 		Repository repo = (r == null) ? new InMemoryCache() 
 				: new PersistentCache(r);
+		if(logEnabled) logger.info("Using Repository "+r+" Provider "+p);
 		if(p != null) {
 			try {
 				ClassLoader loader = CimHandler.class.getClassLoader();
@@ -174,11 +174,23 @@ class CimHandler implements HttpRequestHandler {
 				}
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.PLAINTEXT, b.toString());
 				break;
-			case GET_ELEMENT:	// return the mof value of the element
+			case GET_ELEMENT:	// return the mof value of the named element
 				ObjectPath path = getObjectPath(request);
 				NamedElement element = provider.get(path);
 				if(element != null){
-					response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF,element.toMOF());
+					b = new StringBuilder();
+					b.append("#pragma namespace(\"").append(element.getNameSpacePath().getLocalPath()).append("\")\n");
+					b.append(element.toMOF());
+					switch(element.getElementType()) {
+					case STRUCTUREVALUE:
+						b.append(";");
+					case INSTANCE:
+						b.append(CRLF);
+						break;
+					default:
+						break;
+					}
+					response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				}
 				break;
 			case HAS_ELEMENT:	// return OK/NOT found (OK)
@@ -252,8 +264,22 @@ class CimHandler implements HttpRequestHandler {
 				NameSpacePath ns = new NameSpacePath(request.getXHeader(CimXHeader.NAMESPACE_PATH.toString()));
 				BufferedCache cache = new BufferedCache(provider);
 				parser = new MOFParser(cache);
+				if(logEnabled) {
+					System.out.println("--- Put Received ---");
+					System.out.println(ns.toString());
+					System.out.println(httpBody);
+					System.out.println("--- End Received ---");
+				}
 				parser.parse(new ByteArrayInputStream(httpBody.getBytes()),ns);
 				List<NamedElement> elements = cache.getBufferedElements();
+				if(logEnabled) {
+					// TODO: The parser seems to insert the Structure definition in the buffered cache
+					// in addition to a singleton StructureValue received from the client. This is a
+					// bug. Need to chase it down.
+					System.out.println("--- Parsed Elements ---");
+					for(NamedElement el : elements) System.out.println(el.getObjectPath()+"\n"+el.toMOF());
+					System.out.println("--- End Parsed ---");
+				}
 				if(elements != null && !elements.isEmpty()) {
 					boolean exists = true;
 					for(NamedElement el : elements) {
@@ -294,6 +320,15 @@ class CimHandler implements HttpRequestHandler {
 						ns0 = n;
 					}
 					b.append(e.toMOF());
+					switch(e.getElementType()) {
+					case STRUCTUREVALUE:
+						b.append(";");
+					case INSTANCE:
+						b.append(CRLF);
+						break;
+					default:
+						break;
+					}
 				}
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				break;
@@ -308,7 +343,16 @@ class CimHandler implements HttpRequestHandler {
 						b.append("#pragma namespace(\"").append(n.getLocalPath()).append("\")\n");
 						ns0 = n;
 					}
-					b.append(e.toMOF()).append(CRLF);
+					b.append(e.toMOF());
+					switch(e.getElementType()) {
+					case STRUCTUREVALUE:
+						b.append(";");
+					case INSTANCE:
+						b.append(CRLF);
+						break;
+					default:
+						break;
+					}
 				}
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				break;

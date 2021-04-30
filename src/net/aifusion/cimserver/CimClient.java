@@ -221,7 +221,7 @@ public class CimClient implements Provider, CimListener {
 	 * @return - connection for the next request
 	 */
 	private HttpURLConnection getConnection(CimHeader h, ObjectPath path){
-		// target URL to use
+		// TODO: target URL to use. We seem to be conflating the object path with the resource path here
 		// URL url = (path == null) ? serverURL : path.getURL(serverURL.getProtocol(), serverURL.getAuthority());
 		URL url = serverURL;
 		try {
@@ -232,6 +232,7 @@ public class CimClient implements Provider, CimListener {
 			connection.setRequestProperty(HttpHeader.USER_AGENT.toString(), userAgent);
 			connection.setRequestProperty(CimXHeader.INTRINSIC.toString(), h.toString());
 			if(CimXHeader.OBJECT_PATH.appliesTo(h)) connection.setRequestProperty(CimXHeader.OBJECT_PATH.toString(), path.toString());
+			if(CimXHeader.NAMESPACE_PATH.appliesTo(h)) connection.setRequestProperty(CimXHeader.NAMESPACE_PATH.toString(), path.getLocalPath().toString());
 			connection.setConnectTimeout(connectionTimeout);
 			connection.setReadTimeout(connectionTimeout);
 			return connection;
@@ -427,9 +428,18 @@ public class CimClient implements Provider, CimListener {
 	@Override
 	public boolean put(NamedElement element) {
 		HttpURLConnection connection = getConnection(CimHeader.PUT_ELEMENT,element.getObjectPath());
-		connection.setRequestProperty(CimXHeader.NAMESPACE_PATH.toString(), element.getNameSpacePath().toString());
 		StringBuilder b = new StringBuilder();
+		b.append("#pragma namespace(\"").append(element.getNameSpacePath().getLocalPath()).append("\")\n");
 		b.append(element.toMOF());
+		switch(element.getElementType()) {
+		case STRUCTUREVALUE:
+			b.append(";");
+		case INSTANCE:
+			b.append("\r\n");
+			break;
+		default:
+			break;
+		}
 		CimResponse response = getResponse(connection,b.toString());
 		// response will be
 		//  OK if the element exists, and was updated
@@ -661,16 +671,16 @@ public class CimClient implements Provider, CimListener {
 		HttpURLConnection connection = getConnection(CimHeader.EXECUTE_QUERY);
 		CimResponse response = getResponse(connection,query);
 		if(HttpStatus.OK.equals(response.status)){
-			Vector<StructureValue> instances = new Vector<StructureValue>();
+			Vector<StructureValue> values = new Vector<StructureValue>();
 			if(response.respBody != null && response.respBody.length() > 0){
 				BufferedCache cache = new BufferedCache(this);
 				MOFParser parser = new MOFParser(cache);
 				parser.parse(new BufferedReader(new StringReader(response.respBody)), Constants.defaultNameSpacePath);
-				for(NamedElement e : cache.getElements("instance", null, null, false)){
-					instances.add((CimInstance) e);
+				for(NamedElement e : cache.getElements("structurevalue,instance", null, null, false)){
+					values.add((StructureValue) e);
 				}
 			}
-			return instances;
+			return values;
 		}
 		throw new ModelException(response.status+":"+response.error);
 	}

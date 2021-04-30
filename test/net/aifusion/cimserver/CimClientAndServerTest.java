@@ -326,7 +326,7 @@ public class CimClientAndServerTest {
 		NamedElement e = localCache.get(p);
 		localCache.shutdown();
 		assertNotNull(e);
-		// System.out.println(e.getObjectPath()+"\n"+e.getNameSpacePath()+"\n"+e.toMOF());
+		System.out.println(e.getObjectPath()+"\n"+e.getNameSpacePath()+"\n"+e.toMOF());
 		// put it in the server
 		CimClient client = new CimClient(serverURL,clientConfig);
 		assertTrue(client.put(e));

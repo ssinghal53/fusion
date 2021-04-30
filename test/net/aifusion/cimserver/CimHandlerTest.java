@@ -196,7 +196,7 @@ public class CimHandlerTest {
 		HttpResponse response = handler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
-		assertEquals("Class test_classc {\n	[Key]\n	SInt32 integerProperty;\n};\n",bodyString);
+		assertEquals("#pragma namespace(\"/net/aifusion\")\nClass test_classc {\n	[Key]\n	SInt32 integerProperty;\n};\n",bodyString);
 
 		// get a non-existent element
 		path = new ObjectPath(ElementType.CLASS,"test_classx",ns1,null, null);
