@@ -117,8 +117,8 @@ public class ObjectPath {
      * Create an object path from a path specification as defined in DSP0004 and extended for CimV3. The following forms are recognized<br>
      * className: schemaName "_" identifier<br>
      * instanceName : className "." key "=" dataValue [, key "=" dataValue]*<br>
-     * localClassPath : ["/class"] "/" pathName ["/" pathName]* ":" className<br>
-     * localInstancePath : ["/instance"] "/" pathName ["/" pathName]* ":" instanceName<br>
+     * localClassPath : ["/elementType"] "/" pathName ["/" pathName]* ":" className<br>
+     * localInstancePath : ["/instanceType"] "/" pathName ["/" pathName]* ":" instanceName<br>
      * classPath : scheme "://" authority localClassPath<br>
      * instancePath : scheme "://" authority localInstancePath<br>
      * where<br>
@@ -126,8 +126,8 @@ public class ObjectPath {
      * identifier : [A-Za-z0-9_]+<br>
      * scheme : [A-Za-z0-9+-.]+<br>
      * authority : ascii char set not including "/"<br>
-     * The term "/class" above can take the forms "/" ["class" | "structure" | "enumeration" | "qualifiertype" | "interface"]<br>
-     * The term "/instance" above can take the forms "/" ["instance" | "structurevalue"] 
+     * The term "/elementType" above can take the forms "/" ["class" | "structure" | "enumeration" | "qualifiertype" | "interface"]<br>
+     * The term "/instanceType" above can take the forms "/" ["instance" | "structurevalue"] 
      * @param objectName - string dataValue containing object name
      */
 	public ObjectPath(String objectName){
