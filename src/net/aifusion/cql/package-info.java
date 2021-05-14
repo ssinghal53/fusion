@@ -10,8 +10,8 @@
  * <pre>
  * SELECT * FROM class_name WHERE &lt;selection expression&gt; 
  * </pre>
- * <p>The query will return a list of structure values that meet the desired expression. Result Set operations (DISTINCT, FIRST, ORDER BY) are not implemented,
- * nor are aggregation functions (e.g., COUNT, MIN, MAX, SUM, MEAN, MEDIAN).</p>
+ * <p>The query will return a list of structure values that meet the desired expression. Aggregation functions (e.g., COUNT, MIN, MAX, SUM, MEAN, MEDIAN) are currently
+ * not implemented. However, other result-set operations (i.e., FIRST, DISTINCT, ORDER BY) are implemented.</p>
  * <p>In addition, The construct <code>$identifier$</code> can be used in the query to define &quot;delayed constants&quot; that can be set within the query using
  * {@link CimQuery#setVariable(String, net.aifusion.metamodel.DataValue)} after it is parsed. This is useful, for example to reuse the same query with different
  * values in the selection expression without the overhead of re-constructing the query each time.</p>

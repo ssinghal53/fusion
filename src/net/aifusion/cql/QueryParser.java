@@ -112,8 +112,8 @@ class QueryParser {
 	}
 	
 	/**
-	 * SelectStatment = SELECT [FIRST uint] [DISTINCT] selectList FROM fromCriteria [WHERE searchCondition] 
-	 * 		| "(" SELECT selectList FROM fromCriteria [WHERE searchCondition] [ORDER BY SortList] ")" AS result_class
+	 * SelectStatment = SELECT [FIRST uint] [DISTINCT] selectList FROM fromCriteria [WHERE searchCondition] [ORDER BY SortList]
+	 * 		| "(" SelectStatement ")" [AS] result_class
 	 * @param p - parser state
 	 * @return - select node
 	 */
@@ -169,6 +169,7 @@ class QueryParser {
 		}
 		OrderBy orderBy = null;
 		if(isDistinct || limitRows) {
+			// if distinct rows are desired, or they are limited, then OrderBy clause MUST be present
 			orderBy = (OrderBy) Operator.ORDER_BY.getNode();
 			if(isDistinct) orderBy.setDistinct();
 			if(limitRows) orderBy.setFirst(rowsToReturn);

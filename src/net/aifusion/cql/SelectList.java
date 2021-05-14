@@ -298,10 +298,10 @@ class SelectList extends Node {
 		parser.parse(new ByteArrayInputStream(b.toString().getBytes()), Constants.defaultNameSpacePath);
 		// save the template
 		template = (CimClass) cache.get(new ObjectPath(ElementType.CLASS,resultClassName,Constants.defaultNameSpacePath,null, null));
-		// if(debug){
-		if(debug && template != null) System.out.println("OutputClass:\n"+template.toMOF());
-		//	System.out.println(toString()+" exit reset");
-		// }
+		if(debug){
+			if(template != null) System.out.println("OutputClass:\n"+template.toMOF());
+			System.out.println(toString()+" exit reset");
+		}
 		return;
 	}
 	
