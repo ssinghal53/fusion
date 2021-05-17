@@ -51,6 +51,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import net.aifusion.metamodel.CimClass;
+import net.aifusion.metamodel.CimStructure;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.MOFParser;
 import net.aifusion.metamodel.ModelException;
@@ -66,7 +67,7 @@ public class HttpServerTest {
 	private static Logger logger = Logger.getLogger(HttpServerTest.class.getName());
 	private static String repositoryLocation = "testrepository";
 	private static CimServer server;
-	private static String serverMof = "instance of aifusion_httpconfiguration {\n"+
+	private static String serverMof = "value of aifusion_httpconfiguration {\n"+
 			"KeyStorePassword = \"serverpass\";\n"+
 			"MaxSessions = 0;\n"+
 			"TrustStore = \"testrepository/serverTrustStore.jks\";\n"+
@@ -81,7 +82,7 @@ public class HttpServerTest {
 			"HostName = \"localhost\";\n"+
 			"ServerPort = 8085;\n"+
 			"};\n"+
-			"instance of aifusion_httpconfiguration {\n"+
+			"value of aifusion_httpconfiguration {\n"+
 			"KeyStorePassword = \"serverpass\";\n"+
 			"MaxSessions = 0;\n"+
 			"TrustStore = \"testrepository/serverTrustStore.jks\";\n"+
@@ -96,7 +97,7 @@ public class HttpServerTest {
 			"HostName = \"localhost\";\n"+
 			"ServerPort = 8085;\n"+
 			"};\n"+
-			"instance of aifusion_httpconfiguration {\n"+
+			"value of aifusion_httpconfiguration {\n"+
 			"KeyStorePassword = \"clientpass\";\n"+
 			"TrustStore = \"testrepository/clientTrustStore.jks\";\n"+
 			"KeyStore = \"testrepository/clientKeyStore.jks\";\n"+
@@ -121,7 +122,7 @@ public class HttpServerTest {
 		deleteFiles(repositoryLocation);	// clean up from prior tests
 		// create the server-side cache, and server configuration
 		PersistentCache cache = new PersistentCache(repositoryLocation);
-		CimClass configClass = (CimClass) Java2Cim.getModelForClass(HttpConfiguration.class, cache);
+		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, cache);
 		assertNotNull(configClass);
 		assertTrue(cache.contains(configClass.getObjectPath()));
 		// create instances at the server. Note that normally we do not mix configuration with content information in the repository

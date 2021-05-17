@@ -40,6 +40,7 @@ import java.util.Vector;
 
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimInstance;
+import net.aifusion.metamodel.CimStructure;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
@@ -49,13 +50,14 @@ import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.NameSpacePath;
 import net.aifusion.metamodel.ObjectPath;
 import net.aifusion.metamodel.PersistentCache;
+import net.aifusion.metamodel.StructureValue;
 import net.aifusion.utils.Java2Cim;
 
 /**
  * Class to represent a Cim server configuration
  * @author Sharad Singhal
  */
-@Export(qualifiers="Description(\"Http Configuration\"),Version(\""+HttpConfiguration.version+"\")",forceClass=true)
+@Export(qualifiers="Description(\"Http Configuration\"),Version(\""+HttpConfiguration.version+"\")")
 public class HttpConfiguration {
 	/** Default configuration Key to use */
 	private static final String defaultID = "defaultConfig";
@@ -74,7 +76,7 @@ public class HttpConfiguration {
 	/** Trusted certificates */
 	private static final String defaultTrustStore = "resources/trustStore.jks";
 	/** Default server identity */
-	private static final String defaultX500Principal = "CN="+defaultHost+", OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California";
+	private static final String defaultX500Principal = "CN="+defaultHost+", OU=aifusion.com, O=aifusion, C=US, L=Milpitas, ST=California";
 	/** Default handler for responses */
 	private static final String defaultHandler = "CimHandler";
 	/** Default CIM repository. Null implies an in-memory cache */
@@ -82,7 +84,7 @@ public class HttpConfiguration {
 	/** Default location for storing cookies */
 	private static final String defaultCookieStore = null;
 	/** Server Configuration class version */
-	protected static final String version = "1.1.0";
+	protected static final String version = "2.1.0";
 	/** Default configuration directory */
 	private static final String defaultConfigDirectory = "resources/config";
 
@@ -133,7 +135,7 @@ public class HttpConfiguration {
 	 * @param configuration - configuration to use. If null, a default configuration is used
 	 * @see HttpConfiguration#getConfiguration(String, String, String)
 	 */
-	public HttpConfiguration(CimInstance configuration) {
+	public HttpConfiguration(StructureValue configuration) {
 		if(configuration != null){
 			for(String pName : configuration.getPropertyNames()){
 				DataValue v = configuration.getPropertyValue(pName);
@@ -398,11 +400,10 @@ public class HttpConfiguration {
 		String configId = (id == null) ? defaultID : id;
 		HashMap<String,DataValue> keys = new HashMap<String,DataValue>();
 		keys.put("ID", new DataValue(configId));
-		ObjectPath configPath = new ObjectPath(ElementType.INSTANCE,"AIFusion_HttpConfiguration",path,keys, null);
+		ObjectPath configPath = new ObjectPath(ElementType.STRUCTUREVALUE,"AIFusion_HttpConfiguration",path,keys, null);
 		PersistentCache repository = new PersistentCache(repo);
 		if(repository.contains(configPath)){
-			CimInstance c = (CimInstance) repository.get(configPath);
-			// System.out.println(c.toMOF());
+			StructureValue c = (StructureValue) repository.get(configPath);
 			repository.shutdown();
 			return new HttpConfiguration(c);
 		}
@@ -497,9 +498,9 @@ public class HttpConfiguration {
 		PersistentCache repository = new PersistentCache(repo);
 		
 		// get the configuration class
-		ObjectPath configClassPath = new ObjectPath(ElementType.CLASS,"aifusion_HttpConfiguration",path,null, null);
-		CimClass configClass = repository.contains(configClassPath) ? (CimClass) repository.get(configClassPath) : 
-			(CimClass) Java2Cim.getModelForClass(HttpConfiguration.class, repository);
+		ObjectPath configClassPath = new ObjectPath(ElementType.STRUCTURE,"aifusion_HttpConfiguration",path,null, null);
+		CimStructure configClass = repository.contains(configClassPath) ? (CimStructure) repository.get(configClassPath) : 
+			(CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, repository);
 		
 		// get the configuration instance
 		for(Entry<String,String> entry : options.entrySet()){
@@ -519,8 +520,8 @@ public class HttpConfiguration {
 				propertyValues.put(v, new DataValue(getRandomString(18)));
 			}
 		}
-		
-		CimInstance config = CimInstance.createInstance(configClass, propertyValues, null);
+		StructureValue config = StructureValue.createStructureValue(configClass, propertyValues, null);
+		// CimInstance config = CimInstance.createInstance(configClass, propertyValues, null);
 		repository.put(config);
 	//	System.out.println(configClass.toMOF());
 	//	System.out.println(config.toMOF());

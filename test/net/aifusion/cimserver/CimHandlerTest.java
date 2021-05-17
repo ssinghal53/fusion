@@ -47,19 +47,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import net.aifusion.cimserver.CimHandler;
-import net.aifusion.cimserver.CimHeader;
-import net.aifusion.cimserver.CimServer;
-import net.aifusion.cimserver.HttpConfiguration;
-import net.aifusion.cimserver.HttpHeader;
-import net.aifusion.cimserver.HttpMethod;
-import net.aifusion.cimserver.HttpRequest;
-import net.aifusion.cimserver.HttpResponse;
-import net.aifusion.cimserver.CimXHeader;
-import net.aifusion.cimserver.MimeType;
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEventType;
 import net.aifusion.metamodel.CimInstance;
+import net.aifusion.metamodel.CimStructure;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.ElementType;
@@ -69,6 +60,7 @@ import net.aifusion.metamodel.ModelUtilities;
 import net.aifusion.metamodel.NameSpacePath;
 import net.aifusion.metamodel.NamedElement;
 import net.aifusion.metamodel.ObjectPath;
+import net.aifusion.metamodel.StructureValue;
 import net.aifusion.providers.BasicProvider;
 import net.aifusion.utils.Java2Cim;
 
@@ -91,7 +83,7 @@ public class CimHandlerTest {
 			"#pragma namespace (\"/net/aifusion\")\n"+
 			"class test_classc {\n\t[key]\n\tSint32 integerProperty;\n};\n";
 	private static CimServer server;
-	private static String serverMof = "instance of aifusion_httpconfiguration {\n"+
+	private static String serverMof = "value of aifusion_httpconfiguration {\n"+
 			"MaxSessions = 0;\n"+
 			"ServerTimeout = 5000;\n"+
 			"RequestHandler = \"net.aifusion.cimserver.TestHandler\";\n"+
@@ -114,15 +106,15 @@ public class CimHandlerTest {
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("CimHandler ");
 		// create a server-side cache, and server configuration
-		CimClass configClass = (CimClass) Java2Cim.getModelForClass(HttpConfiguration.class, serverCache);
+		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, serverCache);
 		assertNotNull(configClass);
 		assertTrue(serverCache.contains(configClass.getObjectPath()));
-		// System.out.println(configClass.getObjectPath().toURL());
+		// System.out.println(configClass.getObjectPath().toURL()+"\n"+configClass.toMOF());
 		MOFParser parser = new MOFParser(serverCache);
 		ByteArrayInputStream in = new ByteArrayInputStream(serverMof.getBytes());
 		parser.parse(in, Constants.defaultNameSpacePath);
 		in.close();
-		CimInstance conf = (CimInstance) serverCache.get(new ObjectPath("http://localhost:8085/aifusion:aifusion_httpconfiguration.Id=\"serverConfig\""));
+		StructureValue conf = (StructureValue) serverCache.get(new ObjectPath("http://localhost:8085/structurevalue/aifusion:aifusion_httpconfiguration.Id=\"serverConfig\""));
 		assertNotNull(conf);
 		// System.out.println(conf.toMOF());
 		server = new CimServer(new HttpConfiguration(conf));
