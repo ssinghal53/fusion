@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Jan 29, 2017 by Sharad Singhal
- * Last Modified March 13, 2020 by Sharad Singhal
+ * Last Modified May 18, 2021 by Sharad Singhal
  */
 package net.aifusion.cimserver;
 
@@ -38,8 +38,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Vector;
 
-import net.aifusion.metamodel.CimClass;
-import net.aifusion.metamodel.CimInstance;
 import net.aifusion.metamodel.CimStructure;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.DataType;
