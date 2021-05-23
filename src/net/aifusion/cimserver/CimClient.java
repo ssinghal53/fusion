@@ -49,7 +49,6 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import net.aifusion.metamodel.BufferedCache;
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEvent;
 import net.aifusion.metamodel.CimEventType;
@@ -61,6 +60,7 @@ import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.ElementType;
 import net.aifusion.metamodel.ExceptionReason;
+import net.aifusion.metamodel.InMemoryCache;
 import net.aifusion.metamodel.MOFParser;
 import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.NameSpacePath;
@@ -407,11 +407,11 @@ public class CimClient implements Provider, CimListener {
 		HttpURLConnection connection = getConnection(CimHeader.GET_ELEMENT, path);
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status) && response.hasBody()){
-			BufferedCache cache = new BufferedCache(this);
-			MOFParser parser = new MOFParser(cache);
+			InMemoryCache cache = new InMemoryCache();
+			MOFParser parser = new MOFParser(cache,this);
 			BufferedReader reader = new BufferedReader(new StringReader(response.respBody));
 			parser.parse(reader, path.getNameSpacePath());
-			NamedElement element = cache.getBufferedElement(path);
+			NamedElement element = cache.get(path);
 			cache.shutdown();
 			return element;
 		}
@@ -468,8 +468,8 @@ public class CimClient implements Provider, CimListener {
 		connection.setRequestProperty(CimXHeader.LOCATE_SUBCLASS.toString(), String.valueOf(locateSubTypes));
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)){
-			BufferedCache cache = new BufferedCache(this);
-			MOFParser parser = new MOFParser(cache);
+			InMemoryCache cache = new InMemoryCache();
+			MOFParser parser = new MOFParser(cache,this);
 			parser.parse(new BufferedReader(new StringReader(response.respBody)), Constants.defaultNameSpacePath);
 			return cache.getElements(elementTypes, localNameSpaces, elementNames, locateSubTypes);
 		}
@@ -582,7 +582,7 @@ public class CimClient implements Provider, CimListener {
 				response.respBody = response.respBody.trim();
 				return new DataValue(propertyType,response.respBody);
 			} else {
-				MOFParser parser = new MOFParser(new BufferedCache(this));
+				MOFParser parser = new MOFParser(new InMemoryCache(),this);
 				return parser.parsePropertyValue(path, propertyName, new ByteArrayInputStream(response.respBody.getBytes()));
 			}
 		}
@@ -673,8 +673,8 @@ public class CimClient implements Provider, CimListener {
 		if(HttpStatus.OK.equals(response.status)){
 			Vector<StructureValue> values = new Vector<StructureValue>();
 			if(response.respBody != null && response.respBody.length() > 0){
-				BufferedCache cache = new BufferedCache(this);
-				MOFParser parser = new MOFParser(cache);
+				InMemoryCache cache = new InMemoryCache();
+				MOFParser parser = new MOFParser(cache,this);
 				parser.parse(new BufferedReader(new StringReader(response.respBody)), Constants.defaultNameSpacePath);
 				for(NamedElement e : cache.getElements("structurevalue,instance", null, null, false)){
 					values.add((StructureValue) e);

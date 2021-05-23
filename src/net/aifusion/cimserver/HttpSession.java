@@ -73,7 +73,7 @@ class HttpSession implements Runnable {
 	private boolean logEnabled = false;
 	/** Flag to indicate shutdown */
 	private volatile boolean endSession = false;
-	
+		
 	/**
 	 * Create a new Http Session
 	 * @param server - server tracking this session

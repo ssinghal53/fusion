@@ -217,6 +217,7 @@ public class CimClientAndServerTest {
 	public void testCimClient() {
 		CimClient client1 = new CimClient(serverURL,clientConfig);
 		assertNotNull(client1);
+		client1.shutdown();
 	}
 
 	/**
@@ -245,6 +246,7 @@ public class CimClientAndServerTest {
 	public void testGetProviderURL(){
 		CimClient client = new CimClient(serverURL,clientConfig);
 		assertEquals("http://localhost:8089/",client.getURL().toString());
+		client.shutdown();
 	}
 
 	/**

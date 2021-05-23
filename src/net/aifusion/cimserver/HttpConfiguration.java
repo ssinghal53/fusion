@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Jan 29, 2017 by Sharad Singhal
- * Last Modified May 18, 2021 by Sharad Singhal
+ * Last Modified May 20, 2021 by Sharad Singhal
  */
 package net.aifusion.cimserver;
 
@@ -85,6 +85,8 @@ public class HttpConfiguration {
 	protected static final String version = "2.1.0";
 	/** Default configuration directory */
 	private static final String defaultConfigDirectory = "resources/config";
+	/** Default log file. Note that directories in the path must already exist */
+	private static final String defaultLogFile = "server.log";
 
 	/** identifier for this configuration */
 	private String id = defaultID;
@@ -120,6 +122,10 @@ public class HttpConfiguration {
 	private int proxyPort = 0;
 	/** Provider to use in the CIM Handler */
 	private String providerName = null;
+	/** Server log file */
+	private String logFile = defaultLogFile;
+	/** Flag to indicate if logging is enabled */
+	private Boolean logEnabled = false;
 
 	/**
 	 * Create a default configuration
@@ -190,6 +196,11 @@ public class HttpConfiguration {
 					break;
 				case "provider":
 					providerName = v.toString();
+				case "logfile":
+					logFile = v.toString();
+					break;
+				case "logenabled":
+					logEnabled = (Boolean) v.getValue();
 					break;
 				default:
 					throw new ModelException("HttpConfiguration- Property "+pName+" not yet handled");
@@ -383,6 +394,24 @@ public class HttpConfiguration {
 	@Export(qualifiers="Description(\"Name of the provider to use in the handler class\")")
 	public String getProvider(){
 		return providerName;
+	}
+	
+	/**
+	 * Get the log file used in the server
+	 * @return - name of the log file
+	 */
+	@Export(qualifiers="Description(\"Name of the logger if any\")")
+	public String getLogFile(){
+		return logFile;
+	}
+	
+	/**
+	 * flag to indicate if logging is enabled in the server
+	 * @return - true if logging is enabled, false otherwise
+	 */
+	@Export(qualifiers="Description(\"Name of the logger if any\")")
+	public Boolean getLogEnabled(){
+		return logEnabled;
 	}
 	
 	/**

@@ -144,9 +144,9 @@ public class PersistentCache extends InMemoryCache {
 	@Override
 	public List<NamedElement> getElements(String elementTypes, String localNameSpaces, String elementNames, boolean locateSubTypes) {
 		// System.out.println("Entering getElements");
-		// create a buffered cache with this cache as the backing store, and a MOF parser
-		BufferedCache cache = new BufferedCache(this);
-		MOFParser parser = new MOFParser(cache);
+		// create a cache with this cache as the backing store, and a MOF parser
+		InMemoryCache cache = new InMemoryCache();
+		MOFParser parser = new MOFParser(cache,this);
 		
 		// find the set of requested classNames, empty if none
 		HashSet<String> classNames = new HashSet<String>();
@@ -322,7 +322,6 @@ public class PersistentCache extends InMemoryCache {
 		}
 	}
 	
-
 	/**
 	 * check if a directory exists. If not, create it
 	 * @param directory - path for the directory
@@ -355,7 +354,7 @@ public class PersistentCache extends InMemoryCache {
 			b.append(classDirectory).append(objectPath.getLocalPath()).append("/").append(objectPath.getName());
 			b.append(mofFileSuffix);
 			break;
-		case INTERFACE: // filePath = "/interfaces/localPath/schema_className.mof"
+		case INTERFACE: // filePath = "/interfaces/localPath/schema_interfaceName.mof"
 			b.append(interfaceDirectory).append(objectPath.getLocalPath()).append("/").append(objectPath.getName());
 			b.append(mofFileSuffix);
 			break;
@@ -497,10 +496,10 @@ public class PersistentCache extends InMemoryCache {
 	 */
 	private synchronized NamedElement readElementFromFile(ObjectPath path) {
 		String file = getFilePath(path);
-		BufferedCache cache = new BufferedCache(this);
-		MOFParser parser = new MOFParser(cache);
+		InMemoryCache cache = new InMemoryCache();
+		MOFParser parser = new MOFParser(cache,this);
 		parser.parse(file, path.getNameSpacePath());
-		NamedElement element = cache.getBufferedElement(path);
+		NamedElement element = cache.get(path);
 		return element;
 	}
 

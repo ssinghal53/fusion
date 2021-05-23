@@ -32,6 +32,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +72,12 @@ class HttpServer implements Runnable {
 	 */
 	public HttpServer(HttpConfiguration config) throws IOException{
 		this.config = config;
+		if(config.getLogEnabled()) {
+			FileHandler handler = config.getLogFile() == null ? new FileHandler() : new FileHandler(config.getLogFile());
+			Logger l = logger;
+			while(l.getParent() != null) l = l.getParent();
+			l.addHandler(handler);
+		}
 		// set proxy for outbound connections from the server
 		if(config.getProxyPort() > 0){
 			System.setProperty("http.proxyHost", config.getProxyHost());
@@ -153,6 +160,7 @@ class HttpServer implements Runnable {
 					}
 					// create the session
 					HttpSession session = new HttpSession(this,sessionSocket,handler);
+					if(config.getLogEnabled()) session.enableLog(true);
 					try {
 						// handle the session
 						Thread t = new Thread(session);

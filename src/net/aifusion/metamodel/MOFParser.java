@@ -25,6 +25,7 @@
  * 
  * Created Dec 26, 2013 by Sharad Singhal
  * Last Modified Jan 11, 2018 by Sharad Singhal
+ * Last Modified May 22, 2021 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
@@ -270,6 +271,8 @@ public class MOFParser implements Parser {
 	private int productionNumber = 0;
 	/** Repository being used for the parser */
 	private Repository repository;
+	/** Repository used to look up known definitions */
+	private Repository definitions;
 	/** Globally aliased instance values defined in the parser */
 	private HashMap<String, CimInstance> aliasedInstanceValues = new HashMap<String,CimInstance>();
 	/** Globally aliased Structure Values defined during parsing */
@@ -292,6 +295,17 @@ public class MOFParser implements Parser {
 	 */
 	public MOFParser(Repository repository){
 		this.repository = repository;
+		return;
+	}
+	
+	/**
+	 * Create a MOF parser with a definition repository
+	 * @param repository - repository to parse new input
+	 * @param definitions - repository containing pre-existing definitions (not modified)
+	 */
+	public MOFParser(Repository repository, Repository definitions) {
+		this.repository = repository;
+		this.definitions = definitions;
 		return;
 	}
 
@@ -427,7 +441,7 @@ public class MOFParser implements Parser {
 			if(!aliasedInstanceValues.isEmpty()) aliasedInstanceValues.clear();
 			if(!aliasedStructureValues.isEmpty()) aliasedStructureValues.clear();
 			nextToken();			// get first token for look-ahead
-			NamedElement target = repository.get(path);
+			NamedElement target = get(path);
 			if(target == null) throw new ModelException(ExceptionReason.NOT_FOUND,"Path "+path+" not found");
 			DataValue value = null;
 			CimClass cls = null;
@@ -635,6 +649,32 @@ public class MOFParser implements Parser {
 		// return the current token
 		return t;
 	}
+	
+	private NamedElement get(ObjectPath path) {
+		NamedElement target = repository.get(path);
+		if(target != null) return target;
+		if(definitions != null) {
+			target = definitions.get(path);
+			if(target != null) return target;
+		}
+		return null;
+	}
+	
+	private boolean contains(ObjectPath path) {
+		if(repository.contains(path)) return true;
+		return definitions != null ? definitions.contains(path) : false;
+	}
+	
+	private List<NameSpacePath> getNameSpaces(){
+		Vector<NameSpacePath> nameSpaces = new Vector<NameSpacePath>();
+		nameSpaces.addAll(repository.getNameSpaces());
+		for(NameSpacePath p : definitions.getNameSpaces()) {
+			if(!nameSpaces.contains(p)) {
+				nameSpaces.add(p);
+			}
+		}
+		return nameSpaces;
+	}
 
 	/*
 	 * ********************************
@@ -675,7 +715,7 @@ public class MOFParser implements Parser {
 
 		// locate the name of the structure, class, or association
 		String structName = skipOver(TokenType.IDENTIFIER).value;
-		CimStructure expected = (CimStructure) repository.get(new ObjectPath(ElementType.STRUCTURE,structName,p.path, null, null));
+		CimStructure expected = (CimStructure) get(new ObjectPath(ElementType.STRUCTURE,structName,p.path, null, null));
 		if(expected == null) error(ExceptionReason.NOT_FOUND,"CimStructure "+structName+" is not defined");
 		String alias = null;
 		if(p.lookAheadToken.is(TokenType.AS)){
@@ -733,15 +773,15 @@ public class MOFParser implements Parser {
 			String alias = getAlias();
 			// check if a structure is defined with this name-- if so we must get a StructureValue
 			ObjectPath path = new ObjectPath(ElementType.STRUCTURE,classOrStructName,p.path,null, null);
-			if(repository.contains(path)){
-				CimStructure expected = (CimStructure) repository.get(path);
+			if(contains(path)){
+				CimStructure expected = (CimStructure) get(path);
 				StructureValue value = getStructureValue(alias, expected);
 				if(alias != null) aliasedStructureValues.put(alias, value);
 			} else {
 				// check if a class is defined with this name, if so, we must get an Instance
 				path = new ObjectPath(ElementType.CLASS,classOrStructName,p.path,null, null);
-				if(repository.contains(path)){
-					CimClass expected = (CimClass) repository.get(path);
+				if(contains(path)){
+					CimClass expected = (CimClass) get(path);
 					CimInstance instance = getInstanceValue(alias,expected);
 					if(alias != null) aliasedInstanceValues.put(alias, instance);
 					repository.put(instance);
@@ -829,7 +869,7 @@ public class MOFParser implements Parser {
 		} else {
 			// enumQualiferType = enumName [ array ] "=" enumTypeValue
 			String enumName = skipOver(TokenType.IDENTIFIER).value;
-			CimEnumeration en = (CimEnumeration) repository.get(new ObjectPath(ElementType.ENUMERATION,enumName,p.path, null, null));
+			CimEnumeration en = (CimEnumeration) get(new ObjectPath(ElementType.ENUMERATION,enumName,p.path, null, null));
 			if(en == null) error(ExceptionReason.NOT_FOUND,"QualifierType "+qualifierName+": Enumeration "+enumName+" not defined");
 			qType = DataType.ENUMERATIONVALUE;
 			if(array()){
@@ -956,7 +996,7 @@ public class MOFParser implements Parser {
 			// if not in local features, check the superType(s) of the current class for the superEnumType
 			if(superEnum == null && superType != null) superEnum = superType.getEnumeration(superEnumName);
 			// if not in local features and superType, check repository for superEnumType
-			if(superEnum == null) superEnum = (CimEnumeration) repository.get(new ObjectPath(ElementType.ENUMERATION,superEnumName,p.path, null, null));
+			if(superEnum == null) superEnum = (CimEnumeration) get(new ObjectPath(ElementType.ENUMERATION,superEnumName,p.path, null, null));
 			if(superEnum == null){	// error if no superEnumType found
 				error(ExceptionReason.NOT_FOUND, "Enumeration "+superEnumName+" not found");
 			}
@@ -1031,7 +1071,7 @@ public class MOFParser implements Parser {
 
 		// locate the name of the structure, class, or association
 		String structName = skipOver(TokenType.IDENTIFIER).value;
-		CimStructure expected = (CimStructure) repository.get(new ObjectPath(ElementType.STRUCTURE,structName,p.path, null, null));
+		CimStructure expected = (CimStructure) get(new ObjectPath(ElementType.STRUCTURE,structName,p.path, null, null));
 		if(expected == null) error(ExceptionReason.NOT_FOUND,"CimStructure "+structName+" is not defined");
 
 		String alias = null;
@@ -1066,7 +1106,7 @@ public class MOFParser implements Parser {
 
 		// locate the name of the class, or association
 		String className = skipOver(TokenType.IDENTIFIER).value;
-		CimClass expected = (CimClass) repository.get(new ObjectPath(ElementType.CLASS,className,p.path, null, null));
+		CimClass expected = (CimClass) get(new ObjectPath(ElementType.CLASS,className,p.path, null, null));
 		if(expected == null) error(ExceptionReason.NOT_FOUND,"Class "+className+" is not defined");
 
 		// alias, if any
@@ -1126,7 +1166,7 @@ public class MOFParser implements Parser {
 			String superTypeName = skipOver(TokenType.IDENTIFIER).value;
 			// classes can inherit from other classes or structures
 			ObjectPath op = new ObjectPath(elementType,superTypeName,p.path, null, null);
-			superType = (CimStructure) (repository.contains(op) ? repository.get(op) : repository.get(new ObjectPath(ElementType.STRUCTURE,superTypeName,p.path, null, null)));
+			superType = (CimStructure) (contains(op) ? get(op) : get(new ObjectPath(ElementType.STRUCTURE,superTypeName,p.path, null, null)));
 			if(superType == null) error(ExceptionReason.NOT_FOUND,"Class "+elementName+" SuperType "+superTypeName+" not defined");
 		}
 		skipOver(TokenType.LBRACE);
@@ -1167,8 +1207,8 @@ public class MOFParser implements Parser {
 				for(String intf : interfaces){
 					// TODO: the logic below implies that interfaces can only reside in the same namespace 
 					ObjectPath path = new ObjectPath(ElementType.INTERFACE,intf,p.path,null,null);
-					if(repository.contains(path)){
-						CimClass e = (CimClass) repository.get(path);	// interfaces are always instantiated as CimClass
+					if(contains(path)){
+						CimClass e = (CimClass) get(path);	// interfaces are always instantiated as CimClass
 						elementFeatures.add(e);
 						continue;
 					}
@@ -1330,7 +1370,7 @@ public class MOFParser implements Parser {
 			// scan in the superType, if any
 			if(superStruct == null && superType != null) superStruct = superType.getStructure(structureName);
 			// scan the repository
-			if(superStruct == null) superStruct = (CimStructure) repository.get(new ObjectPath(ElementType.STRUCTURE,superTypeName,p.path, null, null));
+			if(superStruct == null) superStruct = (CimStructure) get(new ObjectPath(ElementType.STRUCTURE,superTypeName,p.path, null, null));
 			// error if we cannot locate the superStruct
 			if(superStruct == null) error(ExceptionReason.NOT_FOUND,structureName+": Supertype not defined - "+superTypeName);
 		}		
@@ -1453,14 +1493,14 @@ public class MOFParser implements Parser {
 		// scan the repository with the given path
 		for(ElementType t : new ElementType[]{ElementType.STRUCTURE,ElementType.CLASS}){
 			ObjectPath path = new ObjectPath(t,elementName,p.path, null, null);
-			if(repository.contains(path)) return repository.get(path);
+			if(contains(path)) return get(path);
 		}
 		// finally scan the repository using all name spaces
-		for(NameSpacePath ns : repository.getNameSpaces()){
+		for(NameSpacePath ns : getNameSpaces()){
 			if(ns.equals(p.path)) continue;
 			for(ElementType t : new ElementType[]{ElementType.STRUCTURE,ElementType.CLASS}){
 				ObjectPath path = new ObjectPath(t,elementName,ns, null, null);
-				if(repository.contains(path)) return repository.get(path);
+				if(contains(path)) return get(path);
 			}
 		}
 		// nothing found
@@ -1496,14 +1536,14 @@ public class MOFParser implements Parser {
 		// scan the repository with the given path
 		for(ElementType t : new ElementType[]{ElementType.ENUMERATION,ElementType.STRUCTURE,ElementType.CLASS}){
 			ObjectPath path = new ObjectPath(t,elementName,p.path, null, null);
-			if(repository.contains(path)) return repository.get(path);
+			if(contains(path)) return get(path);
 		}
 		// finally scan the repository using all name spaces
-		for(NameSpacePath ns : repository.getNameSpaces()){
+		for(NameSpacePath ns : getNameSpaces()){
 			if(ns.equals(p.path)) continue;
 			for(ElementType t : new ElementType[]{ElementType.ENUMERATION,ElementType.STRUCTURE,ElementType.CLASS}){
 				ObjectPath path = new ObjectPath(t,elementName,ns, null, null);
-				if(repository.contains(path)) return repository.get(path);
+				if(contains(path)) return get(path);
 			}
 		}
 		// nothing found
@@ -1549,7 +1589,7 @@ public class MOFParser implements Parser {
 		
 		String qName = skipOver(TokenType.IDENTIFIER).value;
 		if("UMLPACKAGEPATH".equalsIgnoreCase(qName)) qName = StandardQualifierType.PACKAGEPATH.getMofName();
-		QualifierType t = (QualifierType) repository.get(new ObjectPath(ElementType.QUALIFIERTYPE,qName,p.path, null, null));
+		QualifierType t = (QualifierType) get(new ObjectPath(ElementType.QUALIFIERTYPE,qName,p.path, null, null));
 		if(t == null) error(ExceptionReason.NOT_FOUND,"QualifierType "+qName+" is not defined in namespace "+p.path);
 		DataType dt = t.getDataType();
 		

@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-import net.aifusion.metamodel.BufferedCache;
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEventType;
 import net.aifusion.metamodel.CimInstance;
@@ -262,20 +261,21 @@ class CimHandler implements HttpRequestHandler {
 				break;
 			case PUT_ELEMENT:
 				NameSpacePath ns = new NameSpacePath(request.getXHeader(CimXHeader.NAMESPACE_PATH.toString()));
-				BufferedCache cache = new BufferedCache(provider);
-				parser = new MOFParser(cache);
+				InMemoryCache cache = new InMemoryCache();
+				// BufferedCache cache = new BufferedCache(provider);
+				MOFParser bp = new MOFParser(cache,provider);
 				if(logEnabled) {
 					System.out.println("--- Put Received ---");
 					System.out.println(ns.toString());
 					System.out.println(httpBody);
 					System.out.println("--- End Received ---");
 				}
-				parser.parse(new ByteArrayInputStream(httpBody.getBytes()),ns);
-				List<NamedElement> elements = cache.getBufferedElements();
+				bp.parse(new ByteArrayInputStream(httpBody.getBytes()),ns);
+				List<NamedElement> elements = cache.getElements(null,null,null,false);
 				if(logEnabled) {
 					// TODO: The parser seems to insert the Structure definition in the buffered cache
-					// in addition to a singleton StructureValue received from the client. This is a
-					// bug. Need to chase it down.
+					// in addition to a singleton StructureValue received from the client even though the
+					// definition is present in the underlying repository. This is a bug. Need to chase it down.
 					System.out.println("--- Parsed Elements ---");
 					for(NamedElement el : elements) System.out.println(el.getObjectPath()+"\n"+el.toMOF());
 					System.out.println("--- End Parsed ---");

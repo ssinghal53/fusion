@@ -131,5 +131,9 @@ public class BufferedCache extends InMemoryCache {
 	 * Note that put(), delete(), getDefaultNameSpace(), getElements() and shutdown() do not access
 	 * the backing store and do not need special handling here. Also shutdown() does not affect
 	 * the underlying backing store.
+	 * 
+	 * It is possible for elements to be duplicated between the buffer and the backing store if they
+	 * are added to the buffer, since BufferedCache.put() does not check for existence in the backing
+	 * store. 
 	 */
 }
