@@ -264,22 +264,10 @@ class CimHandler implements HttpRequestHandler {
 				InMemoryCache cache = new InMemoryCache();
 				// BufferedCache cache = new BufferedCache(provider);
 				MOFParser bp = new MOFParser(cache,provider);
-				if(logEnabled) {
-					System.out.println("--- Put Received ---");
-					System.out.println(ns.toString());
-					System.out.println(httpBody);
-					System.out.println("--- End Received ---");
-				}
 				bp.parse(new ByteArrayInputStream(httpBody.getBytes()),ns);
 				List<NamedElement> elements = cache.getElements(null,null,null,false);
-				if(logEnabled) {
-					// TODO: The parser seems to insert the Structure definition in the buffered cache
-					// in addition to a singleton StructureValue received from the client even though the
-					// definition is present in the underlying repository. This is a bug. Need to chase it down.
-					System.out.println("--- Parsed Elements ---");
-					for(NamedElement el : elements) System.out.println(el.getObjectPath()+"\n"+el.toMOF());
-					System.out.println("--- End Parsed ---");
-				}
+				// NOTE: the cache will automatically add structure/class definitions
+				// into elements if only StructurValues/Instances are received
 				if(elements != null && !elements.isEmpty()) {
 					boolean exists = true;
 					for(NamedElement el : elements) {
