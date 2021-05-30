@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Jan 29, 2017 by Sharad Singhal
- * Last Modified May 20, 2021 by Sharad Singhal
+ * Last Modified May 29, 2021 by Sharad Singhal
  */
 package net.aifusion.cimserver;
 
@@ -82,11 +82,13 @@ public class HttpConfiguration {
 	/** Default location for storing cookies */
 	private static final String defaultCookieStore = null;
 	/** Server Configuration class version */
-	protected static final String version = "2.1.0";
+	protected static final String version = "2.1.1";
 	/** Default configuration directory */
 	private static final String defaultConfigDirectory = "resources/config";
 	/** Default log file. Note that directories in the path must already exist */
 	private static final String defaultLogFile = "server.log";
+	/** Default log level, if enabled */
+	private static final String defaultLogLevel = "INFO";
 
 	/** identifier for this configuration */
 	private String id = defaultID;
@@ -120,12 +122,14 @@ public class HttpConfiguration {
 	private String proxyHost = defaultHost;
 	/** proxy port, if any. 0 implies no proxy being used */
 	private int proxyPort = 0;
-	/** Provider to use in the CIM Handler */
+	/** Provider to use in the CIM Handler. Null implies a BasicProvider */
 	private String providerName = null;
 	/** Server log file */
 	private String logFile = defaultLogFile;
 	/** Flag to indicate if logging is enabled */
 	private Boolean logEnabled = false;
+	/** Level at which logging is enabled */
+	private String loglevel = defaultLogLevel;
 
 	/**
 	 * Create a default configuration
@@ -201,6 +205,9 @@ public class HttpConfiguration {
 					break;
 				case "logenabled":
 					logEnabled = (Boolean) v.getValue();
+					break;
+				case "loglevel":
+					loglevel = v.toString().toUpperCase();
 					break;
 				default:
 					throw new ModelException("HttpConfiguration- Property "+pName+" not yet handled");
@@ -292,7 +299,7 @@ public class HttpConfiguration {
 	 * Get maximum sessions accepted by server. 0 for no maximums
 	 * @return - maximum sessions accepted
 	 */
-	@Export(qualifiers="Description(\"Maximum sessions accepted by server. if 0, no maximum enforced\")")
+	@Export(qualifiers="Description(\"Maximum concurrent sessions accepted by server. if 0, no maximum enforced\")")
 	public int getMaxSessions(){
 		return maxSessions;
 	}
@@ -400,7 +407,7 @@ public class HttpConfiguration {
 	 * Get the log file used in the server
 	 * @return - name of the log file
 	 */
-	@Export(qualifiers="Description(\"Name of the logger if any\")")
+	@Export(qualifiers="Description(\"Name of the log file, if any\")")
 	public String getLogFile(){
 		return logFile;
 	}
@@ -409,9 +416,14 @@ public class HttpConfiguration {
 	 * flag to indicate if logging is enabled in the server
 	 * @return - true if logging is enabled, false otherwise
 	 */
-	@Export(qualifiers="Description(\"Name of the logger if any\")")
+	@Export(qualifiers="Description(\"true if logging is enabled\")")
 	public Boolean getLogEnabled(){
 		return logEnabled;
+	}
+	
+	@Export(qualifiers = "Description(\"level for logging\")")
+	public String getLogLevel() {
+		return loglevel;
 	}
 	
 	/**
@@ -444,25 +456,28 @@ public class HttpConfiguration {
 	private static void showHelp(){
 		System.out.println("Use:\n$ HttpConfiguration options\nwhere options can be:");
 		System.out.println("\t-help | -Help				# show help (this message) (must be only argument)");
-		System.out.println("\t-r repository				# Name of the repository to use [repsitory]");
-		System.out.println("\t-n namespacePath			# NameSpacePath to use [aifusion]");
 		System.out.println("\t-c configurationId		# ConfigurationID to use [defaultID]");
 		System.out.println("\t-cp configPath			# Path to the configuration directory [resources/config]");
+		System.out.println("\t-cookiestore cookiestore	# cookie directory to use [null]");
 		System.out.println("\t-hostname host name		# server host name [localhost]");
-		System.out.println("\t-serverport port			# server port number [8085]");
+		System.out.println("\t-keystore keystore		# keystore to use [keystore.jks]");
+		System.out.println("\t-keystorepassword pass	# keystore password [null]");
+		System.out.println("\t-maxsessions sessions		# maximum sessions [0]");
+		System.out.println("\t-n namespacePath			# NameSpacePath to use [aifusion]");
+		System.out.println("\t-provider className		# default provider to use in the handler [BasicProvider]");
 		System.out.println("\t-proxyhost hostname		# proxy host name [null]");
 		System.out.println("\t-proxyport port			# server port number [8080]");
+		System.out.println("\t-r repository				# Name of the repository to use [repsitory]");
+		System.out.println("\t-requesthandler className	# default request handler [CimHandler]");
+		System.out.println("\t-secure [true|false]		# server uses https [false] (not implemented)");
+		System.out.println("\t-serverport port			# server port number [8085]");
 		System.out.println("\t-servertimeout timeout	# server time out [5000]");
-		System.out.println("\t-maxsessions sessions		# maximum sessions [0]");
-		System.out.println("\t-secure [true|false]		# server uses https [false]");
-		System.out.println("\t-keystore keystore		# keystore to use [keystore.jks]");
-		System.out.println("\t-cookiestore cookiestore	# cookie directory to use [null]");
 		System.out.println("\t-truststore truststore	# truststore to use [truststore.jks]");
-		System.out.println("\t-keystorepassword pass	# keystore password [null]");
 		System.out.println("\t-truststorepassword pass	# truststore passord [null]");
 		System.out.println("\t-x500principal dn			# x500Principal DN for server [CN=localhost,OU=cimfusion.com,O=cimfusion,C=US,L=Cupertino,ST=California]");
-		System.out.println("\t-requesthandler className	# default request handler [CimHandler]");
-		System.out.println("\t-provider className		# default provider to use in the handler [BasicProvider]");
+		System.out.println("\t-logenabled [true|false]	# true if logging is enabled [false]");
+		System.out.println("\t-loglevel level			# level for logging [INFO]");
+		System.out.println("\t-logfile filename			# filename for logging [server.log]");
 		return;
 	}
 	/**
@@ -548,10 +563,7 @@ public class HttpConfiguration {
 			}
 		}
 		StructureValue config = StructureValue.createStructureValue(configClass, propertyValues, null);
-		// CimInstance config = CimInstance.createInstance(configClass, propertyValues, null);
 		repository.put(config);
-	//	System.out.println(configClass.toMOF());
-	//	System.out.println(config.toMOF());
 		repository.shutdown();
 		return;
 	}
@@ -603,7 +615,6 @@ public class HttpConfiguration {
 					value = b.substring(1,b.length()-1);	// strip the braces from value
 				}
 				options.put(token.toLowerCase(), value);
-				// System.out.println(token+ " "+value);
 			}
 		}
 		return;

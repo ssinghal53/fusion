@@ -32,7 +32,9 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,10 +75,11 @@ class HttpServer implements Runnable {
 	public HttpServer(HttpConfiguration config) throws IOException{
 		this.config = config;
 		if(config.getLogEnabled()) {
-			FileHandler handler = config.getLogFile() == null ? new FileHandler() : new FileHandler(config.getLogFile());
+			Handler handler = config.getLogFile() == null ? new ConsoleHandler() : new FileHandler(config.getLogFile());
+			handler.setLevel(Level.parse(config.getLogLevel()));
 			Logger l = logger;
 			while(l.getParent() != null) l = l.getParent();
-			l.addHandler(handler);
+			l.addHandler(handler);	// set the handler at the root level
 		}
 		// set proxy for outbound connections from the server
 		if(config.getProxyPort() > 0){
@@ -141,7 +144,7 @@ class HttpServer implements Runnable {
 		// get server hostname, port, and maximum concurrent sessions
 		String hostName = config.getHostName();		// server host
 		int port = config.getServerPort();			// server listen port
-		// logger.info("Host: "+hostName+" Port: "+port);
+		if(config.getLogEnabled() && logger.isLoggable(Level.INFO)) logger.info("Host: "+hostName+" Port: "+port);
 		int maxSessions = config.getMaxSessions();	// maximum sessions; 0 implies no limit enforced
 		// get the underlying request handler -- note that the handler instance is shared across all sessions
 		HttpRequestHandler handler = HttpRequestHandler.getHandler(config);
@@ -174,7 +177,7 @@ class HttpServer implements Runnable {
 						// and update sessionCount and currentSessions
 					} catch (Exception e) {
 						listenException = e;
-						logger.info("HttpServer: Unable to accept connection "+e.toString());
+						if(config.getLogEnabled() && logger.isLoggable(Level.INFO)) logger.info("HttpServer: Unable to accept connection "+e.toString());
 						endSession(session);
 					}
 				} else {
@@ -183,13 +186,13 @@ class HttpServer implements Runnable {
 						Thread.sleep(20L);
 					} catch (InterruptedException e) {
 						listenException = e;
-						logger.info("HttpServer: Queue drain sleep interrupted"+e.toString());
+						if(config.getLogEnabled() && logger.isLoggable(Level.INFO)) logger.info("HttpServer: Queue drain sleep interrupted"+e.toString());
 					}
 				}
 			}
 		} catch (Exception e) {	// exception on serverSocket.bind() or serverSocket.accept()
 			this.listenException = e;
-			if(isReady) logger.log(Level.INFO, "HttpServer: Unable to bind socket", e);
+			if(isReady && config.getLogEnabled() && logger.isLoggable(Level.INFO)) logger.log(Level.INFO, "HttpServer: Unable to bind socket", e);
 		} finally {
 			// close all current sessions
 			synchronized(currentSessions){
@@ -208,7 +211,7 @@ class HttpServer implements Runnable {
 					serverSocket.close();
 				} catch (IOException e) {
 					listenException = e;
-					logger.log(Level.INFO, "HttpServer: Unable to close server socket", e);
+					if(config.getLogEnabled() && logger.isLoggable(Level.INFO)) logger.log(Level.INFO, "HttpServer: Unable to close server socket", e);
 				}
 			}
 			// shut down the request handler
@@ -269,7 +272,7 @@ class HttpServer implements Runnable {
 			if(serverThread != null) {
 				serverThread.join();
 			}
-			if(listenException != null) logger.fine("Saw "+listenException.toString());
+			if(listenException != null && config.getLogEnabled() && logger.isLoggable(Level.FINE))logger.fine("Saw "+listenException.toString());
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "HttpServer: Could not stop all connections", e);
 		}
@@ -283,7 +286,7 @@ class HttpServer implements Runnable {
 	 * <dt>-h | -h</dt><dd>(must be only argument) print a help message and exit</dd>
 	 * <dt>-c configId</dt><dd>use configuration identified by ID [defaultConfig]</dd>
 	 * <dt>-cp path</dt><dd>use specified directory to locate the configuration [resources/config]</dd>
-	 * <dt>-n nameSpace</dt><dd>use specified namespace to locate the configuration [cimfusion]</dd>
+	 * <dt>-n nameSpace</dt><dd>use specified namespace to locate the configuration [aifusion]</dd>
 	 * </dl>
 	 */
 	public static void main(String[] args) {
@@ -291,7 +294,7 @@ class HttpServer implements Runnable {
 		if(args.length == 1 && (args[0].startsWith("-h") || args[0].startsWith("-H"))){
 			System.out.println("Use:\n$ HttpServer [options]\nwhere options can be:");
 			System.out.println("\t-help | -Help				# show help (this message) (must be only argument)");
-			System.out.println("\t-n namespacePath			# NameSpacePath to use [cimfusion]");
+			System.out.println("\t-n namespacePath			# NameSpacePath to use [aifusion]");
 			System.out.println("\t-c configurationId		# ConfigurationID to use [defaultConfig]");
 			System.out.println("\t-cp configPath			# Path to the configuration directory [resources/config]");
 			return;
@@ -315,7 +318,7 @@ class HttpServer implements Runnable {
 		}
 		HttpConfiguration config = HttpConfiguration.getConfiguration(id, path, directory);
 		if(config == null){
-			logger.info("HttpServer: No configuration found at ("+id+","+path+","+directory+")");
+			logger.severe("HttpServer: No configuration found at ("+id+","+path+","+directory+")");
 			return;
 		}
 		HttpServer server;

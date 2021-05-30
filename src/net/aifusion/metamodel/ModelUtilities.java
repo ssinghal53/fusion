@@ -28,6 +28,8 @@
 package net.aifusion.metamodel;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
@@ -459,6 +461,7 @@ public class ModelUtilities {
 				if(!value.endsWith("}")){
 					while(i < argv.length-1){
 						b.append(" ");
+						if("\\*".equals(argv[i+1])) argv[i+1] = "*";
 						b.append(argv[++i]);
 						if(argv[i].endsWith("}")) break;
 					}
