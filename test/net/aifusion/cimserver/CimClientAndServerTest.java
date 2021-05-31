@@ -80,7 +80,7 @@ public class CimClientAndServerTest {
 	private static CimServer server;
 	private static CimServer server2;
 
-	private static String serverMof = "value of aifusion_httpconfiguration {\n"+
+	private static String serverMof = "value of AIFusion_HttpConfiguration {\n"+
 			"KeyStorePassword = \"serverpass\";\n"+
 			"MaxSessions = 0;\n"+
 			"TrustStore = \"testrepository/serverTrustStore.jks\";\n"+
@@ -96,7 +96,7 @@ public class CimClientAndServerTest {
 			"ServerPort = 8085;\n"+
 			"};\n"+
 
-			"value of aifusion_httpconfiguration {\n"+
+			"value of AIFusion_HttpConfiguration {\n"+
 			// "TrustStore = \"testrepository/clientTrustStore.jks\";\n"+
 			// "TrustStorePassword = \"clientpass\";\n"+
 			// "KeyStore = \"testrepository/clientKeyStore.jks\";\n"+
@@ -277,7 +277,7 @@ public class CimClientAndServerTest {
 	public void testGet() {
 		// check for an existing element without host name
 		CimClient client = new CimClient(serverURL,clientConfig);
-		ObjectPath path = new ObjectPath("/structurevalue/aifusion:aifusion_httpconfiguration.id=\"clientConfig\"");
+		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
 		PersistentCache cache = new PersistentCache(repositoryLocation);
 		NamedElement expected = cache.get(path);
 		assertNotNull(expected);
@@ -287,7 +287,7 @@ public class CimClientAndServerTest {
 		// System.out.println("Retrieved "+retrieved.toMOF());
 		assertEquals(expected.toMOF(),retrieved.toMOF());
 		// check for a non-existent element
-		path = new ObjectPath("/structurevalue/aifusion:aifusion_httpconfiguration.id=\"otherConfig\"");
+		path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"otherConfig\"");
 		assertFalse(cache.contains(path));
 		retrieved = client.get(path);
 		assertNull(retrieved);
@@ -304,13 +304,13 @@ public class CimClientAndServerTest {
 		// check for an existing element without host name
 		CimClient client = new CimClient(serverURL,clientConfig);
 		assertNotNull(client);
-		ObjectPath path = new ObjectPath("/structurevalue/aifusion:aifusion_httpconfiguration.id=\"clientConfig\"");
+		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
 		assertTrue(client.contains(path));
 		// check for an existing element with the host name
-		path = new ObjectPath("http://localhost:8085/structurevalue/aifusion:aifusion_httpconfiguration.id=\"clientConfig\"");
+		path = new ObjectPath("http://localhost:8085/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
 		assertTrue(client.contains(path));
 		// check for a non-existent element
-		path = new ObjectPath("/structurevalue/aifusion:aifusion_httpconfiguration.id=\"otherConfig\"");
+		path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"otherConfig\"");
 		assertFalse(client.contains(path));
 		client.shutdown();
 	}
