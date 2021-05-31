@@ -160,7 +160,9 @@ class HttpSession implements Runnable {
 			// add session-specific headers
 			if("close".equalsIgnoreCase(request.getHeader(HttpHeader.CONNECTION))) 
 				response.addHeader(HttpHeader.CONNECTION, "close");	// if the client asked to close the session, we also return that
-			
+			if(logEnabled) {
+				logger.info(response.toString());
+			}
 			// TODO: Set Session-specific headers in the response (e.g., cookies)
 			response.send(outputStream);							// send the response to the client
 			return !request.isLastRequest() && !response.isLastResponse();

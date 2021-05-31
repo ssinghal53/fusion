@@ -444,14 +444,22 @@ public class MOFParser implements Parser {
 			NamedElement target = get(path);
 			if(target == null) throw new ModelException(ExceptionReason.NOT_FOUND,"Path "+path+" not found");
 			DataValue value = null;
-			CimClass cls = null;
+			CimStructure cls = null;
 			switch(target.getElementType()){
 			case CLASS:
-				cls = (CimClass) target;
+			case STRUCTURE:
+				cls = (CimStructure) target;
+				break;
+			case STRUCTUREVALUE:
+				cls = ((StructureValue) target).getCreationStruct();
 				break;
 			case INSTANCE:
 				cls = ((CimInstance)target).getCreationClass();
 				break;
+			case ENUMERATION:
+				CimEnumeration enumeration = (CimEnumeration) target;
+				value = enumerationTypeValue(enumeration.getDataType(),enumeration);
+				return value;
 			default:
 				throw new ModelException("MOFParser#parsePropertyValue() does not handle elements of type "+target.getElementType());
 			}

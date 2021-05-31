@@ -218,7 +218,7 @@ class CimHandler implements HttpRequestHandler {
 				path = getObjectPath(request);
 				DataValue v = provider.getPropertyValue(path, propertyName);
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, v.toMOF());
-				response.addXHeader(CimXHeader.PROPERTY_TYPE.toString(),v.getType().toMOF());
+				response.addXHeader(CimXHeader.PROPERTY_TYPE.toString(),v.getType().toString());
 				break;
 			case GET_METHOD_NAMES:	// names of methods, if any
 				path = getObjectPath(request);
@@ -512,7 +512,7 @@ class CimHandler implements HttpRequestHandler {
 		} else {
 			path = new ObjectPath(URI.create("http://"+host+target));
 		}
-		// System.out.println(path.toString());
+		// System.out.println(path.toURL());
 		return path;
 	}
 	/**
@@ -539,7 +539,7 @@ class CimHandler implements HttpRequestHandler {
 		}
 		return new HttpResponse(method,status,MimeType.PLAINTEXT, e.toString()+CRLF);
 	}
-
+	
 	@Override
 	public void shutdown() {
 		if(provider != null) provider.shutdown();
