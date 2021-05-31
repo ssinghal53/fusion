@@ -525,6 +525,9 @@ class CimHandler implements HttpRequestHandler {
 	private HttpResponse exceptionResponse(HttpMethod method, CimHeader header, ModelException e){
 		HttpStatus status = HttpStatus.INTERNAL_ERROR;
 		switch(e.getReason()){
+		case ALREADY_EXISTS:
+			status = HttpStatus.CONFLICT;
+			break;
 		case ACCESS_DENIED:
 			status = HttpStatus.FORBIDDEN;
 			break;
@@ -533,6 +536,9 @@ class CimHandler implements HttpRequestHandler {
 		case METHOD_NOT_FOUND:
 		case METHOD_NOT_AVAILABLE:
 			status = HttpStatus.NOT_FOUND;
+			break;
+		case INVALID_PARAMETER:
+			status = HttpStatus.BAD_REQUEST;
 			break;
 		default:
 			break;
