@@ -75,9 +75,9 @@ public class EnumerationValueTest {
 		DataType.DATETIME_ARRAY, DataType.CHAR16_ARRAY, DataType.OBJECTPATH_ARRAY};
 	// mof values
 	private static String [] mof = {"name = null", "name = 8","name = -12","name = 22","name = 55","name = 100","name = -75","name = 351","name = 500",
-		"name = \"foobar\"","name = true","name = 45.0","name = 500.0","name = \"20140420044028.080***+000\"","name = \'a\'","name = \"/class/cimv2:cim_test\"",
+		"name = \"foobar\"","name = true","name = 45.0","name = 500.0","name = \"20140420044028.080***+000\"","name = \'a\'","name = \"/class/cimv2:CIM_Test\"",
 		"name = { 8 }","name = { -12 }","name = { 22 }",	"name = { 55 }","name = { 100 }","name = { -75 }","name = { 351 }","name = { 500 }","name = { \"foobar\" }",
-		"name = { true }","name = { 45.0 }","name = { 500.0 }","name = { \"20140420044028.080***+000\" }","name = { \'a\' }","name = { \"/class/cimv2:cim_test\" }"
+		"name = { true }","name = { 45.0 }","name = { 500.0 }","name = { \"20140420044028.080***+000\" }","name = { \'a\' }","name = { \"/class/cimv2:CIM_Test\" }"
 	};
 
 	/*

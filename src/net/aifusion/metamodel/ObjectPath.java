@@ -446,7 +446,7 @@ public class ObjectPath {
 			StringBuilder b = new StringBuilder(objectPath.toString());
 			if (b.length() > 0 && b.charAt(b.length() - 1) != ':')
 				b.append(":");
-			b.append(objectName.toLowerCase());
+			b.append(objectName);
 			if (keyValues != null && !keyValues.isEmpty()) {
 				b.append(".");
 				for (String key : keyValues.keySet()) {
@@ -469,7 +469,7 @@ public class ObjectPath {
 	 */
 	@Override
 	public int hashCode() {
-		return toString().hashCode();
+		return getUUID().hashCode();
 	}
 	/*
 	 * (non-Javadoc)
@@ -480,7 +480,7 @@ public class ObjectPath {
 		if(obj == null || !(obj instanceof ObjectPath)) return false;
 		ObjectPath other = (ObjectPath) obj;
 		if(type != other.type) return false;
-		return toString().equals(other.toString());
+		return getUUID().equals(other.getUUID());
 	}
 
 	/**

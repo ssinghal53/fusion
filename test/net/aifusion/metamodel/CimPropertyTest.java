@@ -172,7 +172,7 @@ public class CimPropertyTest {
 	String [] mof = {"null", "UInt8 propName = 8;\n","SInt8 propName = -12;\n","UInt16 propName = 22;\n",
 			"SInt16 propName = 55;\n","UInt32 propName = 100;\n","SInt32 propName = -75;\n","UInt64 propName = 351;\n","SInt64 propName = 500;\n",
 			"String propName = \"foobar\";\n","Boolean propName = true;\n","Real32 propName = 45.0;\n","Real64 propName = 500.0;\n",
-			"Datetime propName = \"20140420044028.080***+000\";\n","Char16 propName = \'a\';\n","Cim_Test ref propName = \"/class/cimv2:cim_test\";\n",
+			"Datetime propName = \"20140420044028.080***+000\";\n","Char16 propName = \'a\';\n","Cim_Test ref propName = \"/class/cimv2:CIM_Test\";\n",
 			"OctetString propName = \"0x213244\";\n",
 			"enum propName = name;\n","Test_Struct propName = value of Test_Struct as $as {\n\tkz = false;\n};\n",
 			"Test_Class propName = instance of Test_Class as $ac {\n\tp2 = \"newP2Value\";\n\tkz = true;\n};\n",
@@ -181,7 +181,7 @@ public class CimPropertyTest {
 			"String [] propName = { \"foobar\" };\n",
 			"Boolean [] propName = { true };\n","Real32 [] propName = { 45.0 };\n","Real64 [] propName = { 500.0 };\n",
 			"Datetime [] propName = { \"20140420044028.080***+000\" };\n","Char16 [] propName = { \'a\' };\n",
-			"Cim_Test ref [] propName = { \"/class/cimv2:cim_test\" };\n",
+			"Cim_Test ref [] propName = { \"/class/cimv2:CIM_Test\" };\n",
 			"OctetString [] propName = { \"0x213244\" };\n",
 			"enum [] propName = { name };\n","Test_Struct [] propName = { value of Test_Struct as $as {\n\tkz = false;\n} };\n",
 			"Test_Class [] propName = { instance of Test_Class as $ac {\n\tp2 = \"newP2Value\";\n\tkz = true;\n} };\n"

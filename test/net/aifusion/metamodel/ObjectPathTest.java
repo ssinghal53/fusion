@@ -256,13 +256,13 @@ public class ObjectPathTest {
 	public final void testToString() {
 		ObjectPath p = new ObjectPath("http://user:pass@localhost:80/root:CIM_class.k2=true,k1=false");
 
-		assertEquals("http://user:pass@localhost:80/instance/root:cim_class.k1=false,k2=true",p.toString());
+		assertEquals("http://user:pass@localhost:80/instance/root:CIM_class.k1=false,k2=true",p.toString());
 
 		p = new ObjectPath(ElementType.INSTANCE,"Cim_Class", "$abc");
 		assertEquals("$abc",p.toString());
 		
 		p = new ObjectPath(ElementType.QUALIFIERTYPE,"Abstract",new NameSpacePath("/cimv3"), null, null);
-		assertEquals("/qualifiertype/cimv3:abstract",p.toString());
+		assertEquals("/qualifiertype/cimv3:Abstract",p.toString());
 	}
 
 	/**

@@ -187,7 +187,7 @@ public class NamedElementTest implements CimListener {
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"MyName",Constants.defaultNameSpacePath, null, null);
 		assertEquals(path,re.getObjectPath());
 		re = new ReElement(ElementType.CLASS,"MyName",null,null,new NameSpacePath("http","localhost","/root"));
-		assertEquals("http://localhost/class/root:myname",re.getObjectPath().toString());
+		assertEquals("http://localhost/class/root:MyName",re.getObjectPath().toString());
 		return;
 	}
 

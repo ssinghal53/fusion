@@ -31,7 +31,6 @@ package net.aifusion.metamodel;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Vector;
 
 /**
  * This enum contains all known CIM data types, as well as commonly used methods for manipulating them

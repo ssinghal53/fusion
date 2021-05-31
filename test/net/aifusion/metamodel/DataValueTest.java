@@ -137,21 +137,21 @@ public class DataValueTest {
 	};
 	// mof values
 	private static String [] mof = {"null", "8","-12","22","55","100","-75","351","500",
-			"\"foobar\"","true","45.0","500.0","\"20140420044028.080***+000\"","\'a\'","\"/class/cimv2:cim_test\"",
+			"\"foobar\"","true","45.0","500.0","\"20140420044028.080***+000\"","\'a\'","\"/class/cimv2:CIM_Test\"",
 			"name","value of name as $alias {\n\tkz = false;\n}","instance of Test_Class as $alias {\n\tp2 = \"newP2Value\";\n\tkz = true;\n}",
 			"\"0xfe10ff\"",
 			"{ 8 }","{ -12 }","{ 22 }",	"{ 55 }","{ 100 }","{ -75 }","{ 351 }","{ 500 }","{ \"foobar\" }",
-			"{ true }","{ 45.0 }","{ 500.0 }","{ \"20140420044028.080***+000\" }","{ \'a\' }","{ \"/class/cimv2:cim_test\" }",
+			"{ true }","{ 45.0 }","{ 500.0 }","{ \"20140420044028.080***+000\" }","{ \'a\' }","{ \"/class/cimv2:CIM_Test\" }",
 			"{ name }","{ value of name as $alias {\n\tkz = false;\n} }","{ instance of Test_Class as $alias {\n\tp2 = \"newP2Value\";\n\tkz = true;\n} }",
 			"{ \"0xfe10ff\" }"
 			};
 	// string values 
 	private static String [] str = {null, "8","-12","22","55","100","-75","351","500",
-			"foobar","true","45.0","500.0","20140420044028.080***+000","a","/class/cimv2:cim_test",
+			"foobar","true","45.0","500.0","20140420044028.080***+000","a","/class/cimv2:CIM_Test",
 			"name","value of name as $alias {\n\tkz = false;\n}","instance of Test_Class as $alias {\n\tp2 = \"newP2Value\";\n\tkz = true;\n}",
 			"0xfe10ff",
 			"{ 8 }","{ -12 }","{ 22 }",	"{ 55 }","{ 100 }","{ -75 }","{ 351 }","{ 500 }","{ \"foobar\" }",
-			"{ true }","{ 45.0 }","{ 500.0 }","{ \"20140420044028.080***+000\" }","{ \'a\' }","{ \"/class/cimv2:cim_test\" }",
+			"{ true }","{ 45.0 }","{ 500.0 }","{ \"20140420044028.080***+000\" }","{ \'a\' }","{ \"/class/cimv2:CIM_Test\" }",
 			"{ name }","{ value of name as $alias {\n\tkz = false;\n} }","{ instance of Test_Class as $alias {\n\tp2 = \"newP2Value\";\n\tkz = true;\n} }",
 			"{ \"0xfe10ff\" }"
 			};
