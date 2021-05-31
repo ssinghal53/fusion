@@ -198,7 +198,7 @@ public class HttpServerTest {
 		while(Thread.activeCount() > minCount){
 			// System.out.println(Thread.activeCount());
 			try {
-				Thread.sleep(10);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
