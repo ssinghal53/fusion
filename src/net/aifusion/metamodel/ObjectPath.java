@@ -55,7 +55,7 @@ public class ObjectPath {
     /** NameSpace Path for this object */
     private NameSpacePath nameSpacePath = null;
     /** Pattern to parse the ObjectName (in DSP0004 format) */
-    private static Pattern pattern = Pattern.compile("^(([a-zA-Z0-9+-]+):)?(//([^/]+))?((/[^:]*):)?([a-zA-Z0-9]+_\\w+)(\\.(.+))?$");
+    private static Pattern pattern = Pattern.compile("^(([a-zA-Z0-9+-]+):)?(//([^/]+))?((/[^:]*):)?(([a-zA-Z0-9]+_)?\\w+)(\\.(.+))?$");
 	
     
     /**
@@ -135,7 +135,7 @@ public class ObjectPath {
 		if(objectName == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"ObjectPath: ObjectName must be non-null");
 		// check for a valid name dataValue
         Matcher m = pattern.matcher(objectName);
-        if (!m.matches() || m.groupCount() != 9) {
+        if (!m.matches() || m.groupCount() != 10) {
             throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: Malformed reference " + objectName);
         }
         // for(int i=0; i<=9;i++) System.out.println("["+i+"] "+m.group(i));
@@ -167,7 +167,12 @@ public class ObjectPath {
         } else {
         	this.objectName = className;
         }
-        String value = m.group(9); // keyValue pairs
+        // objectName must contain _ unless it is a qualifierType
+        if(!ElementType.QUALIFIERTYPE.equals(type) && !objectName.contains("_")) {
+        	throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: ObjectName must be of form schema_name, found " + objectName);
+        }
+        
+        String value = m.group(10); // keyValue pairs
         // System.out.println(dataValue);
         // note that care is needed to parse, since separators can occur in quoted strings
         if (value != null) {
