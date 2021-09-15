@@ -6,7 +6,7 @@ import net.aifusion.metamodel.DataValue;
  * Node to represent a sort order for the result set
  * @author Sharad Singhal
  */
-public class SortSpec extends Node {
+class SortSpec extends Node {
 	boolean isAscending = true;
 	/**
 	 * Create a SORT_BY specification

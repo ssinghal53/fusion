@@ -41,7 +41,7 @@ import net.aifusion.metamodel.StructureValue;
  * Class to manage ORDER_BY for the result set
  * @author Sharad Singhal
  */
-public class OrderBy extends Node {
+class OrderBy extends Node {
 	/** Return only the first n rows */
 	int rowsToReturn = -1;
 	/** Return only distinct rows */
