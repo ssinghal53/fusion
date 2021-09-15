@@ -282,7 +282,7 @@ public class CimStructureTest {
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimStructure#bind(StructureValue)};
+	 * Test method for {@link net.aifusion.metamodel.CimStructure#bind()};
 	 */
 	@Ignore
 	@Test

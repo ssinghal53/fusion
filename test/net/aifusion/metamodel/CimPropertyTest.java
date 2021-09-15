@@ -187,9 +187,6 @@ public class CimPropertyTest {
 			"Test_Class [] propName = { instance of Test_Class as $ac {\n\tp2 = \"newP2Value\";\n\tkz = true;\n} };\n"
 	};
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("CimProperty ");
@@ -327,7 +324,7 @@ public class CimPropertyTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(java.lang.String, java.lang.String, net.aifusion.metamodel.DataType, net.aifusion.metamodel.DataValue, java.util.List, net.aifusion.metamodel.CimProperty)}.
+	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(String, String, DataType, DataValue, java.util.List)}.
 	 */
 	@Test
 	public final void testCimPropertyPrimitiveConstructor() {
@@ -349,7 +346,7 @@ public class CimPropertyTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(java.lang.String, java.lang.String, java.lang.String, boolean, net.aifusion.metamodel.DataValue, java.util.List, net.aifusion.metamodel.CimProperty)}.
+	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(String, String, CimStructure, boolean, DataValue, java.util.List)}.
 	 */
 	@Test
 	public final void testCimPropertyReferenceConstructor() {
@@ -372,7 +369,7 @@ public class CimPropertyTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(java.lang.String, java.lang.String, net.aifusion.metamodel.CimEnumeration, boolean, net.aifusion.metamodel.DataValue, java.util.List, net.aifusion.metamodel.CimProperty)}.
+	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(String, String, CimEnumeration, boolean, DataValue, java.util.List)}.
 	 */
 	@Test
 	public final void testCimPropertyEnumerationConstructor() {
@@ -398,7 +395,7 @@ public class CimPropertyTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(java.lang.String, java.lang.String, net.aifusion.metamodel.CimStructure, boolean, net.aifusion.metamodel.DataValue, java.util.List, net.aifusion.metamodel.CimProperty)}.
+	 * Test method for {@link net.aifusion.metamodel.CimProperty#CimProperty(String, String, CimStructure, boolean, DataValue, java.util.List)}.
 	 */
 	@Test
 	public final void testCimPropertyStructureConstructor() {

@@ -62,9 +62,6 @@ public class TagClassTest {
 		return;
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		assertEquals(4,TagClass.values().length);
@@ -96,7 +93,7 @@ public class TagClassTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.TagClass#getTagClass(long)}.
+	 * Test method for {@link net.aifusion.asn.TagClass#getTagClass(byte)}.
 	 */
 	@Test
 	public final void testGetTagClassLong() {

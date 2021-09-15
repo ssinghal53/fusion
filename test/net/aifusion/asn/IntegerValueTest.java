@@ -81,7 +81,7 @@ public class IntegerValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.IntegerValue#getEncoded()}.
+	 * Test method for {@link net.aifusion.asn.IntegerValue#getEncodedValue()}.
 	 */
 	@Test
 	public final void testGetEncoded() {

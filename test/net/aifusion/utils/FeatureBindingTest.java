@@ -112,9 +112,7 @@ public class FeatureBindingTest {
 		System.out.print(".");
 		return;
 	}
-	/**
-	 * @throws java.lang.Exception
-	 */
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("FeatureBinding ");

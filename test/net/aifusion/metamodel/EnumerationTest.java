@@ -115,7 +115,7 @@ public class EnumerationTest {
 
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimEnumeration#Enumeration(java.lang.String, net.aifusion.metamodel.DataType, java.util.List, java.util.List, net.aifusion.metamodel.NameSpacePath, net.aifusion.metamodel.CimEnumeration)}.
+	 * Test method for {@link net.aifusion.metamodel.CimEnumeration#CimEnumeration(String, CimEnumeration, java.util.List, NameSpacePath, DataType, java.util.List)}.
 	 */
 	@Test
 	public final void testEnumeration() {
@@ -229,7 +229,7 @@ public class EnumerationTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimEnumeration#getLowerCaseKeys()}.
+	 * Test method for {@link net.aifusion.metamodel.CimEnumeration#getKeys()}.
 	 */
 	@Test
 	public final void testGetLowerCaseKeys() {

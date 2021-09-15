@@ -65,9 +65,6 @@ public class SetValueTest {
 		return;
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("SetValueTest");

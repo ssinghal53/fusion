@@ -54,6 +54,7 @@ public class AliasTest {
 		/**
 		 * Create a test query
 		 * @param query - query definition
+		 * @param aliases - query aliases
 		 */
 		public TestQuery(String query,String [] aliases){
 			this.query = query;

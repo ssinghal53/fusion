@@ -61,9 +61,6 @@ public class TagTest {
 		return;
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		assertEquals(37,Tag.values().length);
@@ -296,7 +293,7 @@ public class TagTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.Tag#locate(long)}.
+	 * Test method for {@link net.aifusion.asn.Tag#locate(byte)}.
 	 */
 	@Test
 	public void testLocate() {
@@ -339,7 +336,7 @@ public class TagTest {
 
 	/**
 	 * Test method for {@link net.aifusion.asn.Tag#getEncoded(long, net.aifusion.asn.TagClass, net.aifusion.asn.TagEncoding)}.<br>
-	 * Test method for {@link net.aifusion.asn.Tag#getTag(byte[], int)}.<br>
+	 * Test method for {@link net.aifusion.asn.Tag#getTagNumber(byte[], int)}.<br>
 	 * Test method for {@link net.aifusion.asn.Tag#getRequiredLength(long)}.
 	 */
 	@Test

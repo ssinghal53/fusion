@@ -272,7 +272,7 @@ public class AsnValueTest {
 		}
 	}
 	/**
-	 * Test method for {@link net.aifusion.asn.AsnValue#advanceCursorPastTag(byte[], int, int)}.
+	 * Test method for {@link net.aifusion.asn.AsnValue#skipPastTag(byte[], int, int)}.
 	 */
 	@Test
 	public void testAdvancePastTag() {
@@ -307,7 +307,7 @@ public class AsnValueTest {
 		}
 	}
 	/**
-	 * Test method for {@link net.aifusion.asn.AsnValue#advancePastLength(byte[], int, int)}.
+	 * Test method for {@link net.aifusion.asn.AsnValue#skipPastTag(byte[], int, int)}.
 	 */
 	@Test
 	public void testAdvancePastLength() {

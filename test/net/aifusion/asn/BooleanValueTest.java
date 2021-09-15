@@ -76,7 +76,7 @@ public class BooleanValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.BooleanValue#getEncoded()}.
+	 * Test method for {@link net.aifusion.asn.BooleanValue#getEncodedValue()}.
 	 */
 	@Test
 	public final void testGetEncoded() {
@@ -87,7 +87,7 @@ public class BooleanValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.BooleanValue#Asn1Boolean(boolean)}.
+	 * Test method for {@link net.aifusion.asn.BooleanValue#BooleanValue(boolean)}.
 	 */
 	@Test
 	public final void testAsn1Boolean() {
@@ -98,7 +98,7 @@ public class BooleanValueTest {
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.ast.BooleanValue#
+	 * Test method for {@link net.aifusion.asn.BooleanValue#create(byte[], int, int)}
 	 */
 	@Test
 	public final void testCreate() {

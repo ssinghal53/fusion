@@ -224,9 +224,6 @@ public class Java2CimTest {
 		parser.parse(new ByteArrayInputStream(mof.getBytes()), Constants.defaultNameSpacePath);
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@After
 	public void tearDown() throws Exception {
 		repository.shutdown();

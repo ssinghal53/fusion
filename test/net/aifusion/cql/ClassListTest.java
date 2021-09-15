@@ -152,7 +152,7 @@ public class ClassListTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cql.ClassList#evaluate(net.aifusion.metamodel.Repository, List, java.util.HashMap)}.
+	 * Test method for {@link net.aifusion.cql.ClassList#evaluate(BufferedCache, HashMap)}.
 	 */
 	@Test
 	public void testEvaluateRepositoryHashMapOfStringHashSetOfNamedElement() {

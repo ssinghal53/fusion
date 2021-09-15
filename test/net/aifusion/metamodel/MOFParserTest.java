@@ -149,7 +149,7 @@ public class MOFParserTest {
 
 	/**
 	 * Test to check enumerations
-	 * @throws Exception
+	 * @throws Exception in case of exceptions
 	 */
 	@Test
 	public void testEnumerations() throws Exception {
@@ -196,6 +196,7 @@ public class MOFParserTest {
 	
 	/**
 	 * Test to check valid qualifiers
+	 * @throws Exception in case of exceptions
 	 */
 	@Test
 	public void testQualifiers() throws Exception {

@@ -72,7 +72,7 @@ public class IdentifierTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cql.Identifier#evaluate(java.lang.String, net.aifusion.metamodel.CimInstance)}.
+	 * Test method for {@link net.aifusion.cql.Identifier#evaluate(net.aifusion.metamodel.BufferedCache, java.util.HashMap)}.
 	 */
 	@Ignore
 	@Test

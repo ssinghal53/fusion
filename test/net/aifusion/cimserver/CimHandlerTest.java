@@ -128,9 +128,6 @@ public class CimHandlerTest {
 		System.out.println("done.");
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
@@ -150,9 +147,6 @@ public class CimHandlerTest {
 		return;
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@After
 	public void tearDown() throws Exception {
 		if(handler != null) handler.shutdown();

@@ -81,7 +81,7 @@ public class RealValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.RealValue#getEncoded()}.
+	 * Test method for {@link net.aifusion.asn.RealValue#getEncodedValue()}.
 	 */
 	@Test
 	public final void testGetEncoded() {

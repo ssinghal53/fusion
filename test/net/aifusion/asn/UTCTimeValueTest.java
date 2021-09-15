@@ -72,17 +72,11 @@ public class UTCTimeValueTest {
 		System.out.print("\n");
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		assertEquals(testCases.length,expect.length);
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 	}

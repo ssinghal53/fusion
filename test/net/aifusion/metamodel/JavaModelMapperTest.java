@@ -72,9 +72,6 @@ public class JavaModelMapperTest {
 		System.out.println("done.");
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
@@ -88,9 +85,6 @@ public class JavaModelMapperTest {
 		assertEquals(0,parsedElements.size());
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@After
 	public void tearDown() throws Exception {
 		cache.shutdown();
@@ -608,7 +602,7 @@ public class JavaModelMapperTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#invokeOperation(java.lang.Object, java.lang.String, java.lang.reflect.Method, java.lang.Object[])}.
+	 * Test method for {@link net.aifusion.metamodel.JavaModelMapper#invokeMethod(CimMethod, Object, Method, List)}.
 	 */
 	@Ignore
 	@Test

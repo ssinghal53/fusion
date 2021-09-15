@@ -334,7 +334,7 @@ public class AsnParserTest {
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.asn1.parser.AsnParser#parse(java.lang.String)}.
+	 * Test method for {@link net.aifusion.asn.AsnParser#parse(String)}.
 	 */
 	@Test
 	public void testHeaders() {
@@ -363,7 +363,7 @@ public class AsnParserTest {
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.asn1.parser.AsnParser#parse(java.lang.String)}.
+	 * Test method for {@link net.aifusion.asn.AsnParser#parse(java.lang.String)}.
 	 */
 	@Test
 	public void testParseString() {

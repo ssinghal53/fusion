@@ -69,9 +69,6 @@ public class SequenceValueTest {
 		return;
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		Vector<AsnValue> values1 = new Vector<AsnValue>();

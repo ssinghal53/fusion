@@ -65,7 +65,7 @@ public class OctetStringValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.OctetStringValue#getEncoded()}.
+	 * Test method for {@link net.aifusion.asn.OctetStringValue#getEncodedValue()}.
 	 */
 	@Test
 	public final void testGetEncoded() {
@@ -91,7 +91,7 @@ public class OctetStringValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.OctetStringValue#OctetString(byte[])}.
+	 * Test method for {@link net.aifusion.asn.OctetStringValue#OctetStringValue(byte[])}.
 	 */
 	@Test
 	public final void testOctetString() {

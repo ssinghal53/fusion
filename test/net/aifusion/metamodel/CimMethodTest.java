@@ -228,9 +228,6 @@ public class CimMethodTest {
 		return;
 	}
 	
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("CimMethod ");

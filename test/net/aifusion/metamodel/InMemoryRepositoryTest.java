@@ -93,9 +93,6 @@ public class InMemoryRepositoryTest {
 	};
 	
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("InMemoryRepository ");
@@ -147,9 +144,6 @@ public class InMemoryRepositoryTest {
 		// System.out.println(enumValue2.toMOF());
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

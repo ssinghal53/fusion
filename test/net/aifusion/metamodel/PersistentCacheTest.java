@@ -108,18 +108,12 @@ public class PersistentCacheTest {
 					"instance of test_class1 {\n\tintegerProperty = 5;\n\tstringProperty = null;\n};\n" //
 	};
 	
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("PersistentCache ");
 		assertTrue(repositoryLocation.startsWith("testr"));
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		// clean up -- comment out the next line to check the repository contents manually if tests are failing 
@@ -127,9 +121,6 @@ public class PersistentCacheTest {
 		System.out.println("done.");
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
@@ -272,7 +263,7 @@ public class PersistentCacheTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.PersistentCache#PersistentCache(String, NameSpacePath)}.
+	 * Test method for {@link net.aifusion.metamodel.PersistentCache#PersistentCache(String)}.
 	 */
 	@Test
 	public final void testPersistentCache() {

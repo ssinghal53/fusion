@@ -68,7 +68,7 @@ public class BitStringValueTest {
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.asn.BitStringValue#getEncoded()}.
+	 * Test method for {@link net.aifusion.asn.BitStringValue#getEncodedValue()}.
 	 */
 	@Test
 	public final void testGetEncoded() {
@@ -82,7 +82,7 @@ public class BitStringValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.BitStringValue#BitString(java.lang.String)}.
+	 * Test method for {@link net.aifusion.asn.BitStringValue#BitStringValue(java.lang.String)}.
 	 */
 	@Test
 	public final void testBitString() {

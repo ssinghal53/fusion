@@ -44,9 +44,6 @@ import net.aifusion.utils.Java2Cim;
 public class JavaBindingTest {
 	static InMemoryCache cache = new InMemoryCache();
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("JavaBindingTest ");
@@ -56,25 +53,16 @@ public class JavaBindingTest {
 		}
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("done.");
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@After
 	public void tearDown() throws Exception {
 		System.out.print(".");
@@ -92,7 +80,7 @@ public class JavaBindingTest {
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimEnumerationValue#bind()}.
+	 * Test method for {@link net.aifusion.metamodel.CimEnumeration#bind()}.
 	 */
 	@Test
 	public void testBindEnumerationValue() {

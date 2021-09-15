@@ -49,8 +49,10 @@ import net.aifusion.cimserver.MimeType;
  */
 public class TestHandler implements HttpRequestHandler {
 
+
 	/**
-	 * 
+	 * A test handler that just echoes the incoming request
+	 * @param config - server configuration
 	 */
 	public TestHandler(HttpConfiguration config) {
 		return;

@@ -64,9 +64,6 @@ public class TagEncodingTest {
 		return;
 	}
 	
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		assertEquals(2,TagEncoding.values().length);

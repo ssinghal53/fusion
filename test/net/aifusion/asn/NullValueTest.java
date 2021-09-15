@@ -73,7 +73,7 @@ public class NullValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.NullValue#getEncoded()}.
+	 * Test method for {@link net.aifusion.asn.NullValue#getEncodedValue()}.
 	 */
 	@Test
 	public final void testGetEncoded() {
@@ -81,7 +81,7 @@ public class NullValueTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.NullValue#Null()}.
+	 * Test method for {@link net.aifusion.asn.NullValue#NullValue()}.
 	 */
 	@Test
 	public final void testNull() {

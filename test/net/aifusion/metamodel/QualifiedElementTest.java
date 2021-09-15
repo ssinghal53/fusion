@@ -123,7 +123,7 @@ public class QualifiedElementTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.QualifiedElement#QualifiedElement(net.aifusion.metamodel.ElementType, java.lang.String, net.aifusion.metamodel.QualifiedElement, java.util.List)}.
+	 * Test method for {@link net.aifusion.metamodel.QualifiedElement#QualifiedElement(ElementType, String, List)}.
 	 */
 	@Test
 	public final void testQualifiedElement() {

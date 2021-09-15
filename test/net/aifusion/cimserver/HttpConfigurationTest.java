@@ -69,9 +69,7 @@ public class HttpConfigurationTest {
 		System.out.print(".");
 		return;
 	}
-	/**
-	 * @throws java.lang.Exception
-	 */
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("HttpConfiguration ");
@@ -135,7 +133,7 @@ public class HttpConfigurationTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#ServerConfiguration()}.
+	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#HttpConfiguration()}.
 	 */
 	@Test
 	public void testServerConfiguration() {

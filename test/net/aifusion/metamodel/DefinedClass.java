@@ -28,9 +28,10 @@
 package net.aifusion.metamodel;
 
 /**
- * Class to test defined types created by annotations
+ * Class to test defined types created by annotations<br>
+ * used in EnumBindingClass, InterfaceBindingClass, IsGetterPropertyClass, MethodBindingClass, PropertyBindingClass
  * @author Sharad Singhal
- * @see EnumBindingClass, InterfaceBindingClass, IsGetterPropertyClass, MethodBindingClass, PropertyBindingClass
+ * 
  */
 @Export(schema="TEST")
 public class DefinedClass {

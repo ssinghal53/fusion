@@ -67,9 +67,6 @@ public class StructureValueTest {
 		struct = new CimStructure(ElementType.STRUCTURE,"name",null,null,Constants.defaultNameSpacePath,keyProperties);
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

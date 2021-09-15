@@ -108,9 +108,6 @@ public class BasicProviderTest implements CimListener {
 		return;
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");

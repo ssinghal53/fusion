@@ -317,7 +317,7 @@ public class DataValueTest {
 	}
 	
 	/**
-	 * Test method to check for defined values {@link net.aifusion.metamodel.DataType#isDefinedValue()}.
+	 * Test method to check for defined values
 	 */
 	@Test
 	public final void testDefinedValues() {

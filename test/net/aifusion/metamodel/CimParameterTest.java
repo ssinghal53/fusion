@@ -199,9 +199,6 @@ public class CimParameterTest {
 			"[Description(\"Qualifier\")] Test_Class [] Name = { instance of Test_Class as $ac {\n\tp2 = \"newP2Value\";\n\tkz = true;\n} }"
 	};
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("CimParameter ");
@@ -666,7 +663,7 @@ public class CimParameterTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.metamodel.CimParameter#createInstanceParameter(DataValue)}.
+	 * Test method for {@link net.aifusion.metamodel.CimParameter#createInstanceParameter()}.
 	 */
 	@Test
 	public final void testCreateInstanceParameter() {
