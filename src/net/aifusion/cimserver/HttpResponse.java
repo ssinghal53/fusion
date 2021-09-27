@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -85,6 +86,14 @@ class HttpResponse {
 	private static final SimpleDateFormat gmtFormat = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss 'GMT'", Locale.UK);
 	static {
 		gmtFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		// Java seems to have picked up a bug -- even though we use MMM, "Sep" prints out as "Sept" :(, even though DateFormatSymbols.getShortMonths() shows "Sep"
+		// Worked correctly in 1.8
+		// force it to use our format
+		DateFormatSymbols s = gmtFormat.getDateFormatSymbols();
+		String [] months = new String[] {"Jan","Feb","Mar","Apr","May","Jun","Sep","Oct","Nov","Dec"};
+		s.setMonths(months);
+		s.setShortMonths(months);
+		gmtFormat.setDateFormatSymbols(s);
 	}
 	
 	/**
