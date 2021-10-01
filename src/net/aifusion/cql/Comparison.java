@@ -62,7 +62,7 @@ class Comparison extends Node {
 		DataValue leftValue = children.get(0).getValue();
 		DataValue rightValue = children.get(1).getValue();
 		if(debug) System.out.println("\tCompare "+leftValue+" "+getOperator()+" "+rightValue);
-		if(leftValue == null || rightValue == null){
+		if(leftValue == null || rightValue == null || leftValue.getValue() == null || rightValue.getValue() == null){
 				setValue(NullValue);
 		} else if(leftType.isArray() && rightType.isArray()){
 			// array COMP array
