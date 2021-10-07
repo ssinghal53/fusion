@@ -36,6 +36,8 @@ import net.aifusion.metamodel.DataValue;
 enum Operator {
 	/** Select Node identifier (this is the root node of the query) */
 	SELECT,
+	/** Delete elements identifier */
+	DELETE,
 	/** Select List identifier */
 	SELECT_LIST,
 	/** Node containing class names which are selected */
@@ -129,6 +131,8 @@ enum Operator {
 	 */
 	Node getNode(){
 		switch(this){
+		case DELETE:
+			return new Delete();
 		case ALIAS:
 			return new Alias();
 		case SELECT:

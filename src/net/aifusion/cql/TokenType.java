@@ -19,6 +19,7 @@ enum TokenType {
 	CLASSQUALIFIER("classqualifier",false),
 	COMMA(",",false),
 	DESC("desc",false),
+	DELETE("delete",false),
 	DISTINCT("distinct",false),
 	EOF(null,false),
 	EQUALS("=",false),

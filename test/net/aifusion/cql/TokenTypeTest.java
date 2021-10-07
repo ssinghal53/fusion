@@ -41,7 +41,7 @@ import org.junit.Test;
  */
 public class TokenTypeTest {
 	public static String [] name = {
-			"AND","ANY","AS","ASC","BOOLEAN","BY","CLASSQUALIFIER","COMMA","DESC","DISTINCT","EOF","EQUALS","EVERY",
+			"AND","ANY","AS","ASC","BOOLEAN","BY","CLASSQUALIFIER","COMMA","DESC","DELETE","DISTINCT","EOF","EQUALS","EVERY",
 			"FALSE","FIRST","FROM","GE","GT","IDENTIFIER","IN","IS","ISNOT","ISA","LE","LBRACE","LIKE","LPAREN",
 			"LT","NE","NOT","NULL","OR","ORDER","PERIOD","PROPERTYQUALIFIER","QUALIFIER","RBRACE","RPAREN",
 			"SATISFIES","SELECT","STAR","TRUE","WHERE","COMPARISON","WHITE_SPACE","COMMENT","SEMICOLON","LBRACKET",
@@ -52,7 +52,7 @@ public class TokenTypeTest {
 	};
 	
 	public static String [] value = {
-			"and","any","as","asc",null,"by","classqualifier",",","desc","distinct",null,"=","every",
+			"and","any","as","asc",null,"by","classqualifier",",","desc","delete","distinct",null,"=","every",
 			"false","first","from",">=",">",null,"in","is","isnot","isa","<=","{","like","(",
 			"<","<>","not","null","or","order",".","propertyQualifier","Qualifier","}",")",
 			"satisfies","select","*","true","where",null,null,null,";","[",

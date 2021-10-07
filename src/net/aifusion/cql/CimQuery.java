@@ -8,6 +8,8 @@ import java.util.List;
 
 import net.aifusion.metamodel.BufferedCache;
 import net.aifusion.metamodel.DataValue;
+import net.aifusion.metamodel.ExceptionReason;
+import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.Repository;
 import net.aifusion.metamodel.StructureValue;
 
@@ -19,7 +21,8 @@ public class CimQuery {
 	/** input string */
 	private String query;
 	/** Root of the query parse tree */
-	private Select select;
+	private Node root;
+	private boolean isSelect = false;
 	
 	/**
 	 * Create a CIM query
@@ -28,8 +31,16 @@ public class CimQuery {
 	public CimQuery(String query) {
 		this.query = query;
 		QueryParser parser = new QueryParser();
-		select = (Select) parser.parse(query);
-		select.resolve();
+		root = parser.parse(query);
+		switch(root.getOperator()) {
+		case SELECT:
+			((Select) root).resolve();
+			break;
+		case DELETE:
+			break;
+		default:
+			throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Query "+root.getOperator()+" not yet implemented");
+		}
 		return;
 	}
 	
@@ -60,8 +71,8 @@ public class CimQuery {
 	public String toString() {
 		StringBuilder b = new StringBuilder(query);
 		b.append("\n");
-		if(select != null){
-			b.append(toTree(select,""));
+		if(root != null){
+			b.append(toTree(root,""));
 		}
 		return b.toString();
 	}
@@ -72,7 +83,7 @@ public class CimQuery {
 	 * @param value - value to set
 	 */
 	public void setVariable(String variable, DataValue value){
-		select.setVariable(variable, value);
+		root.setVariable(variable, value);
 		return;
 	}
 	
@@ -82,6 +93,13 @@ public class CimQuery {
 	 * @return - result set from the query
 	 */
 	public List<StructureValue> executeQuery(Repository repository){
-		return select.evaluate(new BufferedCache(repository));
+		switch(root.getOperator()) {
+		case DELETE:
+			return ((Delete) root).evaluate(repository);
+		case SELECT:
+			return root.evaluate(new BufferedCache(repository));
+		default:
+			throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Query "+root.getOperator()+" not yet implemented");
+		}
 	}
 }

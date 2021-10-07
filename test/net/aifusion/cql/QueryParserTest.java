@@ -65,7 +65,7 @@ public class QueryParserTest {
 		}
 	}
 	
-	static boolean verbose = false;
+	static boolean verbose = true;
 	
 	TestQuery [] queries = {
 			new TestQuery("select * from cim_class",true,0),						// selectedEntry = "*"
@@ -261,7 +261,11 @@ public class QueryParserTest {
 					"AND MAR.MethodParameters.__MethodParameters::Pool = AFSP.Antecedent "+
 					"AND OBJECTPATH(SP) = AFSP.Dependent",false,13),
 			new TestQuery("Select * from cim_class where property = $var$",true,0),
-			new TestQuery("Select FIRST 3 DISTINCT * from cim_class where property1 > 5 Order by Property1+Property2 ASC, Property2 DESC",true,0)
+			// sort/distinct
+			new TestQuery("Select FIRST 3 DISTINCT * from cim_class where property1 > 5 Order by Property1+Property2 ASC, Property2 DESC",true,0),
+			// delete
+			new TestQuery("Delete FIRST 3 DISTINCT from cim_class where property1 > 5 Order by Property1+Property2 ASC, Property2 DESC",true,0),
+			
 	};
 	
 	@BeforeClass

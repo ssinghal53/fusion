@@ -82,7 +82,7 @@ class QueryParser {
 	QueryParser() {
 		return;
 	}
-	
+
 	/** 
 	 * Parse a CQLQuery and return the top of the parse tree
 	 * @param query - query string to be parsed
@@ -94,13 +94,16 @@ class QueryParser {
 		p.query = query;
 		p.queryLength = query.length();
 		if(debug) System.out.println(query);
+		Node statement = null;
 		try {
 			// get the first token
 			nextToken(p);
-			// get the select statement
-			Node selectStatement = selectStatement(p);
-			if(!p.lookAheadToken.is(TokenType.EOF)) throw new ModelException(ExceptionReason.INVALID_QUERY, "Incomplete parse: "+p.toString());
-			return selectStatement;
+			if(p.lookAheadToken.is(TokenType.SELECT) || p.lookAheadToken.is(TokenType.LPAREN)) {
+				// get the select statement
+				statement = selectStatement(p);
+			} else if(p.lookAheadToken.is(TokenType.DELETE)) {
+				statement = deleteStatement(p);
+			}
 		} catch (Exception e){
 			if(debug) System.out.println(p.toString());
 			if(e instanceof ModelException){
@@ -109,8 +112,82 @@ class QueryParser {
 				throw new ModelException(p.toString(),e);
 			}
 		}
+		if(statement == null) throw new ModelException(ExceptionReason.INVALID_QUERY, "Invalid query: "+p.toString());
+		if(!p.lookAheadToken.is(TokenType.EOF)) throw new ModelException(ExceptionReason.INVALID_QUERY, "Incomplete parse: "+p.toString());
+		return statement;
 	}
-	
+
+	/**
+	 * DeleteStatment = DELETE [FIRST uint] [DISTINCT] FROM className [WHERE searchCondition] [ORDER BY SortList]
+	 * @param p - parser state
+	 * @return - delete node
+	 */
+	private Node deleteStatement(ParserState p) {
+		if(debug) entering(p,"deleteStatement");
+
+		advanceOver(p,TokenType.DELETE);
+		Node delete = Operator.DELETE.getNode();
+
+		// check if result set operations are defined
+		boolean limitRows = false;
+		int rowsToDelete = -1;
+		if(p.lookAheadToken.is(TokenType.FIRST)) {
+			advanceOver(p,TokenType.FIRST);
+			Token items = advanceOver(p,TokenType.INTEGER);
+			limitRows = true;
+			rowsToDelete = Integer.valueOf(items.value());
+			if(rowsToDelete <= 0) {
+				error(p,"Expected unsigned integer found "+rowsToDelete);
+			}
+		}
+
+		// check if result set is distinct
+		boolean isDistinct = false;
+		if(p.lookAheadToken.is(TokenType.DISTINCT)) {
+			advanceOver(p,TokenType.DISTINCT);
+			isDistinct = true;
+		}
+
+		// from-criteria (classPath)
+		advanceOver(p,TokenType.FROM);
+		delete.addChild(classPath(p));
+
+		// optional search condition
+		if(p.lookAheadToken.is(TokenType.WHERE)){
+			advanceOver(p,TokenType.WHERE);
+			Node where = Operator.WHERE.getNode();
+			delete.addChild(where);
+			where.addChild(searchCondition(p));
+		}
+		OrderBy orderBy = null;
+		if(isDistinct || limitRows) {
+			// if distinct rows are desired, or they are limited, then OrderBy clause MUST be present
+			orderBy = (OrderBy) Operator.ORDER_BY.getNode();
+			if(isDistinct) orderBy.setDistinct();
+			if(limitRows) orderBy.setFirst(rowsToDelete);
+		}
+
+		// optional ORDER BY clause
+		if(p.lookAheadToken.is(TokenType.ORDER)) {
+			advanceOver(p,TokenType.ORDER);
+			advanceOver(p,TokenType.BY);
+			if(orderBy == null) orderBy = (OrderBy) Operator.ORDER_BY.getNode();
+			// at least one sort-spec must exist
+			orderBy.addChild(sortSpec(p));
+			while(p.lookAheadToken.is(TokenType.COMMA)) {
+				advanceOver(p,TokenType.COMMA);
+				orderBy.addChild(sortSpec(p));
+			}
+		}
+
+		if(orderBy != null) delete.addChild(orderBy);
+
+		if(debug) exiting(p,"deleteStatement");
+		return delete;
+	}
+
+
+
 	/**
 	 * SelectStatment = SELECT [FIRST uint] [DISTINCT] selectList FROM fromCriteria [WHERE searchCondition] [ORDER BY SortList]
 	 * 		| "(" SelectStatement ")" [AS] result_class
@@ -122,17 +199,17 @@ class QueryParser {
 		// clone the old alias Values
 		HashMap<String,Node> savedAlias = p.aliases;
 		p.aliases = new HashMap<String,Node>();
-		
+
 		// check if result set is named
 		boolean haveResultSetName = false;
 		if(p.lookAheadToken.is(TokenType.LPAREN)){
 			advanceOver(p,TokenType.LPAREN);
 			haveResultSetName = true;
 		}
-		
+
 		advanceOver(p,TokenType.SELECT);
 		Node select = Operator.SELECT.getNode();
-		
+
 		// check if result set operations are defined
 		boolean limitRows = false;
 		int rowsToReturn = -1;
@@ -145,7 +222,7 @@ class QueryParser {
 				error(p,"Expected unsigned integer found "+rowsToReturn);
 			}
 		}
-		
+
 		// check if result set is distinct
 		boolean isDistinct = false;
 		if(p.lookAheadToken.is(TokenType.DISTINCT)) {
@@ -155,11 +232,11 @@ class QueryParser {
 
 		// select-list
 		select.addChild(selectList(p));
-		
+
 		// from-criteria (classList)
 		advanceOver(p,TokenType.FROM);
 		select.addChild(classList(p));
-		
+
 		// optional search condition
 		if(p.lookAheadToken.is(TokenType.WHERE)){
 			advanceOver(p,TokenType.WHERE);
@@ -174,7 +251,7 @@ class QueryParser {
 			if(isDistinct) orderBy.setDistinct();
 			if(limitRows) orderBy.setFirst(rowsToReturn);
 		}
-		
+
 		// optional ORDER BY clause
 		if(p.lookAheadToken.is(TokenType.ORDER)) {
 			advanceOver(p,TokenType.ORDER);
@@ -187,9 +264,9 @@ class QueryParser {
 				orderBy.addChild(sortSpec(p));
 			}
 		}
-		
+
 		if(orderBy != null) select.addChild(orderBy);
-		
+
 		// named select value
 		if(haveResultSetName){
 			advanceOver(p,TokenType.RPAREN);
@@ -201,7 +278,7 @@ class QueryParser {
 			select.setAlias(rs.getName());
 			p.aliases.put(rs.getName(), rs);
 		}
-		
+
 		// append the known alias values from the parser state
 		if(!p.aliases.isEmpty()){
 			Node alias = Operator.ALIAS.getNode();
@@ -517,7 +594,7 @@ class QueryParser {
 		if(debug) exiting(p,"comp");
 		return n;
 	}
-	
+
 	/**
 	 * Arith := term *( ('+' | '-') term)
 	 * @param p - parser state
@@ -543,8 +620,8 @@ class QueryParser {
 		if(debug) exiting(p,"arith");
 		return n;
 	}
-	
-	
+
+
 	/**
 	 * Term := factor *( ('*'|'/') factor)
 	 * @param p - parser state
@@ -570,7 +647,7 @@ class QueryParser {
 		if(debug) exiting(p,"term");
 		return n;
 	}
-	
+
 	/**
 	 * unary '+' or '-'
 	 * Factor := ['+' | '-'] concat
@@ -592,7 +669,7 @@ class QueryParser {
 		if(debug) exiting(p,"factor");
 		return n;
 	}
-	
+
 	/**
 	 * Concatenation 
 	 * Concat := Chain | *( '||' Chain)
@@ -626,7 +703,7 @@ class QueryParser {
 		if(debug) exiting(p,"concat");
 		return n;
 	}
-	
+
 	/**
 	 * Check if we have a chain. If so, push it on the parser stack<br>
 	 * chain := literal | '(' expr ')' | Identifier | Identifier '#' stringLiteral<br>
@@ -750,7 +827,7 @@ class QueryParser {
 		if(debug) exiting(p,"argumentList");
 		return args;
 	}
-	
+
 	/**
 	 * Get an array index list
 	 * @param p - parser state
@@ -768,7 +845,7 @@ class QueryParser {
 		if(debug) exiting(p,"arrayIndexList");
 		return n;
 	}
-	
+
 	/**
 	 * arrayIndex :
 	 * @param p - Parser state
@@ -968,7 +1045,7 @@ class QueryParser {
 		if(debug) entering(p,"className");
 		Node className = identifier(p);
 		String name = className.getName();
-		if(!name.matches("^([a-zA-Z0-9])+_([a-zA-Z0-9])+$")){
+		if(!name.matches("^([a-zA-Z0-9])+_([a-zA-Z0-9_])+$")){
 			error(p,"Expected className of form schema_name, found "+name,ExceptionReason.TYPE_MISMATCH);
 		}
 		if(debug) exiting(p,"className");
@@ -1031,7 +1108,7 @@ class QueryParser {
 	}
 
 	// debugging helpers
-	
+
 	private StringBuilder indent = new StringBuilder("");
 
 	private void entering(ParserState p, String where){
@@ -1045,7 +1122,7 @@ class QueryParser {
 		System.out.println(indent.toString()+"Exit "+where+" cursor = "+p.cursor+" lookAhead = "+p.lookAheadToken);
 		return;
 	}
-	
+
 	// Tokenizer methods
 
 	/**
@@ -1127,7 +1204,7 @@ class QueryParser {
 		case '-':
 			p.lookAheadToken = new Token(TokenType.MINUS);
 			return;
-		// one or two character tokens
+			// one or two character tokens
 		case '.':
 			p.lookAheadToken = new Token(TokenType.PERIOD);
 			if(p.cursor < p.queryLength && p.query.charAt(p.cursor) == '.'){	// check for '..'
@@ -1135,7 +1212,7 @@ class QueryParser {
 				p.cursor++;
 			}
 			return;
-			
+
 		case ':':
 			p.lookAheadToken = new Token(TokenType.COLON);
 			if(p.cursor < p.queryLength && p.query.charAt(p.cursor) == ':'){	// check for '::'
@@ -1175,7 +1252,7 @@ class QueryParser {
 			}
 			p.lookAheadToken = new Token(TokenType.GT);
 			return;
-		// two character tokens
+			// two character tokens
 		case '|':
 			if(p.cursor < p.queryLength && p.query.charAt(p.cursor) == '|' ){
 				p.lookAheadToken = new Token(TokenType.CONCAT);
@@ -1303,7 +1380,7 @@ class QueryParser {
 				// boolean termination reached
 				if(boolPossible){
 					isBoolean = true;
-				// b.append(c);
+					// b.append(c);
 					cursor++;
 				}
 				break;
