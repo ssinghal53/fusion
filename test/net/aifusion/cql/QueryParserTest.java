@@ -65,7 +65,7 @@ public class QueryParserTest {
 		}
 	}
 	
-	static boolean verbose = true;
+	static boolean verbose = false;
 	
 	TestQuery [] queries = {
 			new TestQuery("select * from cim_class",true,0),						// selectedEntry = "*"
