@@ -50,7 +50,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimStructure;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.MOFParser;
@@ -198,7 +197,7 @@ public class HttpServerTest {
 		while(Thread.activeCount() > minCount){
 			// System.out.println(Thread.activeCount());
 			try {
-				Thread.sleep(50);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

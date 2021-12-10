@@ -24,6 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Jan 30, 2017 by Sharad Singhal
+ * Last updated Dec 10, 2021 by Sharad Singhal to fix date formats
  */
 package net.aifusion.cimserver;
 
@@ -35,14 +36,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.text.DateFormatSymbols;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
@@ -82,19 +80,6 @@ class HttpResponse {
 	private final Map<String,String> xHeaders = new HashMap<String,String>();
 	/** Cookies for the response */
 	private final Map<String,HttpCookie> cookies = new HashMap<String,HttpCookie>();
-	/** Date formatter */
-	private static final SimpleDateFormat gmtFormat = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss 'GMT'", Locale.UK);
-	static {
-		gmtFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-		// Java seems to have picked up a bug -- even though we use MMM, "Sep" prints out as "Sept" :(, even though DateFormatSymbols.getShortMonths() shows "Sep"
-		// Worked correctly in 1.8
-		// force it to use our format
-		DateFormatSymbols s = gmtFormat.getDateFormatSymbols();
-		String [] months = new String[] {"Jan","Feb","Mar","Apr","May","Jun","Sep","Oct","Nov","Dec"};
-		s.setMonths(months);
-		s.setShortMonths(months);
-		gmtFormat.setDateFormatSymbols(s);
-	}
 	
 	/**
 	 * Create an HTTP response that does not require any response body
@@ -224,7 +209,7 @@ class HttpResponse {
 	 * (informational), 204 (no content), and 304 (not modified) responses MUST NOT include a message-body. All other
 	 * responses do include a message-body, although it MAY be of zero length.
 	 * 
-	 * All HTTP/1.1 applications that receive entities MUST accept the �chunked� transfer-coding (section 3.6), thus
+	 * All HTTP/1.1 applications that receive entities MUST accept the "chunked" transfer-coding (section 3.6), thus
 	 * allowing this mechanism to be used for messages when the message length cannot be determined in advance.
 	 * Messages MUST NOT include both a Content-Length header field and a non-identity transfer-coding. If the
 	 * message does include a non-identity transfer-coding, the Content-Length MUST be ignored.
@@ -247,7 +232,7 @@ class HttpResponse {
 			
 			// send mandatory headers if not set otherwise
 			if(!headers.containsKey(HttpHeader.DATE)) {
-				printHeader(pw, HttpHeader.DATE.toString(), gmtFormat.format(new Date()));
+				printHeader(pw, HttpHeader.DATE.toString(), getCurrentDate());
 			}
 			if(!headers.containsKey(HttpHeader.CONNECTION)) {
 				printHeader(pw, HttpHeader.CONNECTION.toString(), (this.keepAlive ? "keep-alive" : "close"));
@@ -401,6 +386,98 @@ class HttpResponse {
 			}
 		}
 		data.close();
+	}
+	
+	/**
+	 * Get the current date in IMF-fixdate format (RFC 7231)
+	 * @return - current date/time in proper format
+	 */
+	String getCurrentDate() {
+		// NOTE that java date formatters mis-behave in unknown ways
+		// explicitly format the date in the RFC 7231 format
+		// Currently does not handle leap second, but we'll let that go
+		StringBuilder b = new StringBuilder();
+		ZonedDateTime dateTime = ZonedDateTime.now(ZoneId.of("Z"));
+		dateTime.getDayOfWeek();
+		switch(dateTime.getDayOfWeek()) {
+		case FRIDAY:
+			b.append("Fri, ");
+			break;
+		case MONDAY:
+			b.append("Mon, ");
+			break;
+		case SATURDAY:
+			b.append("Sat, ");
+			break;
+		case SUNDAY:
+			b.append("Sun, ");
+			break;
+		case THURSDAY:
+			b.append("Thu, ");
+			break;
+		case TUESDAY:
+			b.append("Tue, ");
+			break;
+		case WEDNESDAY:
+			b.append("Wed, ");
+			break;
+		default:
+			throw new ModelException("Internal error in setting day of week -- should not happen");
+		}
+		int day = dateTime.getDayOfMonth();
+		if(day < 10) b.append("0");
+		b.append(day).append(" ");
+		switch(dateTime.getMonth()){
+		case APRIL:
+			b.append("Apr ");
+			break;
+		case AUGUST:
+			b.append("Aug ");
+			break;
+		case DECEMBER:
+			b.append("Dec ");
+			break;
+		case FEBRUARY:
+			b.append("Feb ");
+			break;
+		case JANUARY:
+			b.append("Jan ");
+			break;
+		case JULY:
+			b.append("Jul ");
+			break;
+		case JUNE:
+			b.append("Jun ");
+			break;
+		case MARCH:
+			b.append("Mar ");
+			break;
+		case MAY:
+			b.append("May ");
+			break;
+		case NOVEMBER:
+			b.append("Nov ");
+			break;
+		case OCTOBER:
+			b.append("Oct ");
+			break;
+		case SEPTEMBER:
+			b.append("Sep ");
+			break;
+		default:
+			throw new ModelException("Internal error in setting month -- should not happen");			
+		}
+		b.append(dateTime.getYear()).append(" ");
+		int hour = dateTime.getHour();	// 0-23
+		if(hour < 10) b.append("0");
+		b.append(hour).append(":");
+		int min = dateTime.getMinute();	// 0-59
+		if(min < 10) b.append("0");
+		b.append(min).append(":");
+		int sec = dateTime.getSecond();	// 0-59, leap-second should code as "60"
+		if(sec < 10) b.append("0");
+		b.append(sec).append(" GMT");
+		return b.toString();
 	}
 
 	@Override

@@ -61,7 +61,7 @@ public class CimHeaderTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("CimHeader ");
-		assertEquals(22,CimHeader.values().length);
+		assertEquals(23,CimHeader.values().length);
 	}
 
 	/**

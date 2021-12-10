@@ -52,7 +52,7 @@ public class HttpXHeaderTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("HttpXHeader ");
-		assertEquals(14,CimXHeader.values().length);
+		assertEquals(15,CimXHeader.values().length);
 	}
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
@@ -158,6 +158,7 @@ public class HttpXHeaderTest {
 					case HAS_ELEMENT:
 					case INVOKE_METHOD:
 					case SET_PROPERTY_VALUE:
+					case FILTER:
 						assertTrue(x.appliesTo(h));
 						break;
 					default:
@@ -173,6 +174,15 @@ public class HttpXHeaderTest {
 					default:
 						assertFalse(x.appliesTo(h));
 						break;
+					}
+					break;
+				case FILTER_STRING:
+					switch(h) {
+					case FILTER:
+						assertTrue(x.appliesTo(h));
+						break;
+					default:
+						assertFalse(x.appliesTo(h));
 					}
 					break;
 				case METHOD_TYPE:
@@ -210,6 +220,11 @@ public class HttpXHeaderTest {
 						xHeaders.contains(CimXHeader.NAME_SPACES) && 
 						xHeaders.contains(CimXHeader.ELEMENT_NAMES) &&
 						xHeaders.contains(CimXHeader.LOCATE_SUBCLASS));
+				break;
+			case FILTER:
+				assertEquals(2,xHeaders.size());
+				assertTrue(xHeaders.contains(CimXHeader.FILTER_STRING) && 
+						xHeaders.contains(CimXHeader.OBJECT_PATH));
 				break;
 			case ADD_LISTENER:
 			case REMOVE_LISTENER:

@@ -93,6 +93,13 @@ public interface Repository {
 	 */
 	public List<NamedElement> getElements(String elementTypes, String localNameSpaces, String elementNames, boolean locateSubTypes);
 	
+	/**
+	 * Find all structure value instances based on some filter criteria
+	 * @param filter - filter to apply
+	 * @return - list of structureValues that pass the given filter. Empty list if none available
+	 */
+	public List<StructureValue> filter(CimFilter filter);
+	
 	/* 
 	 * *************************************************************
 	 * General methods to support defaults and repository management

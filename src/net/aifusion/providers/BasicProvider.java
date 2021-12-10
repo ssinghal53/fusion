@@ -35,6 +35,7 @@ import java.util.Vector;
 
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEventType;
+import net.aifusion.metamodel.CimFilter;
 import net.aifusion.metamodel.CimIndication;
 import net.aifusion.metamodel.CimInstance;
 import net.aifusion.metamodel.CimListener;
@@ -489,11 +490,17 @@ public class BasicProvider implements Provider {
 		}
 		return elements;
 	}
-
-	/*
-	 * Local Housekeeping and methods
-	 */
 	
+	@Override
+	public List<StructureValue> filter(CimFilter filter) {
+		return repository.filter(filter);
+	}
+
+	/* *******************************
+	 * Local Housekeeping and methods
+	 * *******************************
+	 */
+
 	/**
 	 * Locate a child provider known to this provider that has an element in it
 	 * @param path - ObjectPath of the element to search
