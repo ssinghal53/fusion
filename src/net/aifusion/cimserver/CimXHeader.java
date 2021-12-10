@@ -40,7 +40,7 @@ public enum CimXHeader {
 	/** header containing the object path of the named element */
 	OBJECT_PATH("Cim-ObjectPath",new CimHeader[] {CimHeader.GET_ELEMENT,CimHeader.HAS_ELEMENT,CimHeader.DELETE_ELEMENT,CimHeader.GET_PROPERTY_NAMES,CimHeader.GET_PROPERTY_TYPE,
 			CimHeader.GET_PROPERTY_VALUE,CimHeader.SET_PROPERTY_VALUE,CimHeader.GET_METHOD_NAMES,CimHeader.GET_METHOD_TYPE,CimHeader.GET_METHOD_PARAMETERS,
-			CimHeader.INVOKE_METHOD,}),
+			CimHeader.INVOKE_METHOD,CimHeader.FILTER}),
 	/** Header containing the name space path */
 	NAMESPACE_PATH("Cim-NamespacePath",new CimHeader[] {CimHeader.PUT_ELEMENT}),
 	/** Name of the extrinsic method being addressed */
@@ -55,6 +55,8 @@ public enum CimXHeader {
 	PARAMETER_NAME("Cim-ParameterName",new CimHeader[]{}),
 	/** List of element types being requested in getElements */
 	ELEMENT_TYPES("Cim-ElementType",new CimHeader[]{CimHeader.GET_ELEMENTS}),
+	/** Filter query string sent using CimFilter */
+	FILTER_STRING("Cim-FilterString",new CimHeader[] {CimHeader.FILTER}),
 	/** List of namespaces being requested in getElements */
 	NAME_SPACES("Cim-NameSpace",new CimHeader[]{CimHeader.GET_ELEMENTS}),
 	/** List of element names being requested in getElements */

@@ -49,14 +49,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import net.aifusion.cimserver.CimHeader;
-import net.aifusion.cimserver.HttpCookie;
-import net.aifusion.cimserver.HttpHeader;
-import net.aifusion.cimserver.HttpMethod;
-import net.aifusion.cimserver.HttpResponse;
-import net.aifusion.cimserver.HttpStatus;
-import net.aifusion.cimserver.CimXHeader;
-import net.aifusion.cimserver.MimeType;
 import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.ModelException;
 
@@ -208,7 +200,7 @@ public class HttpResponseTest {
 		assertNotNull(r);
 		r.addXHeader(CimXHeader.INTRINSIC.toString(), CimHeader.GET_ELEMENT.toString());
 		sendToReceiveString(r);
-		// System.out.println(received);
+		System.out.println(received);
 		assertEquals(193,received.length());
 		return;
 	}

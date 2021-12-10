@@ -596,4 +596,16 @@ public class InMemoryRepository implements Repository {
 	protected void finalize() throws Throwable {
 		shutdown();
 	}
+
+	@Override
+	public List<StructureValue> filter(CimFilter filter) {
+		String className = filter.getStructurePath().getName();
+		String nameSpace = filter.getStructurePath().getLocalPath();
+		List<NamedElement> elements = getElements("StructureValue",nameSpace,className,true);
+		Vector<StructureValue> values = new Vector<StructureValue>();
+		for(NamedElement e : elements) {
+			if(filter.satisfies((StructureValue) e, this)) values.add((StructureValue) e);
+		}
+		return values;
+	}
 }

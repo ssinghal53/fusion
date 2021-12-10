@@ -76,7 +76,9 @@ public enum CimHeader {
 	/** Send an event to the server */
 	SEND_EVENT("SendEvent",HttpMethod.POST),
 	/** Shut down the client, and let the server know */
-	SHUT_DOWN("Bye",HttpMethod.HEAD)
+	SHUT_DOWN("Bye",HttpMethod.HEAD),
+	/** Filter elements at the server */
+	FILTER("Filter",HttpMethod.GET)
 	;
 	
 	/** Http Extension Header to be used to define the Cim header */ 

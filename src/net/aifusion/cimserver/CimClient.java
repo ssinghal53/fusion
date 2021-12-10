@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEvent;
 import net.aifusion.metamodel.CimEventType;
+import net.aifusion.metamodel.CimFilter;
 import net.aifusion.metamodel.CimInstance;
 import net.aifusion.metamodel.CimListener;
 import net.aifusion.metamodel.CimParameter;
@@ -474,6 +475,28 @@ public class CimClient implements Provider, CimListener {
 			return cache.getElements(elementTypes, localNameSpaces, elementNames, locateSubTypes);
 		}
 		return new Vector<NamedElement>();
+	}
+	
+	@Override
+	public List<StructureValue> filter(CimFilter filter) {
+		// get an existing element
+		HttpURLConnection connection = getConnection(CimHeader.FILTER);
+		connection.setRequestProperty(CimXHeader.FILTER_STRING.toString(), filter.getFilterQuery());
+		connection.setRequestProperty(CimXHeader.OBJECT_PATH.toString(), filter.getStructurePath().toString());
+		CimResponse response = getResponse(connection);
+		if(HttpStatus.OK.equals(response.status) && response.hasBody()){
+			InMemoryCache cache = new InMemoryCache();
+			MOFParser parser = new MOFParser(cache,this);
+			BufferedReader reader = new BufferedReader(new StringReader(response.respBody));
+			parser.parse(reader, Constants.defaultNameSpacePath);
+			Vector<StructureValue> values = new Vector<StructureValue>();
+			for(NamedElement e : cache.getElements("structurevalue", null, null, false)) {
+				values.add((StructureValue)e);
+			}
+			cache.shutdown();
+			return values;
+		}
+		return new Vector<StructureValue>();
 	}
 
 	@Override

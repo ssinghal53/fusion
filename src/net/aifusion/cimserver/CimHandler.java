@@ -45,6 +45,7 @@ import net.aifusion.metamodel.CimInstance;
 import net.aifusion.metamodel.CimParameter;
 import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
+import net.aifusion.metamodel.FqlFilter;
 import net.aifusion.metamodel.InMemoryCache;
 import net.aifusion.metamodel.MOFParser;
 import net.aifusion.metamodel.ModelException;
@@ -436,6 +437,31 @@ class CimHandler implements HttpRequestHandler {
 			case SHUT_DOWN:
 				response = new HttpResponse(requestMethod,HttpStatus.OK);
 				// response.addHeader(HttpHeader.ALLOW, "DELETE,GET,HEAD,OPTIONS,POST,PUT");
+				break;
+			case FILTER:
+				path = new ObjectPath(request.getXHeader(CimXHeader.OBJECT_PATH.toString()));
+				FqlFilter filter = new FqlFilter(path,request.getXHeader(CimXHeader.FILTER_STRING.toString()));
+				resultset = provider.filter(filter);
+				b = new StringBuilder("");
+				ns0 = null;
+				for(StructureValue e : resultset){
+					NameSpacePath n = e.getNameSpacePath();
+					if(!n.equals(ns0)) {
+						b.append("#pragma namespace(\"").append(n.getLocalPath()).append("\")\n");
+						ns0 = n;
+					}
+					b.append(e.toMOF());
+					switch(e.getElementType()) {
+					case STRUCTUREVALUE:
+						b.append(";");
+					case INSTANCE:
+						b.append(CRLF);
+						break;
+					default:
+						break;
+					}
+				}
+				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				break;
 			case SEND_EVENT:
 			default:

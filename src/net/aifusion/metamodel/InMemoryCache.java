@@ -148,4 +148,13 @@ public class InMemoryCache implements Repository {
 		}
 		return elements;
 	}
+
+	@Override
+	public List<StructureValue> filter(CimFilter filter) {
+		Vector<StructureValue> values = new Vector<StructureValue>();
+		for(Repository r : repositories.values()) {
+			values.addAll(r.filter(filter));
+		}
+		return values;
+	}
 }
