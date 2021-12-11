@@ -155,7 +155,7 @@ public class DataValue {
 				b.append(ModelUtilities.toMOFString(objectType, Array.get(value, i)));
 				b.append(", ");
 			}
-			b.setLength(b.length()-2);
+			b.setLength(b.length() > 2 ? b.length()-2 : b.length()-1);
 			b.append(" }");
 			return b.toString();
 		}
