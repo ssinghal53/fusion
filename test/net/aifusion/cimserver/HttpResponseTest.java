@@ -200,7 +200,7 @@ public class HttpResponseTest {
 		assertNotNull(r);
 		r.addXHeader(CimXHeader.INTRINSIC.toString(), CimHeader.GET_ELEMENT.toString());
 		sendToReceiveString(r);
-		System.out.println(received);
+//		System.out.println(received);
 		assertEquals(193,received.length());
 		return;
 	}
