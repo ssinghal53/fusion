@@ -32,6 +32,7 @@ import java.util.List;
 import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.DateTime;
+import net.aifusion.metamodel.EnumerationValue;
 import net.aifusion.metamodel.ExceptionReason;
 import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.ObjectPath;
@@ -140,7 +141,6 @@ class Comparison extends Node {
 					default:
 						throw new ModelException(toString()+" does not support operator "+getOperator());
 					}
-					
 				} else {
 					// do a double compare
 					Double lr = getDoubleValue(leftType,leftValue);
@@ -224,9 +224,51 @@ class Comparison extends Node {
 				default:
 					throw new ModelException(toString()+" does not support operator "+getOperator());
 				}
+			} else if(leftType == DataType.ENUMERATIONVALUE || rightType == DataType.ENUMERATIONVALUE) {
+				return enumCompare(leftType, leftValue, rightType, rightValue);
 			}
 		}
 		// we cannot determine the value
+		return null;
+	}
+
+	/**
+	 * Compare enum types for equality
+	 * @param leftType - left child type
+	 * @param leftValue - value of left child
+	 * @param rightType - right child type
+	 * @param rightValue - value of right child
+	 * @return - true if equals, false if not equals
+	 */
+	private Boolean enumCompare(DataType leftType, Object leftValue, DataType rightType, Object rightValue) {
+		if(!(getOperator().equals(Operator.EQUALS) || getOperator().equals(Operator.NE))) {
+			throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+" Enumeration comparison does not support operator "+getOperator());
+		}
+		if(leftType == DataType.ENUMERATIONVALUE && rightType == DataType.ENUMERATIONVALUE) {
+			return leftValue.equals(rightValue);	// enumValue comparison
+		} else if(leftType == DataType.ENUMERATIONVALUE) {
+			// enumValue comparison with string or integers, where left value is enumValue
+			return ecomp((EnumerationValue) leftValue,rightValue);
+		} else {
+			// enumValue comparison with string or integers, where right value is enumValue
+			return ecomp((EnumerationValue) rightValue,leftValue);
+		}
+	}
+	/**
+	 * Compare an enum value to an integer or string
+	 * @param e - enum to compare
+	 * @param v - value to compare (string or integer)
+	 * @return - true if equals, false otherwise
+	 */
+	private Boolean ecomp(EnumerationValue e, Object v) {
+		if(e.getDataType().isString()) {
+			String ev = e.hasValue() ? e.getDataValue().toString() : e.getName();	// value if defined, else name of the enumvalue
+			return ev.equals(v);
+		} else if(e.getDataType().isInteger()) {
+			// right value must be an integer type
+			DataValue ev = e.getDataValue();
+			return ev.getValue().equals(v);
+		}
 		return null;
 	}
 
