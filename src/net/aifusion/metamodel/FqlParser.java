@@ -236,7 +236,7 @@ class FqlParser {
 		// start = select-statement
 		this.query = query;
 		queryLength = query.length();
-		if(debug) System.out.println(query);
+		if(debug) System.out.println("*** Parsing ***\n"+query+"\n****");
 		try {
 			Token t;
 			do {
@@ -244,7 +244,7 @@ class FqlParser {
 				tokens.add(t);
 			} while(!t.is(TokenType.EOF));
 			if(debug) System.out.println(tokens);
-			statement = expr();
+			if(tokens.size() > 1) statement = expr();
 		} catch (Exception e){
 			if(e instanceof ModelException){
 				throw e;
@@ -258,7 +258,7 @@ class FqlParser {
 
 	/**
 	 * Get the parse tree from the parser
-	 * @return - root node for the parse tree
+	 * @return - root node for the parse tree. Null for an empty tree
 	 */
 	public FqlNode getParseTree() {
 		return statement;
@@ -282,11 +282,19 @@ class FqlParser {
 	private Token advanceOver(TokenType expected) {
 		Token t = lookAhead();
 		if(t.is(expected)){
-			if(debug) System.out.println("AdvanceOver "+expected+" [ "+t.getType()+", "+t.getValue()+" ]");
+			if(debug) System.out.println("AdvanceOver "+expected+" found [ "+t.getType()+", "+t.getValue()+" ]");
 			currentToken++;
 			return t;
 		}
-		throw new ModelException("AdvanceOver Failed");
+		throw new ModelException("AdvanceOver Failed: Expected "+expected+" at Token "+currentToken+" found [ "+t.getType()+", "+t.getValue()+" ]");
+	}
+	
+	private void enter(String s) {
+		System.out.println("Enter- "+s+" LookAhead "+lookAhead());
+	}
+	private void exit(String s, FqlNode n) {
+		System.out.println("Exit-"+s+" LookAhead "+lookAhead());
+		System.out.println(n.toTree(s+" "));
 	}
 
 	/**
@@ -295,6 +303,7 @@ class FqlParser {
 	 * @return - FqlNode containing orExpression
 	 */
 	private FqlNode expr() {
+		if(debug) enter("ORExpr");
 		FqlNode n = andExpression();
 		while(lookAhead().is(TokenType.OR)){
 			advanceOver(TokenType.OR);
@@ -307,6 +316,7 @@ class FqlParser {
 				n.addChild(andExpression());
 			}
 		}
+		if(debug) exit("ORExpr",n);
 		return n;
 	}
 
@@ -315,6 +325,7 @@ class FqlParser {
 	 * @return - FqlNode containing AndExpression
 	 */
 	private FqlNode andExpression() {
+		if(debug) enter("ANDExpr");
 		FqlNode n = notExpression();
 		while(lookAhead().is(TokenType.AND)){
 			advanceOver(TokenType.AND);
@@ -327,6 +338,7 @@ class FqlParser {
 				n.addChild(notExpression());
 			}
 		}
+		if(debug) exit("AndExpr",n);
 		return n;
 	}
 
@@ -336,6 +348,7 @@ class FqlParser {
 	 * @return - FqlNode containing NOT expression
 	 */
 	private FqlNode notExpression() {
+		if(debug) enter("NOTExpr");
 		FqlNode n = null;
 		if(lookAhead().is(TokenType.NOT)){
 			advanceOver(TokenType.NOT);
@@ -346,6 +359,7 @@ class FqlParser {
 		} else {
 			n.addChild(arrayComp());
 		}
+		if(debug) exit("NotExpr",n);
 		return n;
 	}
 
@@ -354,6 +368,7 @@ class FqlParser {
 	 * @return - return FqlNode array compare expression
 	 */
 	private FqlNode arrayComp() {
+		if(debug) enter("AComp");
 		FqlNode n = null;
 		if(lookAhead().is(TokenType.ANY) || lookAhead().is(TokenType.EVERY)){
 			Token arrayOp = advanceOver(lookAhead().getType());
@@ -368,9 +383,10 @@ class FqlParser {
 				advanceOver(TokenType.RPAREN);
 				n = FqlOperator.valueOf(arrayOp.getType().toString()).getFqlNode(compOrIdentifier.getName());
 				n.addChild(expr);
-				FqlNode op = FqlOperator.SATISFIES.getFqlNode();
+				FqlNode op = n;
+				n = FqlOperator.SATISFIES.getFqlNode();
 				n.addChild(op);
-				op.addChild(comp);
+				n.addChild(comp);
 			} else {
 				n = FqlOperator.valueOf(arrayOp.getType().toString()).getFqlNode();
 				n.addChild(compOrIdentifier);
@@ -378,6 +394,7 @@ class FqlParser {
 		} else {
 			n = comp();
 		}
+		if(debug) exit("Acomp",n);
 		return n;
 	}
 
@@ -388,6 +405,7 @@ class FqlParser {
 	 * @return FqlNode containing comp tree
 	 */
 	private FqlNode comp(){
+		if(debug) enter("Comp");
 		// TODO: DSP0212 also defines [NOT] LIKE
 		FqlNode n = arith();
 		if(lookAhead().is(TokenType.NOT)) {
@@ -421,6 +439,7 @@ class FqlParser {
 			op.addChild(n);
 			n = op;
 		}
+		if(debug) exit("Comp",n);
 		return n;
 	}
 
@@ -429,6 +448,7 @@ class FqlParser {
 	 * @return FqlNode containing arith
 	 */
 	private FqlNode arith(){
+		if(debug) enter("Arith");
 		FqlNode n = term();
 		while(lookAhead().is(TokenType.PLUS) || lookAhead().is(TokenType.MINUS)){
 			if(lookAhead().is(TokenType.PLUS)){
@@ -444,6 +464,7 @@ class FqlParser {
 			}
 			n.addChild(term());
 		}
+		if(debug) exit("Arith",n);
 		return n;
 	}
 
@@ -453,9 +474,10 @@ class FqlParser {
 	 * @return - FqlNode containing factor 
 	 */
 	private FqlNode term(){
+		if(debug) enter("Term");
 		FqlNode n = factor();
 		while(lookAhead().is(TokenType.STAR) || lookAhead().is(TokenType.SLASH)){
-			if(lookAheadToken.is(TokenType.STAR)){
+			if(lookAhead().is(TokenType.STAR)){
 				advanceOver(TokenType.STAR);
 				FqlNode op = FqlOperator.MULTIPLY.getFqlNode();
 				op.addChild(n);
@@ -468,6 +490,7 @@ class FqlParser {
 			}
 			n.addChild(factor());
 		}
+		if(debug) exit("Term",n);
 		return n;
 	}
 
@@ -477,6 +500,7 @@ class FqlParser {
 	 * @return - FqlNode containing factor
 	 */
 	private FqlNode factor(){
+		if(debug) enter("Factor");
 		FqlNode n = null;
 		if(lookAhead().is(TokenType.SIGN)){
 			Token t = advanceOver(TokenType.SIGN);
@@ -487,88 +511,96 @@ class FqlParser {
 			n = concat;
 		else
 			n.addChild(concat);
+		if(debug) exit("Factor",n);
 		return n;
 	}
-
+	
 	/**
 	 * Concatenation 
 	 * Concat := Chain | *( '||' Chain)
 	 * Get a concatenated chain
 	 * @return - FqlNode with chain or concat
 	 */
-	private FqlNode concat(){
-		FqlNode n = null;
-		if(haveChain()){
-			FqlNode leftChain = stack.pop();
-			if(lookAhead().is(TokenType.CONCAT)){
-				n = FqlOperator.CONCAT.getFqlNode();
-				n.addChild(leftChain);
-				while(lookAhead().is(TokenType.CONCAT)){
-					advanceOver(TokenType.CONCAT);
-					if(haveChain()){
-						FqlNode rightChain = stack.pop();
-						n.addChild(rightChain);
-					} else {
-						throw new ModelException(ExceptionReason.INVALID_QUERY,"Chain"); // error - need a chain
-					}
-				}
-			} else {
-				n = leftChain;	// only a single chain
+	private FqlNode concat() {
+		if(debug) enter("Concat");
+		FqlNode left = chain();
+		if(lookAhead().is(TokenType.CONCAT)) {
+			FqlNode n = FqlOperator.CONCAT.getFqlNode();
+			n.addChild(left);
+			while(lookAhead().is(TokenType.CONCAT)) {
+				advanceOver(TokenType.CONCAT);
+				n.addChild(chain());
 			}
-		} else {
-			throw new ModelException(ExceptionReason.INVALID_QUERY,"Chain"); // error - need a chain
+			if(debug) exit("Concat",n);
+			return n;
 		}
-		return n;
+		if(debug) exit("Concat",left);
+		return left;
 	}
-
+	
 	/**
-	 * Check if we have a chain. If so, push it on the parser stack<br>
-	 * chain = literal<br>
-	 * 		| '(' expr ')'<br>
-	 * 		| identifier<br>
-	 * 		| classPath ['.' identifier ] +<br>
-	 * 		| identifier '(' arg-list ')'<br>
-	 * 		| chain '[' arrayIndex ']'<br>
-	 * @return - true if we have a chain, false otherwise
+	 * Property identifier
+	 * Property := literal<br>
+	 * 	| '(' expr ')'
+	 *  | classPath ('.' propertyIdentifier )+
+	 *  | propertyIdentifier ('.' chain)*
+	 * 
+	 * @return FqlNode with property
 	 */
-	private boolean haveChain() {
+	private FqlNode chain() {
+		if(debug) enter("Chain");
 		FqlNode chain = null;
-		if(lookAhead().is(TokenType.SLASH)) {
-			chain = classPath();
-		} else if(literal()) {
+		if(literal()) {
 			chain = stack.pop();
+			if(debug) exit("Chain",chain);
+			return chain;
 		} else if(lookAhead().is(TokenType.LPAREN)) {
 			advanceOver(TokenType.LPAREN);
 			chain = expr();
 			advanceOver(TokenType.RPAREN);
-		} else if(lookAhead().is(TokenType.IDENTIFIER)) {
-			chain = identifier();
-			if(lookAhead().is(TokenType.LPAREN)) {
-				// chain = identifier '(' arg_list ')'
-				List<FqlNode> argList = argumentList();
-				chain = FqlOperator.FUNCTION.getFqlNode(chain.getName());
-				for(FqlNode n : argList){
-					chain.addChild(n);
-				}
-				stack.push(chain);
-				return true;
-			}
+			if(debug) exit("Chain",chain);
+			return chain;
+		} else if(lookAhead().is(TokenType.SLASH)) {
+			chain = classPath();
+			advanceOver(TokenType.PERIOD);
+			chain.addChild(propertyIdentifier());
+		} else {
+			chain = propertyIdentifier();
 		}
 		while(lookAhead().is(TokenType.PERIOD)) {
 			advanceOver(TokenType.PERIOD);
-			// chain '.' identifier
-			Token t = advanceOver(TokenType.IDENTIFIER);
-			chain.addChild(FqlOperator.IDENTIFIER.getFqlNode(t.getValue()));
+			FqlNode n = FqlOperator.PERIOD.getFqlNode();
+			n.addChild(propertyIdentifier());
+			chain.addChild(n);
 		}
-		if(lookAhead().is(TokenType.LBRACKET)){
-			// chain = identifier '[' arrayIndex ']'
+		if(debug) exit("Chain",chain);
+		return chain;
+	}
+	
+	/**
+	 * Property Identifier
+	 * propIdent := identifier
+	 * 		| identifier '[' index range ']'
+	 * 		| identifier '(' argList ')'
+	 * @return identifier
+	 */
+	private FqlNode propertyIdentifier() {
+		if(debug) enter("PropIdentifier");
+		FqlNode propIdentifier = identifier();
+		if(lookAhead().is(TokenType.LBRACKET)) {
 			advanceOver(TokenType.LBRACKET);
-			chain.addChild(arrayIndexList());
+			propIdentifier.addChild(arrayIndexList());
 			advanceOver(TokenType.RBRACKET);
+		} else if(lookAhead().is(TokenType.LPAREN)) {
+			FqlNode n = FqlOperator.FUNCTION.getFqlNode(propIdentifier.getName());
+			propIdentifier = n;
+			List<FqlNode> argList = argumentList();
+			for(FqlNode a : argList) {
+				n.addChild(a);
+			}
 		}
-		stack.push(chain);
-		return true;
-		
+		if(debug) exit("propIdentifier",propIdentifier);
+		return propIdentifier;
 	}
 
 	/**
@@ -576,6 +608,7 @@ class FqlParser {
 	 * @return list of arguments. Empty if none defined
 	 */
 	private List<FqlNode> argumentList(){
+		if(debug) enter("ArgList");
 		Vector<FqlNode> args = new Vector<FqlNode>();
 		// argList := '(' *Exp *(, Exp) ')'
 		advanceOver(TokenType.LPAREN);
@@ -595,6 +628,7 @@ class FqlParser {
 	 * @return - array index list
 	 */
 	private FqlNode arrayIndexList(){
+		if(debug) enter("ArrayIndexList");
 		// Array-index-list	Array-index *("," Array-Index) | "*" | EMPTY
 		FqlNode n = FqlOperator.INDEX.getFqlNode();
 		n.addChild(arrayIndex());
@@ -602,6 +636,7 @@ class FqlParser {
 			advanceOver(TokenType.COMMA);
 			n.addChild(arrayIndex());
 		}
+		if(debug) exit("ArrayIndexList",n);
 		return n;
 	}
 
@@ -610,6 +645,7 @@ class FqlParser {
 	 * @return - INDEX FqlNode containing index value or '*'
 	 */
 	private FqlNode arrayIndex(){
+		if(debug) enter("ArrayIndex");
 		FqlNode n = null;
 		// Array-index-list	Array-index *("," Array-Index) | "*" | EMPTY
 		// Array-index	Expr | Expr ".." [Expr] | [Expr] ".." Expr
@@ -644,6 +680,7 @@ class FqlParser {
 			}
 		}
 		if(n == null) throw new ModelException(ExceptionReason.INVALID_QUERY,"Index can only be integer value or *");
+		if(debug) exit("ArrayIndex",n);
 		return n;
 	}
 
@@ -654,6 +691,7 @@ class FqlParser {
 	 * @return - true if found a literal value, false otherwise. Value(s) are on the stack if true
 	 */
 	private boolean literal(){
+		if(debug) enter("Literal");
 		boolean matched = false;
 		if(lookAhead().is(TokenType.STRING_VALUE)){
 			// StringLiteral
@@ -662,7 +700,7 @@ class FqlParser {
 			matched = true;
 		} else if(lookAhead().is(TokenType.NUMBER)){
 			// decimal-value | binary-value | hex-value | real-value
-			Token token = advanceOver(lookAheadToken.getType());
+			Token token = advanceOver(lookAhead().getType());
 			switch(token.getType()){
 			case BINARY:
 				stack.push(FqlOperator.CONSTANT.getFqlNode(new DataValue(Long.parseLong(token.getValue(), 2))));
@@ -741,6 +779,7 @@ class FqlParser {
 	 * @return - CLASS_PATH FqlNode containing classpath
 	 */
 	private FqlNode classPath(){
+		if(debug) enter("ClassPath");
 		Vector<String> pathNames = new Vector<String>();
 		if(lookAhead().is(TokenType.SLASH)){
 			while(lookAhead().is(TokenType.SLASH)){
@@ -776,6 +815,7 @@ class FqlParser {
 	 * @return - CLASS_PATH FqlNode containing the class name
 	 */
 	private FqlNode className(){
+		if(debug) enter("ClassName");
 		FqlNode className = identifier();
 		String name = className.getName();
 		if(!name.matches("^([a-zA-Z0-9])+_([a-zA-Z0-9_])+$")){
@@ -792,12 +832,14 @@ class FqlParser {
 	 * @return - IDENTIFIER | VARIABLE with name given by the incoming identifier
 	 */
 	private FqlNode identifier(){
+		if(debug) enter("Identifier");
 		Token t =  advanceOver(TokenType.IDENTIFIER);
 		// FqlNode id =  p.aliases.containsKey(t.value()) ? p.aliases.get(t.value()) : new FqlNode(FqlOperator.IDENTIFIER,t.value());
 		FqlNode id = t.getValue().matches("^\\$.+\\$$") ? FqlOperator.VARIABLE.getFqlNode(t.getValue()) : FqlOperator.IDENTIFIER.getFqlNode(t.getValue());
 		if(debug){
 			System.out.println("-- Token "+t+" returning Identifier "+id);
 		}
+		if(debug) exit("identifier",id);
 		return id;
 	}
 

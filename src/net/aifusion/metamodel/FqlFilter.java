@@ -32,19 +32,35 @@ package net.aifusion.metamodel;
  * @author Sharad Singhal
  */
 public class FqlFilter implements CimFilter {
+	/** Filter query */
 	private String fql;
+	/** Root of the query parse tree */
 	private FqlNode root;
+	/** Path to the structure being located */
 	private ObjectPath path;
 	/**
-	 * Create a CimFilter based on DMTF FQL (DSP0212)
+	 * Create a CimFilter based on an extension of the DMTF FQL (DSP0212)
+	 * @param structurePath - path to the structure being searched
+	 * @param filterQuery - String containing filter query
 	 */
-	public FqlFilter(ObjectPath structurePath, String fql) {
-		if(fql == null) throw new ModelException(ExceptionReason.INVALID_QUERY,"Query cannot be null");
-		this.fql = fql;
+	public FqlFilter(ObjectPath structurePath, String filterQuery) {
+		if(filterQuery == null) throw new ModelException(ExceptionReason.INVALID_QUERY,"Query cannot be null");
+		this.fql = filterQuery;
 		if(structurePath == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"structurePath cannot be null");
 		this.path = structurePath;
-		FqlParser p = new FqlParser(fql);
+		FqlParser p = new FqlParser(filterQuery);
 		root = p.getParseTree();
+		return;
+	}
+
+	/**
+	 * Create a null CimFilter-- selects all elements of the given type
+	 * @param objectPath path to the structure to be searched
+	 */
+	public FqlFilter(ObjectPath structurePath) {
+		this.fql = "";
+		this.path = structurePath;
+		root = FqlOperator.EOF.getFqlNode();
 		return;
 	}
 
@@ -65,30 +81,11 @@ public class FqlFilter implements CimFilter {
 	}
 	
 	/**
-	 * Create a tree representation of all nodes in the query parse tree
-	 * @param n - current node to be represented
-	 * @param indent - current level of indent
-	 * @return - string containing subtree
-	 */
-	private String toTree(FqlNode n, String indent){
-		StringBuilder b = new StringBuilder(indent);
-		if(!indent.isEmpty()) b.append("-- ");
-		b.append(n.toString());
-		if(n.hasChildren()){
-			for(FqlNode c : n.getChildren()){
-				b.append("\n");
-				b.append(c == null ? "|-- Null" : toTree(c,indent+"  |"));
-			}
-		}
-		return b.toString();
-	}
-	
-	/**
 	 * Get the tree representation of this filter
 	 * @return - tree representation of this filter
 	 */
 	public String toTree() {
-		return toTree(root,"");
+		return root.toTree("");
 	}
 	
 	@Override

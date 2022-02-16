@@ -28,6 +28,7 @@
 package net.aifusion.metamodel;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -45,7 +46,7 @@ class FqlNode {
 	/** Value of this node */
 	private DataValue value = null;
 	/** Debugging flag */
-	boolean debug = true;
+	boolean debug = false;
 	/** True value */
 	static final DataValue TrueValue = new DataValue(Boolean.valueOf(true));
 	/** False value */
@@ -62,6 +63,8 @@ class FqlNode {
 	FqlNode(FqlOperator operator) {
 		if(operator == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Operator cannot be null");
 		this.operator = operator;
+		// Null query - will always return a match
+		if(operator == FqlOperator.EOF) value = TrueValue;
 		return;
 	}
 
@@ -212,8 +215,9 @@ class FqlNode {
 	 * @return - node value as a string. If node does not contain a value, returns null
 	 */
 	String getStringValue(){
-		if(value != null && value.getValue() != null) return value.getValue().toString();
-		// if(name != null) return name;
+		if(value != null && value.getValue() != null) {
+			return value.getType().isArray() ? Arrays.toString((Object []) value.getValue()): value.getValue().toString();
+		}
 		return null;
 	}
 
@@ -357,9 +361,15 @@ class FqlNode {
 		for(FqlNode c : children) {
 			c.evaluate(sv,repository);
 		}
+		if(debug) System.out.println("Evaluating "+toString());
 		switch(operator) {
 		case VARIABLE:
+			if(getValue() == null) throw new ModelException(ExceptionReason.INVALID_QUERY,"Variable "+getName()+" not defined before evaluation");
+			break;
 		case CONSTANT:
+			if(getValue() == null) throw new ModelException(ExceptionReason.INVALID_QUERY,"Constant "+getName()+" must be a typed value and not null");
+			break;
+		case EOF:
 			break;
 		case ADD:
 		case SUBTRACT:
@@ -584,9 +594,11 @@ class FqlNode {
 		case ISA:
 		case CLASS_PATH:	
 		case ENUM:
+		case PERIOD:
 		default:
 			throw new ModelException(ExceptionReason.NOT_SUPPORTED,operator+" is not yet implemented");
 		}
+		if(debug) System.out.println(" Done "+toString());
 		return;
 	}
 	
@@ -942,6 +954,24 @@ class FqlNode {
 			throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+" unable to resolve index",ex);
 		}
 		return;
+	}
+	
+	/**
+	 * Compute a tree representation rooted at this node
+	 * @param indent - indent to use
+	 * @return string representation of the substree
+	 */
+	public String toTree(String indent){
+		StringBuilder b = new StringBuilder(indent);
+		if(!indent.isEmpty()) b.append("-- ");
+		b.append(toString());
+		if(hasChildren()){
+			for(FqlNode c : getChildren()){
+				b.append("\n");
+				b.append(c == null ? "|-- Null" : c.toTree(indent+"  |"));
+			}
+		}
+		return b.toString();
 	}
 
 	@Override

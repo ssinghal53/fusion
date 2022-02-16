@@ -63,7 +63,9 @@ package net.aifusion.metamodel;
 	 net.aifusion.metamodel.MOFParserTest.class,
 	 net.aifusion.metamodel.PersistentCacheTest.class,
 	 net.aifusion.metamodel.JavaModelMapperTest.class,
-	 net.aifusion.metamodel.JavaBindingTest.class
+	 net.aifusion.metamodel.JavaBindingTest.class,
+	 net.aifusion.metamodel.FqlNodeTest.class,
+	 net.aifusion.metamodel.FqlParserTest.class
 
 	 // TODO: add test for CimClass, CimInstance
 	 // TODOD: Add tests for CimIndication

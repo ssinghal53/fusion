@@ -59,7 +59,7 @@ public class InMemoryRepository implements Repository {
 
 	/** All standard qualifier types. Keyed by lower case qualifier type name */
 	private HashMap<String,QualifierType> standardQualifierTypes = new HashMap<String,QualifierType>();
-	
+
 	/**
 	 * Container to hold a singleton CIM class and all instances of that CIM class. Instances are keyed by UUID
 	 * @author Sharad Singhal
@@ -68,7 +68,7 @@ public class InMemoryRepository implements Repository {
 		CimClass cimClass = null;
 		LinkedHashMap<UUID,CimInstance> instances = null;
 	}
-	
+
 	/**
 	 * Container to hold a singleton CIM Structure, and all instances of that CIM Structure, keyed by UUID
 	 * @author Sharad Singhal
@@ -78,7 +78,7 @@ public class InMemoryRepository implements Repository {
 		CimStructure struct = null;
 		LinkedHashMap<UUID,StructureValue> values = null;
 	}
-	
+
 	/**
 	 * Create an in-memory CIM repository using the default name space. This repository supports only the default namespace,
 	 * and no persistence. Standard qualifier types are built-in, and do not have to be inserted in the repository
@@ -223,8 +223,8 @@ public class InMemoryRepository implements Repository {
 		String elementName = path.getLowerCaseName();
 		switch(path.getElementType()){
 		case QUALIFIERTYPE:
-			 return standardQualifierTypes.containsKey(elementName) ? standardQualifierTypes.get(elementName) :
-				 qualifierTypes.get(elementName);
+			return standardQualifierTypes.containsKey(elementName) ? standardQualifierTypes.get(elementName) :
+				qualifierTypes.get(elementName);
 		case ENUMERATION:
 			return enumerations.get(elementName);
 		case STRUCTURE:
@@ -377,7 +377,7 @@ public class InMemoryRepository implements Repository {
 	 */
 	@Override
 	public List<NamedElement> getElements(String elementTypes, String localNameSpaces, String elementNames, boolean locateSubTypes) {
-		
+
 		// check that if given, localNameSpaces requested include the repository path for this repository
 		if(localNameSpaces != null){
 			String [] names = localNameSpaces.split(",");
@@ -423,7 +423,7 @@ public class InMemoryRepository implements Repository {
 		}
 		// filtered = true if element names are given
 		boolean filtered = (names == null || names.length == 0) ? false : true;
-		
+
 		// collect the elements requested from the repository
 		Vector<NamedElement> elements = new Vector<NamedElement>();
 		for(ElementType elementType : requestedTypes){
@@ -599,13 +599,26 @@ public class InMemoryRepository implements Repository {
 
 	@Override
 	public List<StructureValue> filter(CimFilter filter) {
-		String className = filter.getStructurePath().getName();
-		String nameSpace = filter.getStructurePath().getLocalPath();
-		List<NamedElement> elements = getElements("StructureValue",nameSpace,className,true);
-		Vector<StructureValue> values = new Vector<StructureValue>();
-		for(NamedElement e : elements) {
-			if(filter.satisfies((StructureValue) e, this)) values.add((StructureValue) e);
+		String structName = filter.getStructurePath().getName();
+		Vector<StructureValue> elements = new Vector<StructureValue>();
+		// scan structures for required values
+		for(StructureAndValues sv : structures.values()) {
+			CimStructure s = sv.struct;
+			if(s != null && s.isSubTypeOf(structName)) {
+				for(StructureValue v : sv.values.values()) {
+					if(filter.satisfies(v, this)) elements.add(v);
+				}
+			}
 		}
-		return values;
+		// scan classes for required values
+		for(ClassAndInstances ci : classAndInstances.values()) {
+			CimClass c = ci.cimClass;
+			if(c != null && c.isSubTypeOf(structName)) {
+				for(CimInstance i : ci.instances.values()) {
+					if(filter.satisfies(i, this)) elements.add(i);
+				}
+			}
+		}
+		return elements;
 	}
 }
