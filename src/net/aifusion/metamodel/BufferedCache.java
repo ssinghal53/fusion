@@ -35,6 +35,7 @@ import java.util.List;
  * the buffer do not affect the objects in the backing store. The buffer does not provide any persistence.
  * @author Sharad Singhal
  */
+@Deprecated(forRemoval = true)
 public class BufferedCache extends InMemoryCache {
 	/** backing store for this repository */
 	private Repository backingStore;
