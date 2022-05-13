@@ -195,10 +195,12 @@ public class FqlNodeTest {
 		for(String s : svals) {
 			parser.parse(new ByteArrayInputStream(s.getBytes()),new NameSpacePath("/path"));
 		}
+		/*
 		List<NamedElement> elem = cache.getElements(null, null, null, false);
 		for(NamedElement e : elem) {
 			System.out.println(e.getObjectPath()+" "+e.toMOF());
 		}
+		*/
 	}
 
 	/**
@@ -592,7 +594,7 @@ public class FqlNodeTest {
 //		System.out.println(sv1.toMOF());
 		for(TestCase t : cases) {
 			try {
-			System.out.println(t.root.toTree(""));
+//			System.out.println(t.root.toTree(""));
 			assertTrue(t.matches(sv1));
 			} catch (ModelException e) {
 				assertEquals(t.errorCode,e.getReason().getCode());

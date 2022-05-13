@@ -61,5 +61,14 @@ enum FqlOperator {
 	FqlNode getFqlNode(String name) {
 		return new FqlNode(this,name,null);
 	}
+	/**
+	 * Get an FQL node with given name and value
+	 * @param name - name of the node
+	 * @param value - value of the node
+	 * @return FQL node
+	 */
+	FqlNode getFqlNode(String name, DataValue value) {
+		return new FqlNode(this,name,value);
+	}
 
 }

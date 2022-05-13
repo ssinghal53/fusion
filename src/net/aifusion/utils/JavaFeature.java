@@ -28,12 +28,15 @@
 package net.aifusion.utils;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Logger;
+
+import javax.lang.model.SourceVersion;
 
 import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEnumeration;
@@ -95,7 +98,7 @@ class JavaFeature {
 	private boolean cimConstructor = true;
 	/** TODO: Contained features within this feature, if any (not needed for V2 MOF) */
 	private Vector<JavaFeature> embeddedFeatures = new Vector<JavaFeature>();
-	
+
 	static {
 		try {
 			defaultNameSpace = (String) Export.class.getDeclaredMethod("nameSpace").getDefaultValue();
@@ -183,7 +186,7 @@ class JavaFeature {
 			for(String mName : c.getMethodNames()) {
 				DataType t = c.getMethodReturnType(mName);
 				if(t.isArray()) t = t.getComponentType();
-				if(t.isVoid()) continue;
+				if(t.isVoid()) continue;	// void type does not need imports
 				if(t.isPrimitive()) {	
 					Class<?> javaType = t.getClassForType();
 					if(!javaType.getName().startsWith("java.lang")) {
@@ -212,7 +215,7 @@ class JavaFeature {
 						String imp = pkg + "." + getJavaName(st);
 						if(!localImports.contains(imp)) localImports.add(imp);
 					}
-				} else {	// void type does not need imports
+				} else {
 					throw new ModelException(cimName+"-- InitGlobals does not yet handle method return types for "+t);
 				}
 				// imports for method parameters
@@ -402,24 +405,34 @@ class JavaFeature {
 	}
 
 	/**
-	 * Get the java name associated with this feature
-	 * @param e - element to get the name from
+	 * Get the java name associated with a qualified element
+	 * @param e - qualified element to get the name from
 	 * @return the javaName
 	 */
 	public String getJavaName(QualifiedElement e) {
-		String featureName = e.getName();
-		String name = null;
-		String javaName = featureName;
-		if(featureName.contains("_")) {
-			int sep = featureName.indexOf("_");
-			name = featureName.substring(sep+1);
-		} else {
-			name = featureName;
+		String elementName = e.getName();
+		String javaName = elementName;
+		String name = elementName;
+		ElementType et = e.getElementType();
+		switch(et) {
+		case CLASS:
+		case INTERFACE:
+		case ENUMERATION:
+		case STRUCTURE:
+			// Strip "Schema_" from the name
+			if(elementName.contains("_")) {
+				int sep = elementName.indexOf("_");
+				name = elementName.substring(sep+1);
+			}
+			break;
+		default:
+			break;
 		}
+		
 		// obtain java name
 		char c[] = name.toCharArray();
 		boolean isUpperCase = Character.isUpperCase(c[0]);
-		switch(e.getElementType()) {
+		switch(et) {
 		case CLASS:
 		case INTERFACE:
 		case ENUMERATION:
@@ -439,6 +452,10 @@ class JavaFeature {
 				javaName = name;
 			}
 			break;
+		}
+		// if javaName is a java keyword, translate it
+		if(!SourceVersion.isName(javaName)) {
+			System.out.println("Found Java keyword as name - "+name);
 		}
 		return javaName;
 	}
@@ -460,9 +477,10 @@ class JavaFeature {
 	/**
 	 * Get the feature name in Java with an initial lowercase letter
 	 * @param featureName - cim name of the feature
+	 * @param dt - associated data type
 	 * @return - java name with lower case
 	 */
-	private String toLowerCase(String featureName) {
+	private String toLowerCase(String featureName, DataType dt) {
 		String name = featureName;
 		if(featureName.contains("_")) {
 			int sep = featureName.indexOf("_");	
@@ -474,7 +492,11 @@ class JavaFeature {
 		char c[] = name.toCharArray();
 		if(Character.isUpperCase(c[0])) {
 			c[0] += 32;
-			return new String(c);
+			name = new String(c);
+		}
+		// if javaName is a java keyword, translate it
+		if(!SourceVersion.isName(name)) {
+			name = dt.equals(DataType.BOOLEAN) ? "is"+name : "j"+name;
 		}
 		return name;
 	}
@@ -559,6 +581,7 @@ class JavaFeature {
 		for(String pName : struct.getPropertyNames()) {
 			DataType dt = struct.getPropertyType(pName);
 			if(debug) System.out.println("-- Checking Property "+pName+" type "+dt);
+			boolean isArrayProperty = dt.isArray();
 			String refClass = null;
 			NamedElement refElement = null;
 			// TODO: Need to handle annotated classes here once DataType is fixed
@@ -583,7 +606,7 @@ class JavaFeature {
 					throw new ModelException("Unknown type "+dt);
 				}
 			}
-			String jName = toLowerCase(pName);
+			String jName = toLowerCase(pName,dt);
 			boolean isStatic = (Boolean) struct.getPropertyQualifierValue(pName, "STATIC").getValue();
 			if(!cimConstructor) {
 				// add property to class fields
@@ -594,14 +617,70 @@ class JavaFeature {
 				b.append(jName);
 				DataValue pv = struct.getDefaultPropertyValue(pName);
 				if(pv != null) {
-					b.append(" = ");
-					switch(dt) {
-					case ENUMERATIONVALUE:
-						b.append(getJavaType(dt,refClass)).append(".").append(pv.getValue());
-						break;
-					default:
-						b.append(pv.getValue());
-						break;
+					if(isArrayProperty) {
+						DataType dc = dt.getComponentType();
+						b.append(" = { ");
+						Object [] values = (Object[]) pv.getValue();
+						for(Object v : values) {
+							switch(dc) {
+							case ENUMERATIONVALUE:
+								b.append(getJavaType(dt,refClass)).append(".").append(v);
+								break;
+							case UINT8:
+								b.append("new UInt8(\"").append(v).append("\")");
+								break;
+							case UINT16:
+								b.append("new UInt16(").append(v).append(")");
+								break;
+							case UINT32:
+								b.append("new UInt32(").append(v).append(")");
+								break;
+							case UINT64:
+								b.append("new UInt64(").append(v).append(")");
+								break;
+							case DATETIME:
+								b.append("new DateTime(\"").append(v).append("\")");
+								break;
+							case STRING:
+								b.append("\"").append(v).append("\"");
+								break;
+							default:
+								b.append(v);
+								break;
+							}
+							b.append(",");
+						}
+						b.setLength(b.length()-1);
+						b.append(" }");
+						
+					} else {
+						b.append(" = ");
+						switch(dt) {
+						case ENUMERATIONVALUE:
+							b.append(getJavaType(dt,refClass)).append(".").append(pv.getValue());
+							break;
+						case UINT8:
+							b.append("new UInt8(\"").append(pv.getValue()).append("\")");
+							break;
+						case UINT16:
+							b.append("new UInt16(").append(pv.getValue()).append(")");
+							break;
+						case UINT32:
+							b.append("new UInt32(").append(pv.getValue()).append(")");
+							break;
+						case UINT64:
+							b.append("new UInt64(").append(pv.getValue()).append(")");
+							break;
+						case DATETIME:
+							b.append("new DateTime(\"").append(pv.getValue()).append("\")");
+							break;
+						case STRING:
+							b.append("\"").append(pv.getValue()).append("\"");
+							break;
+						default:
+							b.append(pv.getValue());
+							break;
+						}
 					}
 				}
 				b.append(";\n");
@@ -682,7 +761,7 @@ class JavaFeature {
 						throw new ModelException("Unknown type "+dt);
 					}
 				}
-				String jName = toLowerCase(mName);
+				String jName = toLowerCase(mName,dt);
 				boolean isStatic = (Boolean) c.getMethodQualifierValue(mName, "STATIC").getValue();
 				// method declaration
 				b2.append("\t@Export\n");
@@ -717,7 +796,7 @@ class JavaFeature {
 							throw new ModelException("Unknown type "+dt);
 						}
 					}
-					jName = toLowerCase(p.getName());
+					jName = toLowerCase(p.getName(),dt);
 					if(isTrue(p.getQualifierValue("DEPRECATED"))) b2.append("\n\t\t@Deprecated");
 					b2.append("\n\t\t@Export(name=\"");
 					b2.append(p.getName()).append("\"");
@@ -1107,386 +1186,4 @@ class JavaFeature {
 		}
 		throw new ModelException("Case "+dataValue.getType()+" not yet handled");
 	}
-
-	/**
-	 * Test code
-	 * @param args - command line arguments
-	 */
-	public static void main(String [] args) {
-		InMemoryCache cache = new InMemoryCache();
-		MOFParser parser = new MOFParser(cache);
-		parser.parse(new ByteArrayInputStream(mof2.getBytes()), Constants.defaultNameSpacePath);
-		for(NamedElement e : cache.getElements("Structure", null, null, false)){
-			System.out.println("----------");
-			System.out.println(e.toMOF());
-			JavaFeature f = new JavaFeature(e,"",cache, true);
-			System.out.println("----------");
-			System.out.println(f.getJavaCode());
-			System.out.println("----------\n");
-		}
-
-	}
-
-	private static String mof = "[Description(\"Integer Valued Enumeration\"), PackagePath(\"newPath1::newPath2\")]\r\n" + 
-			"Enumeration Fusion_integerEnum : SInt32 {\r\n" + 
-			"	NAME1 = 0,\r\n" + 
-			"	Name2 = 2,\r\n" + 
-			"	name3 = 3\r\n" + 
-			"};";
-	
-	private static String mof1 = "[Description(\"String Valued Enumeration\"), PackagePath(\"newPath1::newPath2\")]\r\n" + 
-			"Enumeration Fusion_integerEnum : String {\r\n" + 
-			"	NAME1 = \"0\",\r\n" + 
-			"	Name2 = \"2\",\r\n" + 
-			"	name3 = \"3\"\r\n" + 
-			"};";
-	
-	private static String mof2 =  "	[Version (\"1.0.0\"), Abstract, PackagePath(\"rsam::core\"),\r\n" + 
-			"		Description (\"RSAM_Entity is the base class for all RSAM entities.\")]\r\n" + 
-			"Structure RSAM_Entity {\r\n" + 
-			"    	[Key, Description ( \"The unique id of the entity.\")] \r\n" + 
-			"    String Id;\r\n" + 
-			"    	[Description ( \"Policies associated with this entity\")] \r\n" + 
-			"    RSAM_Policy ref AssociatedPolicies [];\r\n" + 
-			"};"
-			+ "	[Version (\"1.0.0\"), PackagePath(\"rsam::core\"), Description ( \"Types of policies\")]\r\n" + 
-			"Enumeration RSAM_PolicyType : String {\r\n" + 
-			"		[Description(\"Configuration policies\")]\r\n" + 
-			"	Configuration,\r\n" + 
-			"		[Description(\"Scheduling policies for activities\")]\r\n" + 
-			"	Scheduling,\r\n" + 
-			"		[Description(\"Constraint policies for designers\")]\r\n" + 
-			"	Constraint\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"/*\r\n" + 
-			" * =============================================\r\n" + 
-			" * Policy Scope. A class-scoped policy applies to\r\n" + 
-			" * all instances of that type. An instance-scoped\r\n" + 
-			" * policy applies only to a given instance of an\r\n" + 
-			" * entity.\r\n" + 
-			" * =============================================\r\n" + 
-			"*/\r\n" + 
-			"\r\n" + 
-			"	[Version (\"1.0.0\"), PackagePath(\"rsam::core\"), Description ( \"Scope of policies\")]\r\n" + 
-			"Enumeration RSAM_PolicyScope : String {\r\n" + 
-			"		[Description(\"Class-scoped policies apply to all instances of the class or structure\")]\r\n" + 
-			"	Class,\r\n" + 
-			"		[Description(\"Instance-scoped policies apply only to the associated instance\")]\r\n" + 
-			"	Instance\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"/*\r\n" + 
-			" * =================================================\r\n" + 
-			" * Policy Language. This enumeration can be extended\r\n" + 
-			" * to provide additional policy languages\r\n" + 
-			" * =================================================\r\n" + 
-			"*/\r\n" + 
-			"\r\n" + 
-			"	[Version (\"1.0.0\"), PackagePath(\"rsam::core\"), Description ( \"Types of policies\")]\r\n" + 
-			"Enumeration RSAM_PolicyLanguage : String {\r\n" + 
-			"		[Description(\"Cauldron policies\")]\r\n" + 
-			"	Cauldron\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"/*\r\n" + 
-			" * ======================================================================\r\n" + 
-			" * Policy Definition. Note that one of the policy assertions must provide\r\n" + 
-			" * a reference to the appropriate class for class scoped policies.\r\n" + 
-			" * Instance-scoped policies are associated at the RSAM_Entity level to\r\n" + 
-			" * the appropriate instance\r\n" + 
-			" * ======================================================================\r\n" + 
-			"*/\r\n" + 
-			"\r\n" + 
-			"	[Version (\"1.0.0\"), Abstract, PackagePath(\"rsam::core\"), Description ( \"Base Class for policies\")]\r\n" + 
-			"Structure RSAM_Policy : RSAM_Entity {\r\n" + 
-			"		[Description(\"Type of policy\")]\r\n" + 
-			"	RSAM_PolicyType Type;\r\n" + 
-			"		[Description(\"Scope of policy. For class-scoped policies, one of the assertions must identify the corresponding class\")]\r\n" + 
-			"	RSAM_PolicyScope Scope;\r\n" + 
-			"		[Description(\"Specification language for the policy\")]\r\n" + 
-			"	RSAM_PolicyLanguage Language;\r\n" + 
-			"		[Description(\"Policy assertions defined in the policy language\"),Write]\r\n" + 
-			"	String [] Assertions;\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"";
-	
-
-	private static String mofx = "[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.EnumBindingClass\" }, Description(\"Integer Valued Enumeration\"), PackagePath(\"newPath1::newPath2\"), Version(\"1.0.0\")]\r\n" + 
-			"Enumeration CimFusion_EnumBindingClass : SInt32 {\r\n" + 
-			"	NAME1 = 0,\r\n" + 
-			"	Name2 = 2,\r\n" + 
-			"	name3 = 3\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.InterfaceBindingClass\" }, Abstract]\r\n" + 
-			"Interface test_interface {\r\n" + 
-			"	[Write, Read(false)]\r\n" + 
-			"	Boolean intfMethod;\r\n" + 
-			"	Boolean BoolProp;\r\n" + 
-			"};\r\n" +
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingSuperClass\" }]\r\n"+
-			"Structure Cim_TestMethodsSup {\r\n"+
-			"String StringProperty = \"Something\";\r\n"+
-			"};\r\n" + 
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingClass\" }]\n"+
-			"Class Cim_TestMethods : Cim_TestMethodsSup {\n"+
-			"[Key] String Key;\n"+
-			// "[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.PropertyBindingClass$EmbeddedStringEnum\" }]\n"+
-			"AIFusion_EmbeddedStringEnum enumValueToEnum(AIFusion_EmbeddedStringEnum arg0);\n"+
-			"String enumValueToString(AIFusion_EmbeddedStringEnum arg0);\n"+
-			"String concatStringToEnumValue(AIFusion_EmbeddedStringEnum arg0, String arg1);\n"+
-			"Void doSomething();\n};"+
-			
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.PropertyBindingClass\" }, Description(\"Structure to test property bindings\")]\r\n" + 
-			"Structure cim_test {\r\n" + 
-			"	[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.PropertyBindingClass$EmbeddedStringEnum\" }]\r\n" + 
-			"	Enumeration CimFusion_EmbeddedStringEnum : String {\r\n" + 
-			"		NAME1 = \"xyz\",\r\n" + 
-			"		Name2 = \"abc\",\r\n" + 
-			"		name3 = \"def\"\r\n" + 
-			"	};\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt16 [] Va10;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt32 [] Va11;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt32 [] Va12;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt64 [] Va13;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt64 [] Va14;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real32 [] Va15;\r\n" + 
-			"	[Write]\r\n" + 
-			"	String V21;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Char16 V20;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethods ref V23;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Datetime V22;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real32 [] Va16;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethodssup V25;\r\n" + 
-			"	[Write]\r\n" + 
-			"	CimFusion_EmbeddedStringEnum V24;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real64 [] Va17;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real64 [] Va18;\r\n" + 
-			"	[Write]\r\n" + 
-			"	OctetString V27;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Char16 [] Va19;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethods V26;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethodssup V29;\r\n" + 
-			"	[Write]\r\n" + 
-			"	CimFusion_EnumBindingClass V28;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Boolean [] Va01;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Boolean [] Va02;\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt8 [] Va03;\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt16 [] Va04;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethods V30;\r\n" + 
-			"	[Static, Write]\r\n" + 
-			"	String V31 = \"default\";\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt32 [] Va05;\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt64 [] Va06;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt8 [] Va07;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt8 [] Va08;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt16 [] Va09;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethods [] Va30;\r\n" + 
-			"	[Static, Write]\r\n" + 
-			"	String [] Va31;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Boolean V01;\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt8 V03;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Boolean V02;\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt32 V05;\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt16 V04;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt8 V07;\r\n" + 
-			"	[Write]\r\n" + 
-			"	UInt64 V06;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt16 V09;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt8 V08;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Char16 [] Va20;\r\n" + 
-			"	[Write]\r\n" + 
-			"	String [] Va21;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Datetime [] Va22;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethods ref [] Va23;\r\n" + 
-			"	[Write]\r\n" + 
-			"	CimFusion_EmbeddedStringEnum [] Va24;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethodssup [] Va25;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethods [] Va26;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt16 V10;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt32 V12;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt32 V11;\r\n" + 
-			"	[Write]\r\n" + 
-			"	OctetString [] Va27;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt64 V14;\r\n" + 
-			"	[Write]\r\n" + 
-			"	CimFusion_EnumBindingClass [] Va28;\r\n" + 
-			"	[Write]\r\n" + 
-			"	SInt64 V13;\r\n" + 
-			"	[Write]\r\n" + 
-			"	cim_testmethodssup [] Va29;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real32 V16;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real32 V15;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real64 V18;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Real64 V17;\r\n" + 
-			"	[Write]\r\n" + 
-			"	Char16 V19;\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.MethodBindingClass\" }]\r\n" + 
-			"Class cim_testmethods : cim_testmethodssup {\r\n" + 
-			"	[Key]\r\n" + 
-			"	String Key;\r\n" + 
-			"	CimFusion_EmbeddedStringEnum enumValueToEnum(CimFusion_EmbeddedStringEnum arg0);\r\n" + 
-			"	String enumValueToString(CimFusion_EmbeddedStringEnum arg0);\r\n" + 
-			"	String concatStringToEnumValue(CimFusion_EmbeddedStringEnum arg0, String arg1);\r\n" + 
-			"	Void doSomething();\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.CimMethodTestClass\" }]\r\n" + 
-			"Class cim_methodtest {\r\n" + 
-			"	Char16 [] mVa19(Char16 [] arg0);\r\n" + 
-			"	Datetime [] mVa22(Datetime [] arg0);\r\n" + 
-			"	Cim_TestMethods ref [] mVa23(Cim_TestMethods ref [] arg0);\r\n" + 
-			"	CimFusion_EnumBindingClass [] mVa24(CimFusion_EnumBindingClass [] arg0);\r\n" + 
-			"	cim_testmethodssup [] mVa25(cim_testmethodssup [] arg0);\r\n" + 
-			"	cim_testmethods [] mVa26(cim_testmethods [] arg0);\r\n" + 
-			"	cim_testmethods mV30(cim_testmethods arg0);\r\n" + 
-			"	OctetString [] mVa27(OctetString [] arg0);\r\n" + 
-			"	[Static]\r\n" + 
-			"	String mV31(String arg0);\r\n" + 
-			"	CimFusion_EnumBindingClass [] mVa28(CimFusion_EnumBindingClass [] arg0);\r\n" + 
-			"	cim_testmethodssup [] mVa29(cim_testmethodssup [] arg0);\r\n" + 
-			"	Char16 [] mVa20(Char16 [] arg0);\r\n" + 
-			"	String [] mVa21(String [] arg0);\r\n" + 
-			"	cim_testmethodssup mV29(cim_testmethodssup arg0);\r\n" + 
-			"	SInt8 [] mVa08(SInt8 [] arg0);\r\n" + 
-			"	SInt16 [] mVa09(SInt16 [] arg0);\r\n" + 
-			"	SInt32 [] mVa11(SInt32 [] arg0);\r\n" + 
-			"	SInt32 [] mVa12(SInt32 [] arg0);\r\n" + 
-			"	SInt64 [] mVa13(SInt64 [] arg0);\r\n" + 
-			"	SInt64 [] mVa14(SInt64 [] arg0);\r\n" + 
-			"	Real32 [] mVa15(Real32 [] arg0);\r\n" + 
-			"	Real32 [] mVa16(Real32 [] arg0);\r\n" + 
-			"	Char16 mV20(Char16 arg0);\r\n" + 
-			"	Real64 [] mVa17(Real64 [] arg0);\r\n" + 
-			"	Real64 [] mVa18(Real64 [] arg0);\r\n" + 
-			"	Cim_TestMethods ref mV23(Cim_TestMethods ref arg0);\r\n" + 
-			"	[Static]\r\n" + 
-			"	String [] getVa31(String [] arg0);\r\n" + 
-			"	CimFusion_EnumBindingClass mV24(CimFusion_EnumBindingClass arg0);\r\n" + 
-			"	Datetime mV22(Datetime arg0);\r\n" + 
-			"	OctetString mV27(OctetString arg0);\r\n" + 
-			"	CimFusion_EnumBindingClass mV28(CimFusion_EnumBindingClass arg0);\r\n" + 
-			"	cim_testmethodssup mV25(cim_testmethodssup arg0);\r\n" + 
-			"	cim_testmethods mV26(cim_testmethods arg0);\r\n" + 
-			"	SInt16 [] mVa10(SInt16 [] arg0);\r\n" + 
-			"	Real64 mV18(Real64 arg0);\r\n" + 
-			"	Char16 mV19(Char16 arg0);\r\n" + 
-			"	Boolean [] mVa01(Boolean [] arg0);\r\n" + 
-			"	Boolean [] mVa02(Boolean [] arg0);\r\n" + 
-			"	UInt8 [] mVa03(UInt8 [] arg0);\r\n" + 
-			"	UInt16 [] mVa04(UInt16 [] arg0);\r\n" + 
-			"	UInt32 [] mVa05(UInt32 [] arg0);\r\n" + 
-			"	UInt64 [] mVa06(UInt64 [] arg0);\r\n" + 
-			"	SInt8 [] mVa07(SInt8 [] arg0);\r\n" + 
-			"	SInt32 mV12(SInt32 arg0);\r\n" + 
-			"	SInt64 mV13(SInt64 arg0);\r\n" + 
-			"	SInt16 mV10(SInt16 arg0);\r\n" + 
-			"	SInt32 mV11(SInt32 arg0);\r\n" + 
-			"	Real32 mV16(Real32 arg0);\r\n" + 
-			"	Real64 mV17(Real64 arg0);\r\n" + 
-			"	SInt64 mV14(SInt64 arg0);\r\n" + 
-			"	Real32 mV15(Real32 arg0);\r\n" + 
-			"	SInt16 mV09(SInt16 arg0);\r\n" + 
-			"	SInt8 mV07(SInt8 arg0);\r\n" + 
-			"	SInt8 mV08(SInt8 arg0);\r\n" + 
-			"	String getV21(String arg0);\r\n" + 
-			"	Boolean mV01(Boolean arg0);\r\n" + 
-			"	Boolean mV02(Boolean arg0);\r\n" + 
-			"	Void mV00();\r\n" + 
-			"	UInt32 mV05(UInt32 arg0);\r\n" + 
-			"	cim_testmethods [] mVa30(cim_testmethods [] arg0);\r\n" + 
-			"	UInt64 mV06(UInt64 arg0);\r\n" + 
-			"	UInt8 mV03(UInt8 arg0);\r\n" + 
-			"	UInt16 mV04(UInt16 arg0);\r\n" + 
-			"};\r\n" + 
-			"\r\n" + 
-			"[MappingStrings{ \"Bind.CF|net.aifusion.metamodel.IsGetterPropertyClass\" }, Description(\"Structure to test isGetter property bindings\")]\r\n" + 
-			"Structure test_class {\r\n" + 
-			"	[Write]\r\n" + 
-			"	String PF7;\r\n" + 
-			"	String PF6;\r\n" + 
-			"	[Write, Description(\"write only property\"), Read(false)]\r\n" + 
-			"	Boolean P1;\r\n" + 
-			"	[Description(\"read-only property\")]\r\n" + 
-			"	Boolean P2;\r\n" + 
-			"	[Write, Description(\"read/write property\")]\r\n" + 
-			"	Boolean P3;\r\n" + 
-			"	[Description(\"readonly only property with isGetter\")]\r\n" + 
-			"	Boolean P4;\r\n" + 
-			"	[Write, Description(\"read/write only property with isGetter\")]\r\n" + 
-			"	Boolean P5;\r\n" + 
-			"	[Description(\"readonly only property with get() method\")]\r\n" + 
-			"	Boolean P6;\r\n" + 
-			"	[Write, Description(\"read/write property with get() method\")]\r\n" + 
-			"	Boolean P7;\r\n" + 
-			"	[Description(\"read/write only property with isGetter\")]\r\n" + 
-			"	String isPF5;\r\n" + 
-			"	[Description(\"readonly only property with isGetter\")]\r\n" + 
-			"	String isPF4;\r\n" + 
-			"	[Description(\"read/write property with get() method\")]\r\n" + 
-			"	String isPF7;\r\n" + 
-			"	[Description(\"readonly only property with get() method\")]\r\n" + 
-			"	String isPF6;\r\n" + 
-			"	[Write, Description(\"write only property\"), Read(false)]\r\n" + 
-			"	String PF1;\r\n" + 
-			"	[Write, Description(\"read/write property\")]\r\n" + 
-			"	String PF3;\r\n" + 
-			"	[Description(\"read-only property\")]\r\n" + 
-			"	String PF2;\r\n" + 
-			"	[Write, Read(false)]\r\n" + 
-			"	String PF5;\r\n" + 
-			"};\r\n" + 
-			"\r\n";
 }

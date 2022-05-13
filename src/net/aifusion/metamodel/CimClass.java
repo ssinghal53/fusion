@@ -56,7 +56,7 @@ public class CimClass extends CimStructure {
 	 */
 	protected CimClass(ElementType elementType, String name, CimStructure superType, List<Qualifier> qualifiers, NameSpacePath path, List<? extends QualifiedElement> classFeatures) {
 		super(elementType, name, superType, qualifiers, path, classFeatures);
-		if(!name.matches("([a-zA-Z0-9])+_([a-zA-Z0-9])+")) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected name in form 'Schema' '_' 'ClassName', found "+name);
+		if(!name.matches("([a-zA-Z0-9])+_([a-zA-Z0-9_])+")) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected name in form 'Schema' '_' 'ClassName', found "+name);
 		for(QualifiedElement classFeature : classFeatures){
 			switch(classFeature.getElementType()){
 			case METHOD:

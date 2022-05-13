@@ -91,7 +91,7 @@ public class FqlParserTest {
 			new TestCase("01001B","CONSTANT[SINT64 9]",true,0),				// Binary literal
 			new TestCase("42.0","CONSTANT[REAL64 42.0]",true,0),			// Real literal
 			new TestCase("true","CONSTANT[BOOLEAN true]",true,0),			// Boolean literal
-			new TestCase("p1","IDENTIFIER (p1)",true,0),	// property identifier
+			new TestCase("p1","IDENTIFIER (p1)",true,0),					// property identifier
 			new TestCase("func('foo','bar')","FUNCTION (func)\n"
 					+ "  |-- CONSTANT[STRING foo]\n"
 					+ "  |-- CONSTANT[STRING bar]",true,0),					// function identifier

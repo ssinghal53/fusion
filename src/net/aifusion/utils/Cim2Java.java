@@ -60,13 +60,13 @@ public class Cim2Java {
 	/** Logger for this class */
 	private static final Logger logger = Logger.getLogger(Cim2Java.class.getName());
 	/** Stub generator version */
-	private static String version = "0.0.2";
+	private static String version = "0.0.3";
 	/** Date for this stub generator version */
-	private static String dated = "September 14, 2020";
+	private static String dated = "May 6, 2022";
 	/** Header inserted at the top of the generated java class */
 	private static String copyRightHeader = "/*\n * CIM to Java Stub Generator Version "+version+" dated "+dated+"\n"+
-							" * Copyright (c) 2016-2020, Sharad Singhal\n"+
-							" * Copyright (c) 2020, Hewlett Packard Enterprise Development LP\n"+
+							" * Copyright (c) 2016-2022, Sharad Singhal\n"+
+							" * Copyright (c) 2020-2022, Hewlett Packard Enterprise Development LP\n"+
 							" * Stubs may be used without restriction except for retaining this comment in source code\n */\n";
 	
 	/** Annotations added to every generated java class */

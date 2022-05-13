@@ -289,9 +289,18 @@ class FqlParser {
 		throw new ModelException("AdvanceOver Failed: Expected "+expected+" at Token "+currentToken+" found [ "+t.getType()+", "+t.getValue()+" ]");
 	}
 	
+	/**
+	 * Debug method called at method entry
+	 * @param s - Method name
+	 */
 	private void enter(String s) {
 		System.out.println("Enter- "+s+" LookAhead "+lookAhead());
 	}
+	/**
+	 * Debug method called at method exit
+	 * @param s - method name
+	 * @param n - root of the subtree at to be shown
+	 */
 	private void exit(String s, FqlNode n) {
 		System.out.println("Exit-"+s+" LookAhead "+lookAhead());
 		System.out.println(n.toTree(s+" "));
@@ -305,6 +314,7 @@ class FqlParser {
 	private FqlNode expr() {
 		if(debug) enter("ORExpr");
 		FqlNode n = andExpression();
+		// Optimize OR(A, OR(B,C)) --> OR(A,B,C)
 		while(lookAhead().is(TokenType.OR)){
 			advanceOver(TokenType.OR);
 			if(n.getOperator() != FqlOperator.OR){
@@ -327,6 +337,7 @@ class FqlParser {
 	private FqlNode andExpression() {
 		if(debug) enter("ANDExpr");
 		FqlNode n = notExpression();
+		// Optimize AND(A,AND(B,C)) --> AND(A,B,C)
 		while(lookAhead().is(TokenType.AND)){
 			advanceOver(TokenType.AND);
 			if(n.getOperator() != FqlOperator.AND){
@@ -401,12 +412,12 @@ class FqlParser {
 	/**
 	 * Comparison FqlOperators
 	 * comp := arith | arith IS [NOT] Null | arith ISA identifier
-	 *         | arith (GT | GE | EQ | NE | LE | LT | LIKE) arith
+	 *         | arith (GT | GE | EQ | NE | LE | LT | [NOT] LIKE) arith
 	 * @return FqlNode containing comp tree
 	 */
 	private FqlNode comp(){
 		if(debug) enter("Comp");
-		// TODO: DSP0212 also defines [NOT] LIKE
+		// Note: DSP0212 defines [NOT] LIKE, but NOT is not in CQL
 		FqlNode n = arith();
 		if(lookAhead().is(TokenType.NOT)) {
 			advanceOver(TokenType.NOT);

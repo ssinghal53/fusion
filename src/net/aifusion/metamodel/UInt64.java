@@ -54,6 +54,11 @@ public class UInt64 extends BigInteger {
 		return;
 	}
 	
+	public UInt64(long val) {
+		this(Long.toString(val));
+		return;
+	}
+	
 	/**
 	 * Compares this unsigned 64-bit integer object with the specified object
 	 * for equality

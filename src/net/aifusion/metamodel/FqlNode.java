@@ -76,6 +76,8 @@ class FqlNode {
 	FqlNode(FqlOperator operator, DataValue value) {
 		this(operator);
 		this.value = value;
+		// override value for EOF node
+		if(operator == FqlOperator.EOF && value != TrueValue) value = TrueValue;
 		return;
 	}
 
@@ -434,13 +436,13 @@ class FqlNode {
 					Boolean [] childValues = c.getBooleanArrayValue();
 					if(childValues != null){
 						for(int i = 0; i < childValues.length; i++){
-							currentValue = getValue(currentValue, childValues[i]);
+							currentValue = getLogicalValue(currentValue, childValues[i]);
 						}
 					} else {
-						currentValue = getValue(currentValue,null);
+						currentValue = getLogicalValue(currentValue,null);
 					}
 				} else {
-					currentValue = getValue(currentValue, c.getBooleanValue());
+					currentValue = getLogicalValue(currentValue, c.getBooleanValue());
 				}
 			}
 			setValue(new DataValue(DataType.BOOLEAN,currentValue));
@@ -752,7 +754,7 @@ class FqlNode {
 	 * @param childValue - new value received from child
 	 * @return - new current value
 	 */
-	private Boolean getValue(Boolean currentValue, Boolean childValue){
+	private Boolean getLogicalValue(Boolean currentValue, Boolean childValue){
 		switch(operator){
 		case AND:
 		case EVERY:
