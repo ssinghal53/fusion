@@ -37,7 +37,7 @@ import net.aifusion.metamodel.StructureValue;
  * Class to manage a property assignment
  * @author Sharad Singhal
  */
-public class Assign extends Node {
+class Assign extends Node {
 	/**
 	 * create an ASSIGNMENT node
 	 * @param name - name of the property to use

@@ -43,7 +43,7 @@ import net.aifusion.metamodel.StructureValue;
  * @author Sharad Singhal
  *
  */
-public class Update extends Node {
+class Update extends Node {
 
 	/**
 	 * Create an UPDATE node

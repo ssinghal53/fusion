@@ -43,7 +43,7 @@ import net.aifusion.metamodel.StructureValue;
  * @author Sharad Singhal
  *
  */
-public class Delete extends Node {
+class Delete extends Node {
 
 	/**
 	 * Create a DELETE node

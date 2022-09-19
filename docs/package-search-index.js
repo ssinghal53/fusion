@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"net.aifusion.asn"},{"l":"net.aifusion.cimserver"},{"l":"net.aifusion.cql"},{"l":"net.aifusion.metamodel"},{"l":"net.aifusion.providers"},{"l":"net.aifusion.utils"}]
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"net.aifusion.asn"},{"l":"net.aifusion.cimserver"},{"l":"net.aifusion.cql"},{"l":"net.aifusion.metamodel"},{"l":"net.aifusion.providers"},{"l":"net.aifusion.utils"}];updateSearchResults();
