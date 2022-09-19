@@ -48,7 +48,8 @@ public class TokenTypeTest {
 			"RBRACKET","COLON","QUOTED_CHARACTER","ERROR","STRING_VALUE","HASH","CHARACTER","NUMBER","INTEGER",
 			"REAL","BINARY","HEX","DATETIMETOMICROSECONDS","STRINGTOUINT","STRINGTOSINT","STRINGTOREAL","UPPERCASE",
 			"NUMERICTOSTRING","REFERENCETOSTRING","INSTANCEOF","CLASSPATH","OBJECTPATH","CURRENTDATETIME",
-			"DATETIME","MICROSECONDTOTIMESTAMP","MICROSECONDTOINTERVAL","SCOPE","SLASH","PLUS","MINUS","RANGE","CONCAT","SIGN"
+			"DATETIME","MICROSECONDTOTIMESTAMP","MICROSECONDTOINTERVAL","SCOPE","SLASH","PLUS","MINUS","RANGE","CONCAT","SIGN",
+			"UPDATE","SET"
 	};
 	
 	public static String [] value = {
@@ -59,7 +60,7 @@ public class TokenTypeTest {
 			"]",":",null,null,null,"#",null,null,null,null,null,null,"dateTimeToMicroseconds","stringToUint",
 			"stringToSint","stringToReal","uppercase","numerictostring","referencetostring","instanceof",
 			"classpath","objectpath","currentdatetime","datetime","microsecondtotimestamp","microsecondtointerval","::",
-			"/","+","-","..","||",null
+			"/","+","-","..","||",null,"update","set"
 	};
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {

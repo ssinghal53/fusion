@@ -123,7 +123,11 @@ enum Operator {
 	/** Node defining distinct flag */
 	DISTINCT,
 	/** Node defining a sort Spec */
-	SORT_BY;
+	SORT_BY,
+	/** Node defining an update statement */
+	UPDATE,
+	/** Node defining an assignment statement */
+	ASSIGN;
 	
 	/**
 	 * Get a generic branch node corresponding to this operator
@@ -133,6 +137,8 @@ enum Operator {
 		switch(this){
 		case DELETE:
 			return new Delete();
+		case UPDATE:
+			return new Update();
 		case ALIAS:
 			return new Alias();
 		case SELECT:
@@ -203,6 +209,8 @@ enum Operator {
 			return new ClassPath(name);
 		case PROPERTY_NAME:
 			return new PropertyName(name);
+		case ASSIGN:
+			return new Assign(name);
 		default:
 			return new Node(this,name,null);
 		}

@@ -103,6 +103,8 @@ class QueryParser {
 				statement = selectStatement(p);
 			} else if(p.lookAheadToken.is(TokenType.DELETE)) {
 				statement = deleteStatement(p);
+			} else if(p.lookAheadToken.is(TokenType.UPDATE)) {
+				statement = updateStatement(p);
 			}
 		} catch (Exception e){
 			if(debug) System.out.println(p.toString());
@@ -115,6 +117,50 @@ class QueryParser {
 		if(statement == null) throw new ModelException(ExceptionReason.INVALID_QUERY, "Invalid query: "+p.toString());
 		if(!p.lookAheadToken.is(TokenType.EOF)) throw new ModelException(ExceptionReason.INVALID_QUERY, "Incomplete parse: "+p.toString());
 		return statement;
+	}
+
+	/**
+	 * UpdateStatement = UPDATE className SET propertyName1 = value1 [, propertyName2 = value2, ...] [WHERE searchCondition]
+	 * @param p - parser state
+	 * @return - update node
+	 */
+	private Node updateStatement(ParserState p) {
+		if(debug) entering(p,"updateStatement");
+
+		advanceOver(p,TokenType.UPDATE);
+		Node update = Operator.UPDATE.getNode();
+		update.addChild(classPath(p));
+		
+		advanceOver(p,TokenType.SET);
+		update.addChild(assignment(p));
+		while(p.lookAheadToken.is(TokenType.COMMA)) {
+			advanceOver(p,TokenType.COMMA);
+			update.addChild(assignment(p));
+		}	
+		// optional search condition
+		if(p.lookAheadToken.is(TokenType.WHERE)){
+			advanceOver(p,TokenType.WHERE);
+			Node where = Operator.WHERE.getNode();
+			update.addChild(where);
+			where.addChild(searchCondition(p));
+		}
+		if(debug) exiting(p,"updateStatement");
+		return update;
+	}
+
+	/**
+	 * Assignment propertyName = value
+	 * @param p - parser State
+	 * @return Assignment node
+	 */
+	private Node assignment(ParserState p) {
+		if(debug) entering(p,"assignment");
+		Token pName = advanceOver(p,TokenType.IDENTIFIER);
+		Node assignment = Operator.ASSIGN.getNode(pName.value());
+		advanceOver(p,TokenType.EQUALS);
+		assignment.addChild(expr(p));
+		if(debug) exiting(p,"assignment");
+		return assignment;
 	}
 
 	/**

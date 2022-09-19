@@ -92,7 +92,9 @@ enum TokenType {
 	MINUS("-",false),
 	RANGE("..",false),
 	CONCAT("||",false),
-	SIGN (null,false);
+	SIGN (null,false),
+	UPDATE("update",true),
+	SET("set",true);
 	
 	private final String value;
 	private boolean isIdentifier;

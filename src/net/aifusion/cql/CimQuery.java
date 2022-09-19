@@ -22,7 +22,6 @@ public class CimQuery {
 	private String query;
 	/** Root of the query parse tree */
 	private Node root;
-	private boolean isSelect = false;
 	
 	/**
 	 * Create a CIM query
@@ -36,6 +35,7 @@ public class CimQuery {
 		case SELECT:
 			((Select) root).resolve();
 			break;
+		case UPDATE:
 		case DELETE:
 			break;
 		default:
@@ -96,6 +96,8 @@ public class CimQuery {
 		switch(root.getOperator()) {
 		case DELETE:
 			return ((Delete) root).evaluate(repository);
+		case UPDATE:
+			return ((Update) root).evaluate(repository);
 		case SELECT:
 			return root.evaluate(new BufferedCache(repository));
 		default:
