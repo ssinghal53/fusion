@@ -140,9 +140,4 @@ public class Delete extends Node {
 	void evaluate() {
 		throw new ModelException(ExceptionReason.METHOD_NOT_AVAILABLE,"Evaluate() not implemented by "+toString());
 	}
-
-	public static void main(String [] args) {
-		CimQuery q = new CimQuery("delete first 2 distinct from /home:schema_className where p1 = 'prop' or p2 > 3 order by p2 asc");
-		System.out.println(q.toString());
-	}
 }
