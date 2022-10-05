@@ -99,7 +99,7 @@ public class CimQuery {
 		case UPDATE:
 			return ((Update) root).evaluate(repository);
 		case SELECT:
-			return root.evaluate(new BufferedCache(repository));
+			return ((Select) root).evaluate(new BufferedCache(repository));
 		default:
 			throw new ModelException(ExceptionReason.NOT_SUPPORTED,"Query "+root.getOperator()+" not yet implemented");
 		}
