@@ -285,7 +285,7 @@ public class ObjectPath {
      */
     private DataValue getNumericalValue(int linePosition, String currentLine, StringBuilder b) {
         boolean isHex = false, seenDecimal = false, signEnabled = true;
-        boolean needDigit = true, isBool = true;
+        boolean needDigit = true, isBool = true, isInt = true;
 
         int lineLength = currentLine.length();
         int initPosition = linePosition;
@@ -335,8 +335,9 @@ public class ObjectPath {
                 signEnabled = needDigit = true;
 
             } else if (isBool && (c == 'B' || c == 'b')) {
-                // boolean termination reached. Ignore the 'b'
+                // boolean termination reached. change isInt = false
                 // b.append(c);
+            	isInt = false;
                 linePosition++;
                 break;
 
@@ -347,7 +348,7 @@ public class ObjectPath {
             linePosition++;
         }
         linePosition -= initPosition;
-
+        if(isInt && isBool) isBool = false;
         DataValue value = null;
         if (isHex) {
             value = new DataValue(Integer.parseInt(b.toString(), 16));

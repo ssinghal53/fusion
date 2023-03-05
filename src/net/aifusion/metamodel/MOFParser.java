@@ -2689,7 +2689,7 @@ public class MOFParser implements Parser {
 	 */
 	private boolean numericValue(){
 		boolean isHex = false, seenDecimal = false, needSign = true;
-		boolean needDigit = true, isBool = true;
+		boolean needDigit = true, isBool = true, isInt = true;
 
 		StringBuilder b = new StringBuilder();		
 		while(p.cursor < p.lineLength){
@@ -2717,7 +2717,7 @@ public class MOFParser implements Parser {
 				// check for decimal rules
 				if(isHex || seenDecimal) break;	// . is part of the next token, we are done.
 				b.append(c);
-				needSign = isBool = isHex = false;
+				needSign = isBool = isHex = isInt = false;
 				needDigit = seenDecimal = true;
 			} else if(needSign && (c == '+' || c == '-')){
 				// sign can only be at the beginning or after (e | E)
@@ -2728,6 +2728,7 @@ public class MOFParser implements Parser {
 				needSign = needDigit = true;
 			} else if(isBool && (c == 'B' || c == 'b')){
 				// boolean termination reached
+				isInt = false;
 				b.append(c);
 				p.cursor++;
 				break;
