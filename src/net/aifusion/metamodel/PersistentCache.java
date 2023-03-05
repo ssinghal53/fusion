@@ -311,6 +311,7 @@ public class PersistentCache extends InMemoryCache {
 		if(f.getName().endsWith(mofFileSuffix)){
 			String fName = f.getName().substring(0,f.getName().length()-4);	// file name without the .mof
 			// if we have a mof file, parse it into the repository.
+			// TODO: Note that classNames.contains(fName) makes this case sensitive
 			if(classNames == null || classNames.isEmpty() || classNames.contains(fName)){	
 				StringBuilder b = new StringBuilder();
 				for(String p : pathElements){
