@@ -27,7 +27,9 @@
  */
 package net.aifusion.metamodel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
@@ -470,6 +472,36 @@ public class ModelUtilities {
 		}
 		return args;
 	}
+	
+	/**
+	 * Convert a set of {propertyName, propertyValue} pairs to DataValues 
+	 * @param template - CimStructure template to scan for constructing values
+	 * @param recordProperties - record properties provided. Array properties should be given as "," separated string values
+	 * @return map containing <propertyName, DataValue>
+	 */
+	public static HashMap<String, DataValue> getProperties(CimStructure template, Map<String,String> recordProperties){
+		HashMap<String,DataValue> args = new HashMap<String,DataValue>();
+		if(recordProperties != null) {
+			for (String s : recordProperties.keySet()) {
+				if(!template.hasProperty(s)) continue;
+				DataType pType = template.getPropertyType(s);
+				if(pType.isArray()){
+					ArrayList<String> values = new ArrayList<String>();
+					for (String v : recordProperties.get(s).split(",")) {
+						if (v != null) {
+							v = v.trim();
+							values.add(v);
+						}
+					}
+					args.put(s.toLowerCase(),new DataValue(pType.toString(),values.toArray(new String[values.size()])));
+				} else {
+					args.put(s.toLowerCase(),new DataValue(pType.toString(),recordProperties.get(s)));
+				}
+			}
+		}
+		return args;
+	}	
+
 	
 	/**
 	 * Get a random string of ascii characters
