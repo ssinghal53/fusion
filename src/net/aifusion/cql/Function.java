@@ -35,6 +35,7 @@ import net.aifusion.metamodel.DateTime;
 import net.aifusion.metamodel.ExceptionReason;
 import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.ObjectPath;
+import net.aifusion.metamodel.UInt64;
 
 /**
  * Class to manage Functions
@@ -76,17 +77,17 @@ class Function extends Node {
 		case StringToUint:
 			if(children.size() != 1) throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+": Only one child expected, found "+children.size());
 			if(!children.get(0).getType().isString()) throw new ModelException(ExceptionReason.INVALID_PARAMETER,toString()+": expected String argument, found "+children.get(0).getType());
-			setValue(new DataValue(fType,children.get(0).getStringValue()));
+			setValue(new DataValue(fType,new UInt64(children.get(0).getStringValue())));
 			break;
 		case StringToSint:
 			if(children.size() != 1) throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+": Only one child expected, found "+children.size());
 			if(!children.get(0).getType().isString()) throw new ModelException(ExceptionReason.INVALID_PARAMETER,toString()+": expected String argument, found "+children.get(0).getType());
-			setValue(new DataValue(fType,children.get(0).getStringValue()));
+			setValue(new DataValue(fType,Long.valueOf(children.get(0).getStringValue())));
 			break;
 		case StringToReal:
 			if(children.size() != 1) throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+": Only one child expected, found "+children.size());
 			if(!children.get(0).getType().isString()) throw new ModelException(ExceptionReason.INVALID_PARAMETER,toString()+": expected String argument, found "+children.get(0).getType());
-			setValue(new DataValue(fType,children.get(0).getStringValue()));
+			setValue(new DataValue(fType,Double.valueOf( children.get(0).getStringValue())));
 			break;
 		case UpperCase:
 			if(children.size() != 1) throw new ModelException(ExceptionReason.INVALID_QUERY,toString()+": Only one child expected, found "+children.size());
