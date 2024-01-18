@@ -598,8 +598,8 @@ public class InMemoryRepository implements Repository {
 	}
 
 	@Override
-	public List<StructureValue> filter(CimFilter filter) {
-		String structName = filter.getStructurePath().getName();
+	public List<StructureValue> filter(ObjectPath path, CimFilter filter) {
+		String structName = path.getName();
 		Vector<StructureValue> elements = new Vector<StructureValue>();
 		// scan structures for required values
 		for(StructureAndValues sv : structures.values()) {

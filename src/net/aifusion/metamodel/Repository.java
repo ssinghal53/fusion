@@ -95,10 +95,11 @@ public interface Repository {
 	
 	/**
 	 * Find all structure value instances based on some filter criteria
+	 * @param structPath - object path to the structure to use
 	 * @param filter - filter to apply
 	 * @return - list of structureValues that pass the given filter. Empty list if none available
 	 */
-	public List<StructureValue> filter(CimFilter filter);
+	public List<StructureValue> filter(ObjectPath structPath, CimFilter filter);
 	
 	/* 
 	 * *************************************************************

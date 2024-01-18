@@ -478,11 +478,11 @@ public class CimClient implements Provider, CimListener {
 	}
 	
 	@Override
-	public List<StructureValue> filter(CimFilter filter) {
+	public List<StructureValue> filter(ObjectPath path, CimFilter filter) {
 		// get an existing element
 		HttpURLConnection connection = getConnection(CimHeader.FILTER);
 		connection.setRequestProperty(CimXHeader.FILTER_STRING.toString(), filter.getFilterQuery());
-		connection.setRequestProperty(CimXHeader.OBJECT_PATH.toString(), filter.getStructurePath().toString());
+		connection.setRequestProperty(CimXHeader.OBJECT_PATH.toString(), path.toString());
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status) && response.hasBody()){
 			InMemoryCache cache = new InMemoryCache();

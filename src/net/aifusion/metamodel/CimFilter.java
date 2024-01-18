@@ -53,9 +53,4 @@ public interface CimFilter {
 	 */
 	public String getFilterQuery();
 	
-	/**
-	 * Get object path to the structure definition of the structure value being queried
-	 * @return - path to the structure definition
-	 */
-	public ObjectPath getStructurePath();
 }

@@ -440,8 +440,8 @@ class CimHandler implements HttpRequestHandler {
 				break;
 			case FILTER:
 				path = new ObjectPath(request.getXHeader(CimXHeader.OBJECT_PATH.toString()));
-				FqlFilter filter = new FqlFilter(path,request.getXHeader(CimXHeader.FILTER_STRING.toString()));
-				resultset = provider.filter(filter);
+				FqlFilter filter = new FqlFilter(request.getXHeader(CimXHeader.FILTER_STRING.toString()));
+				resultset = provider.filter(path,filter);
 				b = new StringBuilder("");
 				ns0 = null;
 				for(StructureValue e : resultset){

@@ -492,8 +492,8 @@ public class BasicProvider implements Provider {
 	}
 	
 	@Override
-	public List<StructureValue> filter(CimFilter filter) {
-		return repository.filter(filter);
+	public List<StructureValue> filter(ObjectPath path, CimFilter filter) {
+		return repository.filter(path,filter);
 	}
 
 	/* *******************************

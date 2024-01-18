@@ -36,18 +36,14 @@ public class FqlFilter implements CimFilter {
 	private String fql;
 	/** Root of the query parse tree */
 	private FqlNode root;
-	/** Path to the structure being located */
-	private ObjectPath path;
+	
 	/**
 	 * Create a CimFilter based on an extension of the DMTF FQL (DSP0212)
-	 * @param structurePath - path to the structure being searched
 	 * @param filterQuery - String containing filter query
 	 */
-	public FqlFilter(ObjectPath structurePath, String filterQuery) {
+	public FqlFilter(String filterQuery) {
 		if(filterQuery == null) throw new ModelException(ExceptionReason.INVALID_QUERY,"Query cannot be null");
 		this.fql = filterQuery;
-		if(structurePath == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"structurePath cannot be null");
-		this.path = structurePath;
 		FqlParser p = new FqlParser(filterQuery);
 		root = p.getParseTree();
 		return;
@@ -57,9 +53,8 @@ public class FqlFilter implements CimFilter {
 	 * Create a null CimFilter-- selects all elements of the given type
 	 * @param objectPath path to the structure to be searched
 	 */
-	public FqlFilter(ObjectPath structurePath) {
+	public FqlFilter() {
 		this.fql = "";
-		this.path = structurePath;
 		root = FqlOperator.EOF.getFqlNode();
 		return;
 	}
@@ -93,11 +88,6 @@ public class FqlFilter implements CimFilter {
 		return fql;
 	}
 	
-	@Override
-	public ObjectPath getStructurePath() {
-		return path;
-	}
-
 	@Override
 	public String getFilterQuery() {
 		return fql;
