@@ -4,10 +4,10 @@ It also contains a number of CIM repository implementations.
 <ul>
 <li>Primary Java classes corresponding to CIM elements
  <ul>
- <li>CimQualifierType - Defines a qualifier type. Standard qualifier types are "built-in" and do not need
+  <li>CimQualifierType - Defines a qualifier type. Standard qualifier types are "built-in" and do not need
  	to be separately defined</li>
- <li>CimQualifier - defines qualifiers on individual CIM elements</li>
- <li>CimEnumeration - defines enumerations (a type containing integer or string enumerated values)</li>
+  <li>CimQualifier - defines qualifiers on individual CIM elements</li>
+  <li>CimEnumeration - defines enumerations (a type containing integer or string enumerated values)</li>
   <li>CimStructure - defines a CIM structure (a type containing only properties)</li>
   <li>StructureValue - defines a CIM Structure value (instantiates values for a CIM Structure)</li>
   <li>CimClass - defines a CIM class (a type containing both properties and methods</li>
@@ -28,7 +28,7 @@ It also contains a number of CIM repository implementations.
  </ul></li>
  <li>Other elements used as base classes
  <ul>
- <li>CimQualifedElement - base class representing a qualified element (class, instance, property, method, parameter)</li>
+  <li>CimQualifedElement - base class representing a qualified element (class, instance, property, method, parameter)</li>
   <li>CimNamedElement - base class representing all CIM named elements</li>
   <li>CimElement - base class that represents all CIM elements</li>
   <li>NameSpacePath - class representing a CIM namespace</li>
@@ -66,6 +66,7 @@ It also contains a number of CIM repository implementations.
   <li>InMemoryCache - an in-memory repository that supports namespaces</li>
   <li>BufferedCache - an in-memory repository with a backing store. Used for parsing CIM messages.</li>
   <li>PersistentCache - a file-system based persistent repository. Supports namespaces and persistence</li>
+  <li>CimFilter - CQL filter used to select StructureValues and CimInstances from a repository</li>
  </ul></li>
  <li>MOF Parsers
  <ul>
