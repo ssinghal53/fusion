@@ -45,7 +45,7 @@ public class ModelUtilities {
 	private ModelUtilities() {
 		return;
 	}
-	
+
 	/**
 	 * Escapes special characters in a string to generate a MOF formatted string
 	 * @param inp the string to process
@@ -59,7 +59,7 @@ public class ModelUtilities {
 		sb.append('\"');
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Removes the first level of quotes and escapes from a string
 	 *
@@ -169,8 +169,8 @@ public class ModelUtilities {
 					break;
 				default :
 					throw new IllegalArgumentException(
-						"Invalid escape sequence '" + ch + 
-				"' (valid sequences are  \\b  \\t  \\n  \\f  \\r  \\\"  \\\'  \\\\ \\x0000 \\X0000 )");
+							"Invalid escape sequence '" + ch + 
+							"' (valid sequences are  \\b  \\t  \\n  \\f  \\r  \\\"  \\\'  \\\\ \\x0000 \\X0000 )");
 				}
 			}
 			else {
@@ -179,7 +179,7 @@ public class ModelUtilities {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Return the string representation of a dataValue singleton
 	 * @param type - data type of dataValue
@@ -260,11 +260,11 @@ public class ModelUtilities {
 		}
 		return value.toString();
 	}
-	
+
 	/** legal string values for base64 operations. Character at index i is the coding for byte i */
 	private static final String code =
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	
+
 	/**
 	 * Encode a byte array to a base64 encoded string
 	 * @param bytes - array of bytes to be encoded
@@ -300,7 +300,7 @@ public class ModelUtilities {
 		}
 		return b.toString();
 	}
-	
+
 	/**
 	 * Encode a byte array to a base64 encoded string
 	 * @param bytes - array containing bytes to be encoded
@@ -340,7 +340,7 @@ public class ModelUtilities {
 		}
 		return b.toString();
 	}
-	
+
 	/**
 	 * Decode a base64 encoded string to a byte array
 	 * @param s - string to be decoded
@@ -348,19 +348,19 @@ public class ModelUtilities {
 	 * @see #base64Encode(byte[])
 	 */
 	public static byte[] base64Decode(String s) {
-	    if (s == null) {
-	        return null;
-	    }
-	    if(s.contains("\n") || s.contains("\r") || s.contains("-") || s.contains("_")){
-	    	// strip out external characters
-	    	StringBuilder b = new StringBuilder(s.length());
-	    	for(int i = 0; i < s.length(); i++){
-	    		char c = s.charAt(i);
-	    		if(c == '\n' || c == '\r') continue;
-	    		b.append(c == '-' ? '+' : c == '_' ? '/' : c);
-	    	}
-	    	s = b.toString();
-	    }
+		if (s == null) {
+			return null;
+		}
+		if(s.contains("\n") || s.contains("\r") || s.contains("-") || s.contains("_")){
+			// strip out external characters
+			StringBuilder b = new StringBuilder(s.length());
+			for(int i = 0; i < s.length(); i++){
+				char c = s.charAt(i);
+				if(c == '\n' || c == '\r') continue;
+				b.append(c == '-' ? '+' : c == '_' ? '/' : c);
+			}
+			s = b.toString();
+		}
 		int bmax = s.length();
 		byte[] bytes = new byte[bmax];
 		int blen = 0;
@@ -390,7 +390,7 @@ public class ModelUtilities {
 		}
 		return b;
 	}
-	
+
 	/**
 	 * Normalize a local path to remove . and .. segments.
 	 * @param localPath - local path to be checked
@@ -408,7 +408,7 @@ public class ModelUtilities {
 		} else
 			return "/";
 	}
-	
+
 	/**
 	 * Get path elements from a local path definition. The path is split using "/" or "\" characters.
 	 * All '.' and empty segments are ignored, and all ".." segments move up the hierarchy without going past 
@@ -438,7 +438,7 @@ public class ModelUtilities {
 		}
 		return pathElements;
 	}
-	
+
 	/**
 	 * Get a hashmap containing {name, value} pairs passed as an argument list.
 	 * Each {name, value} pair is represented as [-name value] ... in the argument list. In
@@ -472,7 +472,7 @@ public class ModelUtilities {
 		}
 		return args;
 	}
-	
+
 	/**
 	 * Convert a set of {propertyName, propertyValue} pairs to DataValues 
 	 * @param template - CimStructure template to scan for constructing values
@@ -500,9 +500,26 @@ public class ModelUtilities {
 			}
 		}
 		return args;
-	}	
+	}
 
-	
+	/**
+	 * Convert a set of {propertyName, propertyValue} pairs to data values
+	 * @param sv - structureValue containing property values if not given in recordProperties
+	 * @param recordProperties - record properties provided
+	 * @return - map containing {propertyName, propertyValue}
+	 */
+	public static HashMap<String, DataValue> getProperties(StructureValue sv, Map<String, String> recordProperties) {
+		CimStructure template = sv.getCreationStruct();
+		HashMap<String,DataValue> args = getProperties(template,recordProperties);
+		for(String pName : template.getAllPropertyNames()) {
+			pName = pName.toLowerCase();
+			if(!args.containsKey(pName) && sv.hasNonNullProperty(pName)) {
+				args.put(pName, sv.getPropertyValue(pName));
+			}
+		}
+		return args;
+	}
+
 	/**
 	 * Get a random string of ascii characters
 	 * @param len - length of string
@@ -517,4 +534,6 @@ public class ModelUtilities {
 		}
 		return b.toString();
 	}
+
+
 }
