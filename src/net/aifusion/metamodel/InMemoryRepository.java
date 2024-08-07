@@ -599,6 +599,9 @@ public class InMemoryRepository implements Repository {
 
 	@Override
 	public List<StructureValue> filter(ObjectPath path, CimFilter filter) {
+		if(path == null || !localPath.equals(path.getLocalPath())){
+			return new Vector<StructureValue>();
+		}
 		String structName = path.getName();
 		Vector<StructureValue> elements = new Vector<StructureValue>();
 		// scan structures for required values
