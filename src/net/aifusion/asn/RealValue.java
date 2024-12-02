@@ -120,7 +120,7 @@ public class RealValue extends AsnValue {
 		int saved = cursor;
 		// check tag and create IntegerValue
 		Tag tag = Tag.locate(buffer[cursor]);
-		if(tag != Tag.INTEGER) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected INTEGER, found "+tag);
+		if(tag != Tag.REAL) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected REAL, found "+tag);
 		
 		TagClass tagClass = TagClass.getTagClass(buffer[cursor]);
 		TagEncoding tagEncoding = TagEncoding.getTagEncoding(buffer[cursor]);
