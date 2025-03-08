@@ -529,7 +529,7 @@ class JavaFeature {
 	 * @return - java code for the feature
 	 */
 	private String classFeature(CimStructure struct) {
-		StringBuilder b = new StringBuilder();	// mainline + getters/setters
+		StringBuilder b = new StringBuilder();	// main-line + getters/setters
 		StringBuilder b2 = new StringBuilder();	// local property definitions
 		StringBuilder b3 = new StringBuilder();	// constructor
 		b.append("\n");
