@@ -534,6 +534,4 @@ public class ModelUtilities {
 		}
 		return b.toString();
 	}
-
-
 }
