@@ -32,11 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Vector;
 
 import net.aifusion.metamodel.CimStructure;
 import net.aifusion.metamodel.Constants;
@@ -45,6 +41,7 @@ import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.ElementType;
 import net.aifusion.metamodel.Export;
 import net.aifusion.metamodel.ModelException;
+import net.aifusion.metamodel.ModelUtilities;
 import net.aifusion.metamodel.NameSpacePath;
 import net.aifusion.metamodel.ObjectPath;
 import net.aifusion.metamodel.PersistentCache;
@@ -60,9 +57,9 @@ public class HttpConfiguration {
 	/** Default configuration Key to use */
 	private static final String defaultID = "defaultConfig";
 	/** Default host name */
-	private static final String defaultHost = Constants.defaulAuthority.substring(0, Constants.defaulAuthority.indexOf(":"));
+	private static final String defaultHost = Constants.defaultHost;
 	/** Default host port */
-	private static final int defaultPort = Integer.parseInt(Constants.defaulAuthority.substring(Constants.defaulAuthority.indexOf(":")+1));
+	private static final int defaultPort = Constants.defaultPort;
 	/** Use HTTPS for connections */
 	private static final boolean defaultSecure = false;
 	/** Time to wait on idle connection (ms) */
@@ -74,7 +71,7 @@ public class HttpConfiguration {
 	/** Trusted certificates */
 	private static final String defaultTrustStore = "resources/trustStore.jks";
 	/** Default server identity */
-	private static final String defaultX500Principal = "CN="+defaultHost+", OU=aifusion.com, O=aifusion, C=US, L=Milpitas, ST=California";
+	private static final String defaultX500Principal = "CN="+defaultHost+", OU=aifusion.net, O=aifusion, C=US, L=Belmont, ST=California";
 	/** Default handler for responses */
 	private static final String defaultHandler = "CimHandler";
 	/** Default CIM repository. Null implies an in-memory cache */
@@ -122,8 +119,10 @@ public class HttpConfiguration {
 	private String proxyHost = defaultHost;
 	/** proxy port, if any. 0 implies no proxy being used */
 	private int proxyPort = 0;
-	/** Provider to use in the CIM Handler. Null implies a BasicProvider */
+	/** Default Provider to use in the CIM Handler. Null implies a BasicProvider */
 	private String providerName = null;
+	/** Providers to use in the CIM Handler. Null implies that only the default provider is known */
+	private String [] providerNames = null;
 	/** Server log file */
 	private String logFile = defaultLogFile;
 	/** Flag to indicate if logging is enabled */
@@ -209,6 +208,9 @@ public class HttpConfiguration {
 				case "loglevel":
 					loglevel = v.toString().toUpperCase();
 					break;
+				case "providerNames":
+					providerNames = (String []) v.getValue(); 
+					break;
 				default:
 					throw new ModelException("HttpConfiguration- Property "+pName+" not yet handled");
 				}
@@ -263,7 +265,7 @@ public class HttpConfiguration {
 	 * Get the Host name for the server
 	 * @return - host name for the server
 	 */
-	@Export(qualifiers="Description(\"Host Name\")")
+	@Export(qualifiers="Description(\"Host Name\")",defaultValue="\""+defaultHost+"\"")
 	public String getHostName(){
 		return hostName;
 	}
@@ -281,7 +283,7 @@ public class HttpConfiguration {
 	 * Get the server port
 	 * @return - server port for the server
 	 */
-	@Export(qualifiers="Description(\"Server Port\")")
+	@Export(qualifiers="Description(\"Server Port\")",defaultValue=""+defaultPort)
 	public int getServerPort(){
 		return port;
 	}
@@ -290,7 +292,7 @@ public class HttpConfiguration {
 	 * Get the server time out
 	 * @return - time out in ms
 	 */
-	@Export(qualifiers="Description(\"Server Time Out (ms). If 0, no timeout enforced\")")
+	@Export(qualifiers="Description(\"Server Time Out (ms). If 0, no timeout enforced\")",defaultValue="0")
 	public int getServerTimeout(){
 		return timeout;
 	}
@@ -299,7 +301,7 @@ public class HttpConfiguration {
 	 * Get maximum sessions accepted by server. 0 for no maximums
 	 * @return - maximum sessions accepted
 	 */
-	@Export(qualifiers="Description(\"Maximum concurrent sessions accepted by server. if 0, no maximum enforced\")")
+	@Export(qualifiers="Description(\"Maximum concurrent sessions accepted by server. if 0, no maximum enforced\")",defaultValue="0")
 	public int getMaxSessions(){
 		return maxSessions;
 	}
@@ -308,7 +310,7 @@ public class HttpConfiguration {
 	 * Check if the server uses https
 	 * @return - true if the server should use https, false otherwise
 	 */
-	@Export(qualifiers="Description(\"Flag to indicate if server is secure (i.e., uses https)\")")
+	@Export(qualifiers="Description(\"Flag to indicate if server is secure (i.e., uses https)\")",defaultValue="false")
 	public boolean isSecure(){
 		return isSecure;
 	}
@@ -326,7 +328,7 @@ public class HttpConfiguration {
 	 * Get the name of the key store to use for managing known keys, if any
 	 * @return - name of the key store to use
 	 */
-	@Export(qualifiers="Description(\"Name of key store to use, if any\")")
+	@Export(qualifiers="Description(\"Name of key store to use, if any\")",defaultValue="\""+defaultKeyStore+"\"")
 	public String getKeyStore(){
 		return keyStoreName;
 	}
@@ -344,7 +346,7 @@ public class HttpConfiguration {
 	 * Get the name of the trusted certificate store to use, if any
 	 * @return - name of the trusted certificate store to use
 	 */
-	@Export(qualifiers="Description(\"Name of trust store to use, if any\")")
+	@Export(qualifiers="Description(\"Name of trust store to use, if any\")",defaultValue="\""+defaultTrustStore+"\"")
 	public String getTrustStore(){
 		return trustStoreName;
 	}
@@ -362,7 +364,7 @@ public class HttpConfiguration {
 	 * Get the X500 Principal distinguished name for server credentials
 	 * @return - X500 name used by the server
 	 */
-	@Export(qualifiers="Description(\"X500 principal distinguished name used for server credentials\")")
+	@Export(qualifiers="Description(\"X500 principal distinguished name used for server credentials\")",defaultValue="\""+defaultX500Principal+"\"")
 	public String getX500Principal() {
 		return x500Principal;
 	}
@@ -371,7 +373,7 @@ public class HttpConfiguration {
 	 * Get the name of the request handler class used by this server
 	 * @return - name of the request handler class to use
 	 */
-	@Export(qualifiers="Description(\"Name of the request handler class to use\")")
+	@Export(qualifiers="Description(\"Name of the request handler class to use\")",defaultValue="\""+defaultHandler+"\"")
 	public String getRequestHandler() {
 		return requestHandler;
 	}
@@ -398,9 +400,18 @@ public class HttpConfiguration {
 	 * Get the CIM provider used in CimHandler
 	 * @return - name of the class to use in CimHandler
 	 */
-	@Export(qualifiers="Description(\"Name of the provider to use in the handler class\")")
+	@Export(qualifiers="Description(\"Name of the default provider to use in the handler class\")")
 	public String getProvider(){
 		return providerName;
+	}
+	
+	/**
+	 * Get additional providers to be used if multiple providers are netwprk accessible from the server
+	 * @return list of providers to add to the server. Each is of the form serverEndpoint|ProviderName|repositoryLocation
+	 */
+	@Export(qualifiers="Description(\"Names of the providers to use in the handler class. Each is of the form serverEndpoint|ProviderClassName[|repository]\")")
+	public String [] getProviderNames() {
+		return providerNames;
 	}
 	
 	/**
@@ -478,6 +489,7 @@ public class HttpConfiguration {
 		System.out.println("\t-logenabled [true|false]	# true if logging is enabled [false]");
 		System.out.println("\t-loglevel level			# level for logging [INFO]");
 		System.out.println("\t-logfile filename			# filename for logging [server.log]");
+		System.out.println("\t-providerNames {names}	# names of providers. Each name is a triple endpoint|name|repository [{ }]");
 		return;
 	}
 	/**
@@ -503,7 +515,7 @@ public class HttpConfiguration {
 	 * <dt>-requesthandler className</dt><dd>default request handler [CimHandler]</dd>
 	 * <dt>-proxyHost hostName</dt><dd>proxy host [null]</dd>
 	 * <dt>-proxyPort port</dt><dd>proxy port [8080]</dd>
-	 *
+	 * <dt>-ProviderNames {name name name}</dt><dd>names of providers to use. Each name is a triple serverendpoint|providerclass|repositorylocation</dd>
 	 * </dl>
 	 */
 	public static void main(String [] args){
@@ -531,8 +543,7 @@ public class HttpConfiguration {
 		
 		// get the arguments from the command line to construct the configuration
 		HashMap<String,String> options = new HashMap<String,String>();
-		Vector<String> files = new Vector<String>();
-		getArgs(args,options,files);
+		options = ModelUtilities.getArgs(args);
 		
 		String repo = options.containsKey("cp") ? options.get("cp") : defaultConfigDirectory;
 		NameSpacePath path = options.containsKey("n") ? new NameSpacePath(options.get("n")) : Constants.defaultNameSpacePath;
@@ -559,7 +570,7 @@ public class HttpConfiguration {
 		for(String v : new String[]{"keystorepassword","truststorepassword"}){
 			DataValue pass = propertyValues.get(v);
 			if(pass == null || pass.getValue() == null){
-				propertyValues.put(v, new DataValue(getRandomString(18)));
+				propertyValues.put(v, new DataValue(ModelUtilities.getRandomString(18)));
 			}
 		}
 		StructureValue config = StructureValue.createStructureValue(configClass, propertyValues, null);
@@ -568,57 +579,4 @@ public class HttpConfiguration {
 		return;
 	}
 	
-	/**
-	 * Get a random string of ascii characters
-	 * @param len - length of string
-	 * @return random string
-	 */
-	private static String getRandomString(int len){
-		String ascii = "!#$%&()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-		StringBuilder b = new StringBuilder();
-		Random r = new Random();
-		for(int i = 0; i < len; i++){
-			b.append(ascii.charAt(r.nextInt(ascii.length())));
-		}
-		return b.toString();
-	}
-
-	/**
-	 * Get a hashmap containing {name, value} pairs passed as an argument list.
-	 * Each {name, value} pair is represented as [-name value] ... in the argument list. In
-	 * case the value contains spaces, it can be enclosed in braces.
-	 * The returned Hashmap is keyed by name (sans the '-') and contains the corresponding
-	 * value. Note that names are converted to lower case, so are case insensitive
-	 * @param argv - string array to be parsed
-	 * @return - argument map
-	 */
-	private static void getArgs(String [] argv, Map<String,String> options, List<String> files){
-		for(int i=0; i<argv.length; i++ ){
-			String token = argv[i];
-			if(!token.startsWith("-")){
-				files.add(token);
-				continue;
-			} else if(i < argv.length-1){
-				token = token.substring(1); // strip the - sign in front
-				String value = argv[++i];	// get the value, and move forward
-				if("\\*".equals(value)) value = "*";
-				if(value.startsWith("{")){	// have a quoted value
-					StringBuilder b = new StringBuilder(value);
-					if(!value.endsWith("}")){
-						while(i < argv.length-1){
-							b.append(" ");
-							if("\\*".equals(argv[i+1])) argv[i+1] = "*";
-							b.append(argv[++i]);
-							if(argv[i].endsWith("}")) break;
-						}
-					}
-					value = b.substring(1,b.length()-1);	// strip the braces from value
-				}
-				options.put(token.toLowerCase(), value);
-			}
-		}
-		return;
-	}
-
-
 }
