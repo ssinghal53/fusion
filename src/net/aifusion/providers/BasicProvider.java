@@ -24,10 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Dec 12, 2015 by Sharad Singhal
+ * Last modified March 8, 2025 by Sharad Singhal
  */
 package net.aifusion.providers;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,10 +58,13 @@ import net.aifusion.cql.CimQuery;
 
 /**
  * This class represents a basic provider that can be extended by other classes to implement providers. The provider will persist
- * information if the repository passed in the constructor is persistent.
+ * information if the repository passed in the constructor is persistent. Note that A provider can be accessed from multiple session
+ * threads, so subclasses should be made thread-safe as needed
  * @author Sharad Singhal
  */
 public class BasicProvider implements Provider {
+	/** URL at which the provider can be reached */
+	private URI uri = null;
 	/** Repository for holding model elements within this provider */
 	private Repository repository;	
 	/** children for this provider -- keyed by namespace path */
@@ -74,6 +78,17 @@ public class BasicProvider implements Provider {
 	 */
 	public BasicProvider(Repository repository) {
 		this.repository = (repository != null) ? repository : new InMemoryCache();
+		return;
+	}
+	
+	/**
+	 * Create a basic provider accessible through the network
+	 * @param repository - repository to use. If none given, an in-memory cache is used within the provider
+	 * @param uri - uri for this provider. Currently, only the local path of the URI is used to determine the enpoint within a cim server
+	 */
+	public BasicProvider(Repository repository, URI uri) {
+		this(repository);
+		if(uri != null) this.uri = uri;
 		return;
 	}
 	
@@ -561,8 +576,8 @@ public class BasicProvider implements Provider {
 	}
 	
 	@Override
-	public URL getURL() {
-		return null;
+	public URI getURI() {
+		return uri;
 	}
 	
 	/*
