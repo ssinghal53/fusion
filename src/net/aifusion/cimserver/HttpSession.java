@@ -63,11 +63,11 @@ class HttpSession implements Runnable {
 	private final OutputStream outputStream;
 	/** Session input stream for requests */
 	private final BufferedInputStream inputStream;
-	/** IP address of client obtained from input socket */
-	private String remoteIp;
-	/** Hostname of client obtained from input socket */
-	private String remoteHostname;
-	/** Handler to manage individual requests */
+	/** IP address of the session client obtained from input socket */
+	private String clientIp;
+	/** Hostname of session client obtained from input socket */
+	private String clientHostname;
+	/** Handler to manage individual requests. Currently shared across sessions */
 	private HttpRequestHandler requestHandler;
 	/** flag to enable incoming request logging */
 	private boolean logEnabled = false;
@@ -88,8 +88,11 @@ class HttpSession implements Runnable {
 		InetAddress inetAddress = sessionSocket.getInetAddress();
 		this.inputStream = new BufferedInputStream(sessionSocket.getInputStream(), BUFSIZE);
 		this.outputStream = sessionSocket.getOutputStream();
-		remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress().toString();
-		remoteHostname = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "localhost" : inetAddress.getHostName().toString();
+		// client IP and Host are picked up from the session socket.
+		// Requests also contain Host: header, which is not available yet
+		clientIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress().toString();
+		clientHostname = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "localhost" : inetAddress.getHostName().toString();
+		if(logEnabled) logger.info("Session from "+inetAddress.toString()+"\n");
 		return;
 	}
 	
@@ -190,7 +193,7 @@ class HttpSession implements Runnable {
 	 * cannot determine the length of the message, or with 411 (length required) if it wishes to insist on receiving a valid
 	 * Content-Length.
 	 * 
-	 * All HTTP/1.1 applications that receive entities MUST accept the �chunked� transfer-coding (section 3.6), thus
+	 * All HTTP/1.1 applications that receive entities MUST accept the chunked transfer-coding (section 3.6), thus
 	 * allowing this mechanism to be used for messages when the message length cannot be determined in advance.
 	 * Messages MUST NOT include both a Content-Length header field and a non-identity transfer-coding. If the
 	 * message does include a non-identity transfer-coding, the Content-Length MUST be ignored.
@@ -220,7 +223,7 @@ class HttpSession implements Runnable {
 
 	/**
 	 * Get the next request from the client
-	 * @return - true if request successfully handled, false otherwise
+	 * @return - request from the input socket
 	 * @throws IOException - in case the client disappears
 	 */
 	public HttpRequest getRequest() throws IOException {
@@ -255,7 +258,7 @@ class HttpSession implements Runnable {
 			// Have a BUFSIZE (16K) header without termination
 			throw new HttpException(HttpStatus.BAD_REQUEST,"Header too large");
 		}
-		if(logEnabled) logger.info("HttpSession ("+Thread.currentThread().getName()+"): "+remoteHostname+"["+remoteIp+"] Read "+
+		if(logEnabled) logger.info("HttpSession ("+Thread.currentThread().getName()+"): "+clientHostname+"["+clientIp+"] Read "+
 				inputLen+" bytes\n"+new String(Arrays.copyOf(inputBuffer, inputLen),"UTF-8"));
 		// Create a BufferedReader for parsing the header. Note that header MUST be restricted to US-ASCII characters
 		BufferedReader headerIn = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(inputBuffer, 0, cursor),Charset.forName("US-ASCII")));
