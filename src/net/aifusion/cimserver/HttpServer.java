@@ -58,6 +58,7 @@ class HttpServer implements Runnable {
 	private volatile Thread serverThread;
 	/** timeout (in ms) for sessions. If 0, no timeout is enforced */
 	private int timeout = 0;
+	// TODO: Make sessionCount atomic integer
 	/** Number of currently active sessions */
 	private volatile long sessionCount;
 	/** Currently active sessions */
@@ -70,7 +71,6 @@ class HttpServer implements Runnable {
 	/**
 	 * Create an HttpServer using the given configuration settings
 	 * @param config - configuration for the server
-	 * @throws IOException - if the a new socket could not be created
 	 */
 	public HttpServer(HttpConfiguration config) throws IOException{
 		this.config = config;
@@ -87,52 +87,13 @@ class HttpServer implements Runnable {
 			System.setProperty("https.proxyHost", config.getProxyHost());
 			System.setProperty("http.proxyPort", String.valueOf(config.getProxyPort()));
 		}
-		if(!config.isSecure()){
-			// create a normal socket
-			serverSocket = new ServerSocket();
-		} else {
+		if(config.isSecure()){
 			// create a TLS socket
 			System.setProperty("javax.net.ssl.keyStore", config.getKeyStore());
 			System.setProperty("javax.net.ssl.keyStorePassword", config.getKeyStorePassword());
 			System.setProperty("javax.net.ssl.trustStore", config.getTrustStore());
 			System.setProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword());
-			// alternative paths...
-
-			// TODO: ServerConfiguration has the server private key protected by a second password.
-			// Need to understand how to pass that down...
-			SSLServerSocketFactory sslServerSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-			SSLServerSocket socket = (SSLServerSocket) sslServerSocketFactory.createServerSocket();
-			// socket.setNeedClientAuth(true); // require client authentication
-			serverSocket = socket;
-			// keytool -genkey -keyalg RSA -alias selfsigned -keystore testkey.jks -storepass password -validity 360 -keysize 2048
-			/* Alternate method from http://stackoverflow.com/questions/18787419/ssl-socket-connection
-			 * 
-			KeyStore ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream("keystoreFile"), "keystorePassword".toCharArray());
-
-			KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
-			kmf.init(ks, "keystorePassword".toCharArray());
-
-			TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509"); 
-			tmf.init(ks);
-
-			SSLContext sc = SSLContext.getInstance("TLS"); 
-			TrustManager[] trustManagers = tmf.getTrustManagers(); 
-			sc.init(kmf.getKeyManagers(), trustManagers, null); 
-
-			// for the server side, use
-			SSLServerSocketFactory ssf = sc.getServerSocketFactory(); 
-			SSLServerSocket s = (SSLServerSocket) ssf.createServerSocket(serverport);
-			SSLSocket c = (SSLSocket) s.accept();
-
-			// For client side, replace the last three lines with:
-			SSLSocketFactory ssf = sc.getSocketFactory(); 
-			SSLSocket s = (SSLSocket) ssf.createSocket(serverip, serverport);
-			s.startHandshake();
-			 */
-		}
-		// allow the socket to be reused
-		serverSocket.setReuseAddress(true);			
+		}		
 		return;
 	}
 
@@ -146,13 +107,54 @@ class HttpServer implements Runnable {
 		int port = config.getServerPort();			// server listen port
 		if(config.getLogEnabled() && logger.isLoggable(Level.INFO)) logger.info("Host: "+hostName+" Port: "+port);
 		int maxSessions = config.getMaxSessions();	// maximum sessions; 0 implies no limit enforced
-		// get the underlying request handler -- note that the handler instance is shared across all sessions
+		// get the underlying request handler (the handler instance is shared across all sessions)
 		HttpRequestHandler handler = HttpRequestHandler.getHandler(config);
-		// bind the server socket to the host:port
 		try {
+			if(!config.isSecure()){
+				// create a normal socket
+				serverSocket = new ServerSocket();
+			} else {
+				// create a TLS socket
+				// TODO: ServerConfiguration has the server private key protected by a second password.
+				// Need to understand how to pass that down...
+				SSLServerSocketFactory sslServerSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+				SSLServerSocket socket = (SSLServerSocket) sslServerSocketFactory.createServerSocket();
+				// socket.setNeedClientAuth(true); // require client authentication
+				serverSocket = socket;
+				// keytool -genkey -keyalg RSA -alias selfsigned -keystore testkey.jks -storepass password -validity 360 -keysize 2048
+				/* Alternate method from http://stackoverflow.com/questions/18787419/ssl-socket-connection
+				 * 
+					KeyStore ks = KeyStore.getInstance("JKS");
+					ks.load(new FileInputStream("keystoreFile"), "keystorePassword".toCharArray());
+
+					KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
+					kmf.init(ks, "keystorePassword".toCharArray());
+
+					TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509"); 
+					tmf.init(ks);
+
+					SSLContext sc = SSLContext.getInstance("TLS"); 
+					TrustManager[] trustManagers = tmf.getTrustManagers(); 
+					sc.init(kmf.getKeyManagers(), trustManagers, null); 
+
+					// for the server side, use
+					SSLServerSocketFactory ssf = sc.getServerSocketFactory(); 
+					SSLServerSocket s = (SSLServerSocket) ssf.createServerSocket(serverport);
+					SSLSocket c = (SSLSocket) s.accept();
+
+					// For client side, replace the last three lines with:
+					SSLSocketFactory ssf = sc.getSocketFactory(); 
+					SSLSocket s = (SSLSocket) ssf.createSocket(serverip, serverport);
+					s.startHandshake();
+				 */
+			}
+			// allow the socket to be reused
+			serverSocket.setReuseAddress(true);	
+			// bind the server socket to the host:port
 			serverSocket.bind(hostName != null ? new InetSocketAddress(hostName, port) : new InetSocketAddress(port));
 			isReady = true;
-			// loop listening to the socket. ServerSocket will be closed by StopServer() method
+			// loop listening to the socket.
+			// ServerSocket will be closed by StopServer() method
 			while(isReady && !serverSocket.isClosed()){
 				// while we are alive, do
 				if(maxSessions == 0 || sessionCount < maxSessions){
@@ -278,7 +280,7 @@ class HttpServer implements Runnable {
 		}
 		return;
 	}
-	
+
 	/**
 	 * Start the Http Server.
 	 * @param args - the program takes the following arguments
