@@ -117,7 +117,7 @@ class DefaultHandler implements HttpRequestHandler {
 
 	@Override
 	public void shutdown() {
-		// nothing to do
+		// This handler does not maintain any state.  Nothing to do here. 
 		return;
 	}
 
