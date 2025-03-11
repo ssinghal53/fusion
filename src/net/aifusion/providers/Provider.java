@@ -1,5 +1,5 @@
 /**
- * Copyright 2015, Sharad Singhal, All Rights Reserved
+ * Copyright 2015,2025 Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,10 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Nov 16, 2015 by Sharad Singhal
+ * Last Modified March 9, 2025
  */
 package net.aifusion.providers;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import net.aifusion.metamodel.CimEventGenerator;
@@ -136,10 +137,10 @@ public interface Provider extends Repository, CimEventGenerator {
 	public Repository getRepository();
 	
 	/**
-	 * Get the URL for this provider
-	 * @return - URL where this provider can be reached. Null if the provider is not network accessible
+	 * Get the URI for this provider
+	 * @return - URI where this provider can be reached. Null if the provider is not network accessible
 	 */
-	public URL getURL();
+	public URI getURI();
 	
 	// TODO: Add APIs here for receiving indications, and registering filers
 
