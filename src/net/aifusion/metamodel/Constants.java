@@ -1,5 +1,5 @@
 /**
- * Copyright 2014, Sharad Singhal, All Rights Reserved
+ * Copyright 2014,2025 Sharad Singhal, All Rights Reserved
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright notice, this
@@ -22,6 +22,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Nov 29, 2014 by Sharad Singhal
+ * Last Modified Mar 2, 2025 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
@@ -37,8 +38,12 @@ public class Constants {
 	public static final String defaultSchema = "AIFusion";
 	/** Default scheme to be used (http)*/
 	public static final String defaultScheme = "http";
+	/** Default host name to be used */
+	public static final String defaultHost = "localhost";
+	/** Default port number to be used */
+	public static final int defaultPort = 8085;
 	/** default authority (host:port) if none specified(localhost:8085)*/
-	public static final String defaulAuthority = "localhost:8085";
+	public static final String defaulAuthority = defaultHost+":"+defaultPort;
 	/** Default local path if none specified (/aifusion)*/
 	public static final String defaultLocalPath = "/aifusion";
 	/** Default name space path ("http://localhost:8085/aifusion")*/
@@ -52,7 +57,7 @@ public class Constants {
 	/** Byte encoding for strings and character arrays (UTF-8) */
 	public static final Charset byteEncoding = StandardCharsets.UTF_8;
 	/** Copyright text */
-	public static final String copyright = "Copyright (c) 2013-2020, Sharad Singhal\r\n" +
+	public static final String copyright = "Copyright (c) 2013-2025, Sharad Singhal\r\n" +
 			"Copyright (c) 2020, Hewlett Packard Enterprise Development LP\r\n" + 
 			"All rights reserved.\r\n";
 	/** License text */
@@ -78,7 +83,7 @@ public class Constants {
 			"OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\r\n" + 
 			"OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\r\n";
 	/** Current library version (1.0.0-R1")*/
-	public static final String libraryVersion = "1.0.0-R1";
+	public static final String libraryVersion = "1.1.0-R1";
 	/**
 	 * Global Constants
 	 * This class only contains static constants used in the metamodel classes. It should not be instantiated.
