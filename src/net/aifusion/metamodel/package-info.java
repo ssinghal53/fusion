@@ -5,7 +5,7 @@ It also contains a number of CIM repository implementations.
 <li>Primary Java classes corresponding to CIM elements
  <ul>
   <li>CimQualifierType - Defines a qualifier type. Standard qualifier types are "built-in" and do not need
- 	to be separately defined</li>
+ 	to be defined separately</li>
   <li>CimQualifier - defines qualifiers on individual CIM elements</li>
   <li>CimEnumeration - defines enumerations (a type containing integer or string enumerated values)</li>
   <li>CimStructure - defines a CIM structure (a type containing only properties)</li>
@@ -64,7 +64,7 @@ It also contains a number of CIM repository implementations.
   <li>Repository - interface implemented by all repositories</li>
   <li>InMemoryRepository - a lightweight in-memory repository for named elements. Supports a single namespace, and no persistence</li>
   <li>InMemoryCache - an in-memory repository that supports namespaces</li>
-  <li>BufferedCache - an in-memory repository with a backing store. Used for parsing CIM messages.</li>
+  <li>BufferedCache - an in-memory repository with a backing store. Used for parsing CIM messages. (Deprecated. Use MOFParser with backing store)</li>
   <li>PersistentCache - a file-system based persistent repository. Supports namespaces and persistence</li>
   <li>CimFilter - CQL filter used to select StructureValues and CimInstances from a repository</li>
  </ul></li>
@@ -79,7 +79,7 @@ It also contains a number of CIM repository implementations.
   <li>CimEventType - interface defining a Cim Event type</li>
   <li>CimEventGenerator - interface implemented by elements that can generate events</li>
   <li>CimListener - interface implemented by elements that can receive events</li>
-   <li>CimIndication - represents a CIM Indication (an event instance)</li>
+  <li>CimIndication - represents a CIM Indication (an event instance)</li>
  </ul></li>
  <li>Language bindings to Java
  <ul>
