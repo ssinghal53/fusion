@@ -288,7 +288,7 @@ public class MOFParserTest {
 		InMemoryRepository r = new InMemoryRepository();
 		MOFParser p = new MOFParser(r);
 		try {
-			p.parse("testcases/golf/GOLF_Schema.mof", null);
+			p.parse("test/testcases/golf/GOLF_Schema.mof", null);
 			assertEquals(21,r.getElements(null,null,null, false).size());
 		} catch (ModelException e){
 			if(verbose) System.out.println(e);

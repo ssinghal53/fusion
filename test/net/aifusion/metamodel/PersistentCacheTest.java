@@ -411,7 +411,7 @@ public class PersistentCacheTest {
 		// InMemoryCache cache = new InMemoryCache(nameSpacePath1);
 		MOFParser p = new MOFParser(cache);
 		try {
-			p.parse("testcases/golf/GOLF_Schema.mof", null);
+			p.parse("test/testcases/golf/GOLF_Schema.mof", null);
 			assertEquals(3,cache.getElements("qualifierType",null,null, false).size());
 			assertEquals(5,cache.getElements("enumeration",null,null, false).size());
 			assertEquals(3,cache.getElements("structure",null,null, false).size());
