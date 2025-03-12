@@ -208,7 +208,7 @@ public class HttpConfiguration {
 				case "loglevel":
 					loglevel = v.toString().toUpperCase();
 					break;
-				case "providerNames":
+				case "providernames":
 					providerNames = (String []) v.getValue(); 
 					break;
 				default:
