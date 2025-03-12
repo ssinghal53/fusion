@@ -89,6 +89,8 @@ public class HttpConfigurationTest {
 		propertyValues.put("X500Principal", new DataValue(DataType.STRING,"CN=localhost,OU=cimfusion.com,O=cimfusion,C=US"));
 		propertyValues.put("HostName", new DataValue(DataType.STRING,"localhost"));
 		propertyValues.put("Provider", new DataValue(DataType.STRING,"net.aifusion.providers.BasicProvider"));
+		propertyValues.put("ProviderNames", new DataValue(DataType.STRING_ARRAY,new String []{"/ep1|BasicProvider|ep1",
+				"/ep2|BasicProvider|ep2"}));
 		deleteFiles(testRepository);
 		cache = new PersistentCache(testRepository);
 		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, cache);
@@ -290,7 +292,7 @@ public class HttpConfigurationTest {
 	public void testGetX500Principal() {
 		HttpConfiguration conf = new HttpConfiguration();
 		assertNotNull(conf);
-		assertEquals("CN=localhost, OU=aifusion.com, O=aifusion, C=US, L=Milpitas, ST=California",conf.getX500Principal());
+		assertEquals("CN=localhost, OU=aifusion.net, O=aifusion, C=US, L=Belmont, ST=California",conf.getX500Principal());
 	}
 
 
@@ -321,6 +323,18 @@ public class HttpConfigurationTest {
 	public void testGetConfiguration() {
 		HttpConfiguration conf = HttpConfiguration.getConfiguration("confKey", null, testRepository);
 		assertNotNull(conf);
+	}
+	
+	/** 
+	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getProviders()}
+	 */
+	@Test
+	public void testGetProviders() {
+		HttpConfiguration conf = HttpConfiguration.getConfiguration("confKey", null, testRepository);
+		assertNotNull(conf);
+		assertEquals(2,conf.getProviderNames().length);
+		assertEquals("/ep1|BasicProvider|ep1",conf.getProviderNames()[0]);
+		assertEquals("/ep2|BasicProvider|ep2",conf.getProviderNames()[1]);
 	}
 
 }
