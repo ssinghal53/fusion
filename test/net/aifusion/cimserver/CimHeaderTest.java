@@ -28,15 +28,13 @@
 package net.aifusion.cimserver;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import net.aifusion.cimserver.CimHeader;
-import net.aifusion.cimserver.HttpMethod;
 
 /**
  * Class to test CIM Headers
@@ -101,9 +99,13 @@ public class CimHeaderTest {
 			case GET_PROPERTY_NAMES:
 			case GET_PROPERTY_TYPE:
 			case GET_PROPERTY_VALUE:
+			case FILTER:
 				assertEquals(HttpMethod.GET,h.getHttpMethod());
 				break;
-			}
+			default:
+				fail("Unhandled case "+h);
+				break;
+			}				
 			
 		}
 	}
