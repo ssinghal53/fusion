@@ -35,6 +35,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -621,6 +623,20 @@ public class BasicProviderTest implements CimListener {
 	}
 	
 	/**
+	 * Test method for {@linkplain net.aifusion.providers.BasicProvider#getURI()}
+	 */
+	@Test
+	public final void testGetURI() {
+		try {
+			Provider p = new BasicProvider(new InMemoryCache(),new URI("http://localhost:8080/endpoint"));
+			assertNotNull(p);
+			assertEquals(new URI("http://localhost:8080/endpoint"),p.getURI());
+		} catch (URISyntaxException e) {
+			fail("should not happen");
+		}
+	}
+	
+	/**
 	 * Test to check if MOFParser places instances in the correct Provider
 	 * Note that even though the parser uses the parent, all created instances reside in the provider
 	 * containing the correct namespace
@@ -691,8 +707,8 @@ public class BasicProviderTest implements CimListener {
 
 	@Override
 	public URL getURL() {
+		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 }
