@@ -623,14 +623,14 @@ public class BasicProviderTest implements CimListener {
 	}
 	
 	/**
-	 * Test method for {@linkplain net.aifusion.providers.BasicProvider#getURI()}
+	 * Test method for {@linkplain net.aifusion.providers.BasicProvider#getroviderEndpoint()}
 	 */
 	@Test
 	public final void testGetURI() {
 		try {
 			Provider p = new BasicProvider(new InMemoryCache(),new URI("http://localhost:8080/endpoint"));
 			assertNotNull(p);
-			assertEquals(new URI("http://localhost:8080/endpoint"),p.getURI());
+			assertEquals(new URI("http://localhost:8080/endpoint"),p.getroviderEndpoint());
 		} catch (URISyntaxException e) {
 			fail("should not happen");
 		}

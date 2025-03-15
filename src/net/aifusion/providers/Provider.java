@@ -138,9 +138,9 @@ public interface Provider extends Repository, CimEventGenerator {
 	
 	/**
 	 * Get the URI for this provider
-	 * @return - URI where this provider can be reached. Null if the provider is not network accessible
+	 * @return - Endpoint  where this provider can be reached. Null if the provider is not network accessible
 	 */
-	public URI getURI();
+	public URI getroviderEndpoint();
 	
 	// TODO: Add APIs here for receiving indications, and registering filers
 

@@ -576,7 +576,7 @@ public class BasicProvider implements Provider {
 	}
 	
 	@Override
-	public URI getURI() {
+	public URI getroviderEndpoint() {
 		return uri;
 	}
 	
