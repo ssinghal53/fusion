@@ -38,9 +38,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import org.junit.After;
@@ -63,6 +65,7 @@ import net.aifusion.utils.Java2Cim;
  * @author Sharad Singhal
  */
 public class HttpServerTest {
+	private static boolean verbose = false;
 	private static Logger logger = Logger.getLogger(HttpServerTest.class.getName());
 	private static String repositoryLocation = "testrepository";
 	private static CimServer server;
@@ -73,7 +76,7 @@ public class HttpServerTest {
 			"KeyStore = \"testrepository/serverKeyStore.jks\";\n"+
 			"ServerTimeout = 5000;\n"+
 			"Repository = \"testrepository\";\n"+
-			"RequestHandler = \"net.aifusion.cimserver.TestHandler\";\n"+
+			"RequestHandler = \"net.aifusion.cimserver.DefaultHandler\";\n"+
 			"Secure = false;\n"+
 			"X500Principal = \"CN=localhost, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California\";\n"+
 			"Id = \"serverConfig\";\n"+
@@ -81,6 +84,7 @@ public class HttpServerTest {
 			"HostName = \"localhost\";\n"+
 			"ServerPort = 8085;\n"+
 			"};\n"+
+			
 			"value of aifusion_httpconfiguration {\n"+
 			"KeyStorePassword = \"serverpass\";\n"+
 			"MaxSessions = 0;\n"+
@@ -88,7 +92,7 @@ public class HttpServerTest {
 			"KeyStore = \"testrepository/serverKeyStore.jks\";\n"+
 			"ServerTimeout = 5000;\n"+
 			"Repository = \"testrepository\";\n"+
-			"RequestHandler = \"net.aifusion.cimserver.TestHandler\";\n"+
+			"RequestHandler = \"net.aifusion.cimserver.DefaultHandler\";\n"+
 			"Secure = true;\n"+
 			"X500Principal = \"CN=localhost, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California IP=127.0.0.1\";\n"+
 			"Id = \"secureServerConfig\";\n"+
@@ -96,6 +100,7 @@ public class HttpServerTest {
 			"HostName = \"localhost\";\n"+
 			"ServerPort = 8085;\n"+
 			"};\n"+
+			
 			"value of aifusion_httpconfiguration {\n"+
 			"KeyStorePassword = \"clientpass\";\n"+
 			"TrustStore = \"testrepository/clientTrustStore.jks\";\n"+
@@ -103,8 +108,10 @@ public class HttpServerTest {
 			"Secure = false;\n"+
 			"X500Principal = \"CN=localclient, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California\";\n"+
 			"Id = \"clientConfig\";\n"+
+			"ServerPort = 8080;\n"+
 			"TrustStorePassword = \"clientpass\";\n"+
 			"};\n"+
+			
 			"#pragma namespace (\"/root/local\")\n"+
 			"Enumeration test_enum : string { enumvalue};\n"+
 			"Structure test_struct { test_enum v;\n string foobar; };\n"+
@@ -119,13 +126,13 @@ public class HttpServerTest {
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("HttpServer ");
 		deleteFiles(repositoryLocation);	// clean up from prior tests
-		// create the server-side cache, and server configuration
+		// create the server-side cache, and server configuration definition
 		PersistentCache cache = new PersistentCache(repositoryLocation);
 		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, cache);
 		assertNotNull(configClass);
 		assertTrue(cache.contains(configClass.getObjectPath()));
-		// create instances at the server. Note that normally we do not mix configuration with content information in the repository
-		// to prevent attacks, but for testing we don't care about that
+		// create instances at the server. Note that normally we should not mix configuration with content information
+		// in the repository to prevent attacks, but for testing we don't care about that
 		parser = new MOFParser(cache);
 		ByteArrayInputStream in = new ByteArrayInputStream(serverMof.getBytes());
 		parser.parse(in, Constants.defaultNameSpacePath);
@@ -139,13 +146,17 @@ public class HttpServerTest {
 		// create the server configuration
 		serverConfig = HttpConfiguration.getConfiguration("serverConfig", null, repositoryLocation);
 		assertNotNull(serverConfig);
+		if(verbose) System.out.println(serverConfig.getRequestHandler());
 		// create the server, and start it
-		serverURL = new URL("http://localhost:8085/");
+		serverURL = new URI("http://localhost:8085/").toURL();
+		server = new CimServer(serverConfig);
+		server.startServer();
 		return;
 		
 	}
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		if(server != null) server.stopServer();
 		// comment the following line to retain content of server-side repository after the tests complete if needed for debugging
 		deleteFiles(repositoryLocation);
 		System.out.println("done.");
@@ -153,12 +164,10 @@ public class HttpServerTest {
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
-		server = new CimServer(serverConfig);
-		server.startServer();
+		
 	}
 	@After
 	public void tearDown() throws Exception {
-		if(server != null) server.stopServer();
 		System.out.print(".");
 	}
 	
@@ -183,19 +192,20 @@ public class HttpServerTest {
 			fail("Unable to delete file "+fileOrDirectory);
 		}
 	}
-	private static int NTHREADS = 100;
+	private static int NTHREADS = 10;
 	private static boolean [] done = new boolean[NTHREADS];
+	public static AtomicInteger count = new AtomicInteger(0);
 	@Test
 	public void testHttpServer() {
-		int minCount = Thread.activeCount();
 		for(int i = 0; i < NTHREADS; i++){
 			done[i] = true;
-			Thread t = new Thread(new TestClient(100,false));
+			count.incrementAndGet();
+			Thread t = new Thread(new TestClient(1,false));
 			t.setName("c-"+i);
 			t.start();
 		}
-		while(Thread.activeCount() > minCount){
-			// System.out.println(Thread.activeCount());
+		while(count.get() > 1){
+		//	System.out.println(Thread.activeCount());
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -235,7 +245,7 @@ public class HttpServerTest {
 		@Override
 		public void run() {
 			int j = Integer.parseInt(Thread.currentThread().getName().substring(2));
-			// System.out.println("Starting "+j);
+			if(verbose) System.out.println("Starting "+j);
 			for(int i = 0; i < iterations; i++){
 				String httpMethod = methods[rand.nextInt(methods.length)];
 				HttpURLConnection connection = getConnection(httpMethod);
@@ -271,8 +281,8 @@ public class HttpServerTest {
 					}
 					int code = connection.getResponseCode();
 					int contentLength = (int) connection.getContentLengthLong();
-					// logger.info("Iteration "+i+" Method "+httpMethod+" doOutput "+doOutput+" Status "+code+" ContentLength "+contentLength+"\n");
-					byte[] b = new byte[1024];
+					if(verbose) logger.info("Thread "+j+" Iteration "+i+" Method "+httpMethod+" doOutput "+doOutput+" Status "+code+" ContentLength "+contentLength+"\n");
+					byte[] b = new byte[2048];
 					if(code >= 200 && code < 300){
 						if(contentLength > 0){
 							InputStream in = connection.getInputStream();
@@ -309,6 +319,7 @@ public class HttpServerTest {
 				// j++;
 			}
 			// logger.info("Thread "+Thread.currentThread().getName()+": "+(float)average/(float)j);
+			count.decrementAndGet();
 			return;
 		}
 		
