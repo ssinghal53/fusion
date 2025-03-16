@@ -92,7 +92,6 @@ class CimHandler implements HttpRequestHandler {
 			// load default provider for this handler
 			String r = config.getRepository();
 			Repository repo = (r == null) ? new InMemoryCache() : new PersistentCache(r);
-			// server URI-- note that hostname may need to be replaced with IP address if server is not on DNS
 			URI uri = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),"/",null,null);
 			defaultProvider = config.getProvider() != null ? loadProvider(config.getProvider(),uri,repo) : new BasicProvider(repo,uri);
 			// any additional providers if defined
