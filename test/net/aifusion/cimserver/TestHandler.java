@@ -27,100 +27,30 @@
  */
 package net.aifusion.cimserver;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-
-import net.aifusion.cimserver.CimHeader;
-import net.aifusion.cimserver.HttpConfiguration;
-import net.aifusion.cimserver.HttpHeader;
-import net.aifusion.cimserver.HttpMethod;
-import net.aifusion.cimserver.HttpRequest;
-import net.aifusion.cimserver.HttpRequestHandler;
-import net.aifusion.cimserver.HttpResponse;
-import net.aifusion.cimserver.HttpStatus;
-import net.aifusion.cimserver.CimXHeader;
-import net.aifusion.cimserver.MimeType;
+import net.aifusion.providers.Provider;
 
 /**
  * @author Sharad Singhal
  *
  */
-public class TestHandler implements HttpRequestHandler {
-
+public class TestHandler extends CimHandler {
 
 	/**
-	 * A test handler that just echoes the incoming request
+	 * A test handler that provides access to the underlying providers for server-side testing
 	 * @param config - server configuration
 	 */
 	public TestHandler(HttpConfiguration config) {
-		return;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.aifusion.httpserver.HttpRequestHandler#serve(net.aifusion.cimserver.HttpRequest)
-	 */
-	@Override
-	public HttpResponse serve(HttpRequest request) {
-		HttpMethod method = request.getHttpMethod();
-		CimHeader cimRequest = CimHeader.lookup(request.getXHeader(CimXHeader.INTRINSIC.toString()));
-		HttpResponse response = null;
-		String body = null;
-		if(CimHeader.GET_NAMESPACES.equals(cimRequest)){
-			String authority = request.getHeader(HttpHeader.HOST);
-			response = new HttpResponse(request.getHttpMethod(),HttpStatus.OK,MimeType.PLAINTEXT,"http://"+authority+"/localPath");
-		} else {
-			switch(method){
-			case DELETE:
-				break;
-			case GET:
-			case POST:
-				body = getBody(request);	// note that GET does not send a body, but POST does
-				if(body == null || body.isEmpty()) body = "Server Created Body";
-				break;
-			case HEAD:
-				break;
-			case OPTIONS:
-				break;
-			case PUT:
-				String b = getBody(request);
-				break;
-			default:
-				response = new HttpResponse(method,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,"Method "+method+" not implemented");
-				break;
-			}
-		}
-		if(response == null){
-			response = (body == null) ? new HttpResponse(request.getHttpMethod(),HttpStatus.OK) :
-				new HttpResponse(request.getHttpMethod(),HttpStatus.OK,MimeType.PLAINTEXT,body);
-		}
-		return response;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.aifusion.httpserver.HttpRequestHandler#shutdown()
-	 */
-	@Override
-	public void shutdown() {
+		super(config);
 		return;
 	}
 	
-	String getBody(HttpRequest request){
-		long l = request.getContentLength();
-		if(l == 0) return null;
-		byte [] b = new byte[1024];
-		BufferedInputStream in = request.getInputStream();
-		long read = 0;
-		while(read < l){
-			try {
-				int found = in.read(b, (int) read, (int)(l-read));
-				read += found;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}	
+	protected Provider getProvider(String endpoint) {
+		// locate the provider to use
+		Provider p = defaultProvider;
+		if(providers.containsKey(endpoint)) {
+			p = providers.get(endpoint);
 		}
-		return new String(Arrays.copyOf(b, (int) l),Charset.forName(request.getCharset()));
+		return p;
 	}
-
+	
 }
