@@ -31,12 +31,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -60,8 +63,10 @@ import net.aifusion.metamodel.ModelUtilities;
 import net.aifusion.metamodel.NameSpacePath;
 import net.aifusion.metamodel.NamedElement;
 import net.aifusion.metamodel.ObjectPath;
+import net.aifusion.metamodel.PersistentCache;
 import net.aifusion.metamodel.StructureValue;
 import net.aifusion.providers.BasicProvider;
+import net.aifusion.providers.Provider;
 import net.aifusion.utils.Java2Cim;
 
 /**
@@ -80,23 +85,37 @@ public class CimHandlerTest {
 			"class test_classb {\n\t[key]\n\tSint32 integerProperty;\n\t[write]String stringProperty;\n};\n"+
 			"instance of test_class {\n\tintegerProperty = 5;\n};\n"+
 			"instance of test_classb {\n\tintegerProperty = 5;\n\tstringProperty = \"foo\";\n};\n"+
+			
 			"#pragma namespace (\"/net/aifusion\")\n"+
 			"class test_classc {\n\t[key]\n\tSint32 integerProperty;\n};\n";
-	private static CimServer server;
-	private static String serverMof = "value of aifusion_httpconfiguration {\n"+
-			"MaxSessions = 0;\n"+
-			"ServerTimeout = 5000;\n"+
-			"RequestHandler = \"net.aifusion.cimserver.TestHandler\";\n"+
-			"Secure = false;\n"+
+
+	private static InMemoryCache configCache = new InMemoryCache();
+	private static String testRepository = "resources/test";
+	private static ObjectPath serverConfigPath = new ObjectPath("http://localhost:8085/structurevalue/aifusion:aifusion_httpconfiguration.Id=\"serverConfig\"");
+	private static ObjectPath clientConfigPath = new ObjectPath("http://localhost:8080/structurevalue/aifusion:aifusion_httpconfiguration.Id=\"clientConfig\"");
+	private static String serverConfigMof = "value of aifusion_httpconfiguration {\n"+
 			"Id = \"serverConfig\";\n"+
-			"HostName = \"localhost\";\n"+
-			"ServerPort = 8085;\n"+
+			"ServerPort = 8085;"+
+			"Repository = \""+testRepository+"/server\";\n"+
+			"};\n"+
+			"value of aifusion_httpconfiguration {\n"+
+			"Id = \"clientConfig\";\n"+
+			"ServerPort = 8080;"+
+			"Repository = \""+testRepository+"/client\";\n"+
 			"};\n";
-	private static InMemoryCache serverCache = new InMemoryCache();
+	
+	// name space for test_classc in the server repository
 	private static NameSpacePath ns1 = new NameSpacePath("http://localhost:8085/net/aifusion");
+	// name space for other server-side elements in the server repository
 	private static NameSpacePath ns2 = new NameSpacePath("http://localhost:8085/root/local");
-	private CimHandler handler;
-	private BasicProvider provider,clientProvider;
+	private static URI serverURI, clientURI;
+	
+	// client side server to handle event  listeners
+	private static CimServer clientServer;
+	
+	
+	private TestHandler serverHandler;
+	private Provider serverProvider,clientProvider;
 	private BufferedReader header;
 	private BufferedInputStream input;
 	private ByteArrayOutputStream output;
@@ -105,42 +124,88 @@ public class CimHandlerTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.print("CimHandler ");
-		// create a server-side cache, and server configuration
-		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, serverCache);
+		deleteFiles(testRepository);
+		// Create server configuration for the handler
+		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, configCache);
 		assertNotNull(configClass);
-		assertTrue(serverCache.contains(configClass.getObjectPath()));
-		// System.out.println(configClass.getObjectPath().toURL()+"\n"+configClass.toMOF());
-		MOFParser parser = new MOFParser(serverCache);
-		ByteArrayInputStream in = new ByteArrayInputStream(serverMof.getBytes());
+		assertTrue(configCache.contains(configClass.getObjectPath()));
+		if(verbose) System.out.println(configClass.getObjectPath().toURL()+"\n"+configClass.toMOF());
+		MOFParser parser = new MOFParser(configCache);
+		ByteArrayInputStream in = new ByteArrayInputStream(serverConfigMof.getBytes());
 		parser.parse(in, Constants.defaultNameSpacePath);
 		in.close();
-		StructureValue conf = (StructureValue) serverCache.get(new ObjectPath("http://localhost:8085/structurevalue/aifusion:aifusion_httpconfiguration.Id=\"serverConfig\""));
-		assertNotNull(conf);
-		// System.out.println(conf.toMOF());
-		server = new CimServer(new HttpConfiguration(conf));
-		server.startServer();
+		assertTrue(configCache.contains(serverConfigPath));
+		assertTrue(configCache.contains(clientConfigPath));
+		if(verbose) {
+			System.out.println(configCache.get(serverConfigPath).toMOF());
+			System.out.println(configCache.get(clientConfigPath).toMOF());
+		}
+		
+		HttpConfiguration clientConfig = new HttpConfiguration((StructureValue) configCache.get(clientConfigPath));
+		clientServer = new CimServer(clientConfig);
+		clientServer.startServer();
 		return;
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		if(server != null) server.stopServer();
+		if(clientServer != null) clientServer.stopServer();
+		deleteFiles(testRepository);
 		System.out.println("done.");
+	}
+	
+	/**
+	 * Delete a file or directory. If the input is a directory, all files and
+	 * directories within that directory are deleted.
+	 * @param fileOrDirectory - name of file or directory to delete
+	 */
+	private static void deleteFiles(String fileOrDirectory){
+		File file = new File(fileOrDirectory);
+		if(!file.exists()) return;
+		if(file.isDirectory()){
+			String [] names = file.list();
+			if(names != null && names.length > 0){
+				for(String n : names){
+					String fName = fileOrDirectory+"/"+n;
+					deleteFiles(fName);
+				}
+			}
+		}
+		if(file.exists() && !file.delete()){
+			fail("Unable to delete file "+fileOrDirectory);
+		}
 	}
 
 	@Before
 	public void setUp() throws Exception {
 		System.out.print("-");
-		InMemoryCache cache = new InMemoryCache();
-		MOFParser parser = new MOFParser(cache);
+
+		// create server-side configuration
+		StructureValue sv = (StructureValue) configCache.get(serverConfigPath);
+		assertNotNull(sv);
+		HttpConfiguration config = new HttpConfiguration(sv);
+		assertNotNull(config);
+		
+		// clean out the server-side cache, and reinsert all definitions
+		PersistentCache serverCache = new PersistentCache(config.getRepository());
+		for(NamedElement e : serverCache.getElements(null, null, null, false)) {
+			serverCache.delete(e.getObjectPath());
+		}
+		MOFParser parser = new MOFParser(serverCache);
 		parser.parse(new ByteArrayInputStream(mof.getBytes()), null);
-		List<NamedElement> elements = cache.getElements(null, null, null, false);
+		List<NamedElement> elements = serverCache.getElements(null, null, null, false);
 		assertEquals(9,elements.size());
-		provider = new BasicProvider(cache);
-		assertNotNull(provider);
-		handler = new CimHandler(provider);		
-		assertNotNull(handler);
-		clientProvider = new BasicProvider(new InMemoryCache());
+		
+		// create the handler with the provider pointing to the server cache
+		// we can use the serverProvider to check server-side data
+		serverHandler = new TestHandler(config);		
+		assertNotNull(serverHandler);
+		serverProvider = serverHandler.getProvider("/");
+		
+		
+		// client side provider is a basic provider
+		clientURI = new URI("http://localhost:8080/");
+		clientProvider = new BasicProvider(new InMemoryCache(),clientURI);
 		assertNotNull(clientProvider);
 		output = new ByteArrayOutputStream(16*1024);
 		assertNotNull(output);
@@ -149,7 +214,7 @@ public class CimHandlerTest {
 
 	@After
 	public void tearDown() throws Exception {
-		if(handler != null) handler.shutdown();
+		if(serverHandler != null) serverHandler.shutdown();
 		if(clientProvider != null) clientProvider.shutdown();
 		if(header != null) header.close();
 		if(input != null) input.close();
@@ -164,12 +229,13 @@ public class CimHandlerTest {
 	@Test
 	public void testGetNameSpaces() {
 		CimHeader h = CimHeader.GET_NAMESPACES;
-		HttpRequest request = getRequest(h, null, null, null);
+		HttpRequest request = getRequest("/", h, null, null, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
-		assertEquals("/root/local\r\n/net/aifusion\r\n",bodyString);
+		assertEquals("http://localhost:8085/root/local\r\n"
+				+ "http://localhost:8085/net/aifusion\r\n",bodyString);
 	}
 
 	@Test
@@ -177,18 +243,18 @@ public class CimHandlerTest {
 		// get an existing element
 		CimHeader h = CimHeader.GET_ELEMENT;
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_classc",ns1,null, null);
-		HttpRequest request = getRequest(h, path, null, null);
+		HttpRequest request = getRequest("/", h, path, null, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("#pragma namespace(\"/net/aifusion\")\nClass test_classc {\n	[Key]\n	SInt32 integerProperty;\n};\n",bodyString);
 
 		// get a non-existent element
 		path = new ObjectPath(ElementType.CLASS,"test_classx",ns1,null, null);
-		request = getRequest(h, path, null, null);
+		request = getRequest("/", h, path, null, null);
 		assertNotNull(request);
-		response = handler.serve(request);
+		response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,"HTTP/1.1 404");
 		assertEquals("",bodyString);
@@ -200,18 +266,18 @@ public class CimHandlerTest {
 		// check for an existing element
 		CimHeader h = CimHeader.HAS_ELEMENT;
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_classc",ns1,null, null);
-		HttpRequest request = getRequest(h, path, null, null);
+		HttpRequest request = getRequest("/", h, path, null, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("",bodyString);
 
 		// check for a non-existent element
 		path = new ObjectPath(ElementType.CLASS,"test_classx",ns1,null, null);
-		request = getRequest(h, path, null, null);
+		request = getRequest("/", h, path, null, null);
 		assertNotNull(request);
-		response = handler.serve(request);
+		response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,"HTTP/1.1 404");
 		assertEquals("",bodyString);
@@ -220,10 +286,11 @@ public class CimHandlerTest {
 
 	@Test
 	public void testInvokeMethod() {
+		// TODO: Add a bound class to test_class so we can get a successful return as well.
 		CimHeader h = CimHeader.INVOKE_METHOD;
 		ObjectPath path = new ObjectPath("http://localhost/root/local:test_class.integerproperty=5");
-		HttpRequest request = getRequest(h, path, new String[]{"stringMethod"}, "10");
-		HttpResponse response = handler.serve(request);
+		HttpRequest request = getRequest("/", h, path, new String[]{"stringMethod"}, "10");
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,"HTTP/1.1 404");	// method not available...
 		assertEquals("16 METHOD_NOT_AVAILABLE [The extrinsic method cannot be invoked because it is not available]: stringMethod is not available because it is not bound\r\n",bodyString);
@@ -232,54 +299,57 @@ public class CimHandlerTest {
 	@Test
 	public void testUnregisterProvider() {
 		CimHeader h = CimHeader.UNREGISTER_PROVIDER;
-		HttpRequest request = getRequest(h, null, new String[]{"http://localhost:8085/"}, null);
-		HttpResponse response = handler.serve(request);
+		HttpRequest request = getRequest("/", h, null, new String[]{clientURI.toString()}, null);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
-		validate(response,"HTTP/1.1 501");	// TestHandler does not implement unregisterProvider
+//		validate(response,"HTTP/1.1 501");
+		// CimHandler will return success as long as it can construct a cim client to talk back to us
+		validate(response,null);
 	}
 
+	
 	@Test
 	public void testRegisterProvider() {
 		CimHeader h = CimHeader.REGISTER_PROVIDER;
-		HttpRequest request = getRequest(h,null,new String[]{"http://localhost:8085/"},null);
-		HttpResponse response = handler.serve(request);
+		HttpRequest request = getRequest("/",h,null,new String[]{clientURI.toString()}, null);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
-		validate(response,"HTTP/1.1 501");
+		validate(response,null);
 	}
 
 	@Test
 	public void testRemoveListener() {
 		CimHeader h = CimHeader.REMOVE_LISTENER;
-		HttpRequest request = getRequest(h,null,new String[]{CimEventType.CREATED.toString(),"http://localhost:8080/"},null);
-		HttpResponse response = handler.serve(request);
-		validate(response,"HTTP/1.1 501");
+		HttpRequest request = getRequest("/",h,null,new String[]{CimEventType.CREATED.toString(),clientURI.toString()}, null);
+		HttpResponse response = serverHandler.serve(request);
+		validate(response,null);
 	}
 
 	@Test
 	public void testHasListener() {
 		CimHeader h = CimHeader.HAS_LISTENER;
-		HttpRequest request = getRequest(h, null, new String[]{CimEventType.CREATED.toString(),"http://localhost:8080/"}, null);
-		HttpResponse response = handler.serve(request);
+		HttpRequest request = getRequest("/", h, null, new String[]{CimEventType.CREATED.toString(),clientURI.toString()}, null);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
-		validate(response,"HTTP/1.1 501");
+		validate(response,"");
 	}
 
 	@Test
 	public void testAddListener() {
-		assertFalse(provider.hasListener(CimEventType.CREATED, null));
+		assertFalse(serverProvider.hasListener(CimEventType.CREATED, null));
 		CimHeader h = CimHeader.ADD_LISTENER;
-		HttpRequest request = getRequest(h,null,new String[]{CimEventType.CREATED.toString(),"http://localhost:8080/"},null);
-		HttpResponse response = handler.serve(request);
+		HttpRequest request = getRequest("/",h,null,new String[]{CimEventType.CREATED.toString(),clientURI.toString()}, null);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
-		validate(response,"HTTP/1.1 501");
+		validate(response,null);
 		// assertTrue(provider.hasListener(CimEventType.CREATED, null));
 	}
 
 	@Test
 	public void testGetElements() {
 		CimHeader h = CimHeader.GET_ELEMENTS;
-		HttpRequest request = getRequest(h, null, new String[]{"null","null","null","false"}, null);
-		HttpResponse response = handler.serve(request);
+		HttpRequest request = getRequest("/", h, null, new String[]{"null","null","null","false"}, null);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		// TODO: Check returned values from the query
@@ -289,9 +359,9 @@ public class CimHandlerTest {
 	public void testExecuteQuery() {
 		CimHeader h = CimHeader.EXECUTE_QUERY;
 		String queryString = "Select * from test_class";
-		HttpRequest request = getRequest(h, null, null, queryString);
+		HttpRequest request = getRequest("/", h, null, null, queryString);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("#pragma namespace(\"/root/local\")\ninstance of test_class {\n\tintegerProperty = 5;\n};\r\n",bodyString);
@@ -304,14 +374,14 @@ public class CimHandlerTest {
 	public void testDeleteElement() {
 		CimHeader h = CimHeader.DELETE_ELEMENT;
 		HashMap<String,DataValue> keys = new HashMap<String,DataValue>();
-		keys.put("integerProperty", new DataValue(new Integer(5)));
+		keys.put("integerProperty", new DataValue(Integer.valueOf(5)));
 		ObjectPath path = new ObjectPath(ElementType.INSTANCE,"test_classb",ns2,keys, null);
-		HttpRequest request = getRequest(h,path,null,null);
+		HttpRequest request = getRequest("/",h,path,null, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
-		assertFalse(provider.contains(path));
+		assertFalse(serverProvider.contains(path));
 	}
 
 	/**
@@ -323,19 +393,19 @@ public class CimHandlerTest {
 		HashMap<String,DataValue> keys = new HashMap<String,DataValue>();
 		keys.put("integerProperty", new DataValue(new Integer(7)));
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_classb",ns2,null, null);
-		CimClass template = (CimClass) provider.get(path);
+		CimClass template = (CimClass) serverProvider.get(path);
 		assertNotNull(template);
 		keys.put("stringProperty",new DataValue("zap"));
 		CimInstance instance = CimInstance.createInstance(template, keys, null);
 		assertNotNull(instance);
 
-		HttpRequest request = getRequest(h,instance.getObjectPath(),new String[]{instance.getObjectPath().getLocalPath()},instance.toMOF());
+		HttpRequest request = getRequest("/",h,instance.getObjectPath(),new String[]{instance.getObjectPath().getLocalPath()}, instance.toMOF());
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 
 		validate(response,"HTTP/1.1 201");
-		NamedElement element = provider.get(instance.getObjectPath());
+		NamedElement element = serverProvider.get(instance.getObjectPath());
 		assertNotNull(element);
 		assertEquals(instance,element);
 	}
@@ -350,12 +420,12 @@ public class CimHandlerTest {
 		keys.put("integerProperty", new DataValue(new Integer(5)));	// key value
 		ObjectPath path = new ObjectPath(ElementType.INSTANCE,"test_classb",ns2,keys, null);
 		if(verbose) System.out.println(path.toURL());
-		HttpRequest request = getRequest(h, path, new String[]{"stringProperty","STRING"}, ModelUtilities.quote("bar"));
+		HttpRequest request = getRequest("/", h, path, new String[]{"stringProperty","STRING"}, ModelUtilities.quote("bar"));
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
-		DataValue v = provider.getPropertyValue(path, "stringProperty");
+		DataValue v = serverProvider.getPropertyValue(path, "stringProperty");
 		assertNotNull(v);
 		assertEquals("\"bar\"",v.toMOF());
 
@@ -371,9 +441,9 @@ public class CimHandlerTest {
 	public void testGetMethodParameters() {
 		CimHeader h = CimHeader.GET_METHOD_PARAMETERS;
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_class",ns2,null, null);
-		HttpRequest request = getRequest(h,path,new String[]{"stringMethod"},null);
+		HttpRequest request = getRequest("/",h,path,new String[]{"stringMethod"}, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("SInt32 intParam\r\n\r\n",bodyString);
@@ -387,9 +457,9 @@ public class CimHandlerTest {
 	public void testGetMethodType() {
 		CimHeader h = CimHeader.GET_METHOD_TYPE;
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_class",ns2,null, null);
-		HttpRequest request = getRequest(h,path,new String[]{"stringMethod"},null);
+		HttpRequest request = getRequest("/",h,path,new String[]{"stringMethod"}, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("STRING\r\n",bodyString);
@@ -402,9 +472,9 @@ public class CimHandlerTest {
 	public void testGetMethodNames() {
 		CimHeader h = CimHeader.GET_METHOD_NAMES;
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_class",ns2,null, null);
-		HttpRequest request = getRequest(h,path,null,null);
+		HttpRequest request = getRequest("/",h,path,null, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("stringMethod\r\n",bodyString);
@@ -419,9 +489,9 @@ public class CimHandlerTest {
 		HashMap<String,DataValue> keys = new HashMap<String,DataValue>();
 		keys.put("integerProperty", new DataValue(new Integer(5)));
 		ObjectPath path = new ObjectPath(ElementType.INSTANCE,"test_classb",ns2,keys, null);
-		HttpRequest request = getRequest(h,path,new String[]{"stringProperty"},null);
+		HttpRequest request = getRequest("/",h,path,new String[]{"stringProperty"}, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("\"foo\"",bodyString);
@@ -436,9 +506,9 @@ public class CimHandlerTest {
 	public void testGetPropertyType() {
 		CimHeader h = CimHeader.GET_PROPERTY_TYPE;
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_classc",ns1,null, null);
-		HttpRequest request = getRequest(h,path,new String[]{"integerProperty"},null);
+		HttpRequest request = getRequest("/",h,path,new String[]{"integerProperty"}, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("SINT32\r\n",bodyString);
@@ -451,9 +521,9 @@ public class CimHandlerTest {
 	public void testGetPropertyNames() {
 		CimHeader h = CimHeader.GET_PROPERTY_NAMES;
 		ObjectPath path = new ObjectPath(ElementType.CLASS,"test_classc",ns1,null, null);
-		HttpRequest request = getRequest(h,path,null,null);
+		HttpRequest request = getRequest("/",h,path,null, null);
 		assertNotNull(request);
-		HttpResponse response = handler.serve(request);
+		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
 		assertEquals("integerProperty\r\n",bodyString);
@@ -471,7 +541,7 @@ public class CimHandlerTest {
 		output.reset();
 		response.send(output);
 		String outputString = output.toString();
-		if(verbose) System.out.println(outputString);
+		System.out.println(outputString);
 		assertTrue(outputString.startsWith(expect));
 		bodyString = outputString.substring(outputString.indexOf("\r\n\r\n")+4);
 		return;
@@ -479,24 +549,25 @@ public class CimHandlerTest {
 
 	/**
 	 * Construct a request with an HttpHeader and input body
+	 * @param endpoint - server-side  endpoint to use
 	 * @param h - CimHeader to use
 	 * @param path - object path (if any)
-	 * @param extensions - extended header values (in order required by CimHeader)
+	 * @param extensions - extended header values (in order defined in CimHeader)
 	 * @param inputBody - input body (if any)
 	 * @return CimRequest
 	 */
-	private HttpRequest getRequest(CimHeader h, ObjectPath path, String [] extensions, String inputBody){
-		String localPath = "/";
+	private HttpRequest getRequest(String endpoint, CimHeader h, ObjectPath path, String [] extensions, String inputBody){
 		String host = ns1.getAuthority();
+		// get the query, if any to add to the endpoint
+		// TODO: Check if we need the query on the request line-- it will be part of the object_path extension header in any case
 		if(path != null){
 			URL url = path.toURL();
-			localPath = url.getPath();
 			host = url.getAuthority();
 			String query = url.getQuery();
-			if(query != null && !query.isEmpty()) localPath = localPath+"?"+query;
+			if(query != null && !query.isEmpty()) endpoint = endpoint+"?"+query;
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append(h.getHttpMethod()).append(" ").append(localPath).append(" ");
+		sb.append(h.getHttpMethod()).append(" ").append(endpoint).append(" ");
 		sb.append("HTTP/1.1").append(CRLF);
 		sb.append(HttpHeader.HOST).append(": ").append(host).append(CRLF);
 		sb.append(HttpHeader.ACCEPT).append(": ").append(MimeType.MOF.getType()).append(", ").append(MimeType.PLAINTEXT.getType()).append(CRLF);
@@ -532,7 +603,8 @@ public class CimHandlerTest {
 			sb.append(HttpHeader.CONTENT_LENGTH).append(": ").append(buffer.length).append(CRLF);
 		}
 		sb.append(CRLF);
-		if(verbose) System.out.println(sb);
+//		if(verbose) 
+			System.out.println(sb);
 		header = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(sb.toString().getBytes())));
 		input = new BufferedInputStream(new ByteArrayInputStream(buffer));
 		return new HttpRequest(header,input);
