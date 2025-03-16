@@ -40,6 +40,8 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -94,8 +96,8 @@ public class CimClient implements Provider, CimListener {
 	private boolean debug = false;
 	/** Flag to indicate if connections should be kept alive */
 	private boolean keepAlive = true;
-	/** URL for this client */
-	private URL clientURL = null;
+	/** URI to hold the return network address for this client as a listener, if any */
+	private URI clientURI = null;
 
 	/**
 	 * Class to hold request/response values from the server 
@@ -146,13 +148,13 @@ public class CimClient implements Provider, CimListener {
 	/**
 	 * Create a CimClient using a server URL and an optional proxy
 	 * @param serverURL - server to which this client should connect
-	 * @param clientURL - the URL of this client (if any) for inbound communication. Null if no inbound connections expected.
+	 * @param clientURI - the URI of this client (if any) for inbound communication. Null if no inbound connections expected.
 	 * @param proxyHost - outbound HTTP proxy host, if any
 	 * @param proxyPort - outbound HTTP proxy port, if any
 	 */
-	public CimClient(URL serverURL, URL clientURL, String proxyHost, int proxyPort){
+	public CimClient(URL serverURL, URI clientURI, String proxyHost, int proxyPort){
 		this.serverURL = serverURL;
-		this.clientURL = clientURL;
+		this.clientURI = clientURI;
 		if(proxyHost != null && proxyPort > 0){
 			proxy = new Proxy(Proxy.Type.HTTP,new InetSocketAddress(proxyHost,proxyPort));
 		}
@@ -182,9 +184,9 @@ public class CimClient implements Provider, CimListener {
 			int portNumber = configuration.getServerPort();
 			if(hostName != null && portNumber > 0){
 				try {
-					clientURL = new URL(configuration.isSecure() ? "https" : "http",hostName,portNumber,"/");
-				} catch (MalformedURLException e) {
-					logger.warning("Invalid URL specification for client "+e.toString());
+					clientURI = new URI(configuration.isSecure()?"https":"http",hostName+":"+portNumber,"/",null);
+				} catch (URISyntaxException e) {
+					logger.warning("Invalid URI specification for client "+e.toString());
 				}
 			}
 		}
@@ -223,6 +225,8 @@ public class CimClient implements Provider, CimListener {
 	 */
 	private HttpURLConnection getConnection(CimHeader h, ObjectPath path){
 		// TODO: target URL to use. We seem to be conflating the object path with the resource path here
+		// The server side CIMHandler can get the required URLs from the providers there and return them to us
+		// the server side HttpConfiguration is not necessarily that available at the client side
 		// URL url = (path == null) ? serverURL : path.getURL(serverURL.getProtocol(), serverURL.getAuthority());
 		URL url = serverURL;
 		try {
@@ -542,10 +546,10 @@ public class CimClient implements Provider, CimListener {
 
 	@Override
 	public void registerChildProvider(Provider child) {
-		URL childURL = child.getURL();
-		if(childURL == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Child provider must have valid URL");
+		URI childURI = child.getroviderEndpoint();
+		if(childURI == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Child provider must have valid URL");
 		HttpURLConnection connection = getConnection(CimHeader.REGISTER_PROVIDER);
-		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), childURL.toString());
+		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), childURI.toString());
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)) return;
 		throw new ModelException(ExceptionReason.FAILED,response.status+":"+response.error);
@@ -553,10 +557,10 @@ public class CimClient implements Provider, CimListener {
 
 	@Override
 	public void unregisterChildProvider(Provider child) {
-		URL childURL = child.getURL();
-		if(childURL == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Child provider must have valid URL");
+		URI childURI = child.getroviderEndpoint();
+		if(childURI == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Child provider must have valid URL");
 		HttpURLConnection connection = getConnection(CimHeader.UNREGISTER_PROVIDER);
-		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), childURL.toString());
+		connection.setRequestProperty(CimXHeader.CIM_URL.toString(), childURI.toString());
 		CimResponse response = getResponse(connection);
 		if(HttpStatus.OK.equals(response.status)) return;
 		throw new ModelException(ExceptionReason.FAILED,response.error);
@@ -723,10 +727,6 @@ public class CimClient implements Provider, CimListener {
 		throw new ModelException(ExceptionReason.NOT_SUPPORTED,"CimClient.getRepository() not supported");
 	}
 
-	@Override
-	public URL getURL() {
-		return clientURL;
-	}
 
 	@Override
 	public int hashCode() {
@@ -738,5 +738,20 @@ public class CimClient implements Provider, CimListener {
 		if(obj == null || !(obj instanceof CimClient)) return false;
 		CimClient other = (CimClient) obj;
 		return serverURL.equals(other.serverURL);
+	}
+
+	
+	@Override
+	public URL getURL() {
+		try {
+			return clientURI.toURL();
+		} catch (MalformedURLException e) {
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER, "Invalid URL for "+clientURI.toString());
+		}
+	}
+
+	@Override
+	public URI getroviderEndpoint() {
+		return clientURI;
 	}
 }

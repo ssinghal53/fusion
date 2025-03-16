@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Sharad Singhal, All Rights Reserved
+ * Copyright 2017,2025 Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -23,7 +23,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- * Created Jul 16, 2017 by sharad
+ * Created Jul 16, 2017 by Sharad Singhal
+ * Last Modified March 10, 2025 by Sharad Singhal
  */
 package net.aifusion.cimserver;
 
@@ -32,9 +33,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -45,6 +47,7 @@ import net.aifusion.metamodel.CimInstance;
 import net.aifusion.metamodel.CimParameter;
 import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
+import net.aifusion.metamodel.ExceptionReason;
 import net.aifusion.metamodel.FqlFilter;
 import net.aifusion.metamodel.InMemoryCache;
 import net.aifusion.metamodel.MOFParser;
@@ -59,14 +62,19 @@ import net.aifusion.providers.BasicProvider;
 import net.aifusion.providers.Provider;
 
 /**
- * Class to Handle Cim Requests directed at an underlying provider. This handler provides server-side processing for the CIM server
+ * Class to Handle CIM Requests directed at an underlying provider. This handler provides server-side processing for the CIM server
  * @author Sharad Singhal
  */
 class CimHandler implements HttpRequestHandler {
 	/** Logger for this class */
 	private static Logger logger = Logger.getLogger(CimHandler.class.getName());
-	/** Underlying Cim Provider */
-	private Provider provider;
+	// provider information can be accessed by subclasses-- currently only for testing (see TestHandler}
+	/** Underlying default Cim Provider */
+	protected Provider defaultProvider;
+	/** Providers based on end points */
+	protected HashMap<String,Provider> providers = new HashMap<String,Provider>();
+
+
 	/** Configuration, if any */
 	private HttpConfiguration config = null;
 	/** Line terminator */
@@ -75,53 +83,67 @@ class CimHandler implements HttpRequestHandler {
 	private boolean logEnabled = false;
 
 	/**
-	 * Create a CimHandler with an underlying Cim Provider
-	 * @param provider - provider used in the handler
-	 */
-	public CimHandler(Provider provider){
-		if(provider == null) throw new ModelException("CimHandler - Provider cannot be null");
-		this.provider = provider;
-		return;
-	}
-
-	/**
 	 * Create a CimHandler from a server configuration
 	 * @param config server configuration to use
 	 */
 	public CimHandler(HttpConfiguration config) {
-		this.config = config;
-		String r = config.getRepository();
-		String p = config.getProvider();
-		Repository repo = (r == null) ? new InMemoryCache() 
-				: new PersistentCache(r);
-		if(logEnabled) logger.info("Using Repository "+r+" Provider "+p);
-		if(p != null) {
-			try {
-				ClassLoader loader = CimHandler.class.getClassLoader();
-				Class<?> providerClass = loader.loadClass(p);
-				if(Provider.class.isAssignableFrom(providerClass)){
-					try {
-						Constructor<?> constructor = providerClass.getConstructor(Repository.class);
-						this.provider = (Provider) constructor.newInstance(repo);
-					} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
-						try {
-							this.provider =  (Provider) providerClass.getDeclaredConstructor().newInstance();
-						} catch (IllegalArgumentException | InvocationTargetException | SecurityException e1) {
-							throw new ModelException("Unable to locate a provider for "+p,e1);
-						}
-					}
-				} else {
-					throw new ModelException(p+" is not a Provider");
+		try {
+			this.config = config;
+			// load default provider for this handler
+			String r = config.getRepository();
+			Repository repo = (r == null) ? new InMemoryCache() : new PersistentCache(r);
+			// server URI-- note that hostname may need to be replaced with IP address if server is not on DNS
+			URI uri = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),"/",null,null);
+			defaultProvider = config.getProvider() != null ? loadProvider(config.getProvider(),uri,repo) : new BasicProvider(repo,uri);
+			// any additional providers if defined
+			if(config.getProviderNames() != null) {
+				for(String p : config.getProviderNames()) {
+					// serverEndpoint|providerClassName[|repositoryName]
+					String [] v = p.split("|");
+					String endpoint = v[0];
+					String providerClassName = v.length > 1 ? v[1] : BasicProvider.class.getName();
+					URI u = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),endpoint,null,null);
+					Repository rep = v.length > 2 ? new PersistentCache(v[2]) : new InMemoryCache();
+					Provider prov = loadProvider(providerClassName, u, rep);
+					providers.put(endpoint, prov);
 				}
-			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
-				throw new ModelException("CimHandler: Unable to load class "+p, e);
 			}
-		} else {
-			this.provider = new BasicProvider(repo);
+		} catch (URISyntaxException e) {
+			throw new ModelException("Unable to instantiate CimHandler because of invalid URI",e);
 		}
 		return;
 	}
-	
+
+	/**
+	 * Load a provider
+	 * @param provider - name of the class to be loaded. Must implement Provider interface
+	 * @param uri - server uri at which this provider is accessible
+	 * @param repo - repository to use for the provider
+	 * @return - the provider instance
+	 */
+	private Provider loadProvider(String provider,URI uri, Repository repo) {
+		try {
+			ClassLoader loader = CimHandler.class.getClassLoader();
+			Class<?> providerClass = loader.loadClass(provider);
+			if(Provider.class.isAssignableFrom(providerClass)){
+				try {
+					Constructor<?> constructor = providerClass.getConstructor(Repository.class, URI.class);
+					return (Provider) constructor.newInstance(repo,uri);
+				} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
+				//	try {
+				//		return (Provider) providerClass.getDeclaredConstructor().newInstance();
+				//	} catch (IllegalArgumentException | InvocationTargetException | SecurityException e1) {
+						throw new ModelException("Unable to locate a provider for "+provider,e);
+				//	}
+				}
+			} else {
+				throw new ModelException(provider+" is not a Provider");
+			}
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			throw new ModelException(ExceptionReason.INVALID_CLASS,"CimHandler: Unable to load class "+provider, e);
+		}
+	}
+
 	/**
 	 * Enable logging on handler
 	 * @param enable - true to enable logging, false to disable logging
@@ -155,13 +177,24 @@ class CimHandler implements HttpRequestHandler {
 				return new HttpResponse(requestMethod,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,
 						cimRequest+" requires header "+x);
 		}
+		// locate the provider to use
+		Provider requestProvider = defaultProvider;
+		try {
+			String endpoint = new URI(request.getURI()).getPath();
+			if(providers.containsKey(endpoint)) {
+				requestProvider = providers.get(endpoint);
+			}
+		} catch (URISyntaxException e) {
+			return new HttpResponse(requestMethod,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,
+					cimRequest+" has bad target "+request.getURI());
+		}		
 		// null response implies that HttpStatus.NOT_FOUND will be sent to client
 		HttpResponse response = null;
 		try {
 			String httpBody = getBody(request);
 			switch(cimRequest){
-			case GET_NAMESPACES:	// all name spaces, one per line (OK)
-				List<NameSpacePath> names = provider.getNameSpaces();
+			case GET_NAMESPACES:	// all name spaces, one per line
+				List<NameSpacePath> names = requestProvider.getNameSpaces();
 				StringBuilder b = new StringBuilder();
 				for(NameSpacePath name : names){
 					if(config != null && config.getServerPort() > 0){
@@ -176,7 +209,7 @@ class CimHandler implements HttpRequestHandler {
 				break;
 			case GET_ELEMENT:	// return the mof value of the named element
 				ObjectPath path = getObjectPath(request);
-				NamedElement element = provider.get(path);
+				NamedElement element = requestProvider.get(path);
 				if(element != null){
 					b = new StringBuilder();
 					b.append("#pragma namespace(\"").append(element.getNameSpacePath().getLocalPath()).append("\")\n");
@@ -193,15 +226,15 @@ class CimHandler implements HttpRequestHandler {
 					response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				}
 				break;
-			case HAS_ELEMENT:	// return OK/NOT found (OK)
+			case HAS_ELEMENT:	// return OK/NOT found
 				path = getObjectPath(request);
-				boolean bv = provider.contains(path);
+				boolean bv = requestProvider.contains(path);
 				response = bv ? new HttpResponse(requestMethod,HttpStatus.OK) :
 					new HttpResponse(requestMethod,HttpStatus.NOT_FOUND);
 				break;
 			case GET_PROPERTY_NAMES:	// all property names, one per line
 				path = getObjectPath(request);
-				List<String> pNames = provider.getPropertyNames(path);
+				List<String> pNames = requestProvider.getPropertyNames(path);
 				b = new StringBuilder();
 				for(String name : pNames){
 					b.append(name).append(CRLF);
@@ -211,19 +244,19 @@ class CimHandler implements HttpRequestHandler {
 			case GET_PROPERTY_TYPE:	// type of a given property
 				String propertyName = request.getXHeader(CimXHeader.PROPERTY_NAME.toString());
 				path = getObjectPath(request);
-				DataType type = provider.getPropertyType(path, propertyName);
+				DataType type = requestProvider.getPropertyType(path, propertyName);
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.PLAINTEXT, type.toString()+CRLF);
 				break;
 			case GET_PROPERTY_VALUE:	// mof value of a given property
 				propertyName = request.getXHeader(CimXHeader.PROPERTY_NAME.toString());
 				path = getObjectPath(request);
-				DataValue v = provider.getPropertyValue(path, propertyName);
+				DataValue v = requestProvider.getPropertyValue(path, propertyName);
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, v.toMOF());
 				response.addXHeader(CimXHeader.PROPERTY_TYPE.toString(),v.getType().toString());
 				break;
 			case GET_METHOD_NAMES:	// names of methods, if any
 				path = getObjectPath(request);
-				pNames = provider.getMethodNames(path);
+				pNames = requestProvider.getMethodNames(path);
 				b = new StringBuilder();
 				for(String name : pNames){
 					b.append(name).append(CRLF);
@@ -233,13 +266,13 @@ class CimHandler implements HttpRequestHandler {
 			case GET_METHOD_TYPE:	// return type of the method
 				propertyName = request.getXHeader(CimXHeader.METHOD_NAME.toString());
 				path = getObjectPath(request);
-				type = provider.getMethodReturnType(path, propertyName);
+				type = requestProvider.getMethodReturnType(path, propertyName);
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.PLAINTEXT, type.toString()+CRLF);
 				break;
 			case GET_METHOD_PARAMETERS:	// method parameters, one per line
 				propertyName = request.getXHeader(CimXHeader.METHOD_NAME.toString());
 				path = getObjectPath(request);
-				List<CimParameter> pm = provider.getMethodParameters(path, propertyName);
+				List<CimParameter> pm = requestProvider.getMethodParameters(path, propertyName);
 				b = new StringBuilder();
 				for(CimParameter p : pm){
 					b.append(p.toMOF()).append(CRLF);
@@ -249,22 +282,21 @@ class CimHandler implements HttpRequestHandler {
 			case SET_PROPERTY_VALUE:	// set property value
 				path = getObjectPath(request);
 				propertyName = request.getXHeader(CimXHeader.PROPERTY_NAME.toString());
-				NamedElement target = provider.get(path);
+				NamedElement target = requestProvider.get(path);
 				if(target == null || propertyName == null){
 					response = new HttpResponse(requestMethod,HttpStatus.NOT_FOUND,MimeType.PLAINTEXT,path+" ["+propertyName+"]");
 					break;
 				}
-				
-				MOFParser parser = new MOFParser(provider);
+
+				MOFParser parser = new MOFParser(requestProvider);
 				DataValue propertyValue = parser.parsePropertyValue(path,propertyName,new ByteArrayInputStream(httpBody.getBytes()));
-				provider.setPropertyValue(path, propertyName, propertyValue);
+				requestProvider.setPropertyValue(path, propertyName, propertyValue);
 				response = new HttpResponse(requestMethod,HttpStatus.OK);
 				break;
 			case PUT_ELEMENT:
 				NameSpacePath ns = new NameSpacePath(request.getXHeader(CimXHeader.NAMESPACE_PATH.toString()));
 				InMemoryCache cache = new InMemoryCache();
-				// BufferedCache cache = new BufferedCache(provider);
-				MOFParser bp = new MOFParser(cache,provider);
+				MOFParser bp = new MOFParser(cache,requestProvider);
 				bp.parse(new ByteArrayInputStream(httpBody.getBytes()),ns);
 				List<NamedElement> elements = cache.getElements(null,null,null,false);
 				// NOTE: the cache will automatically add structure/class definitions
@@ -272,8 +304,8 @@ class CimHandler implements HttpRequestHandler {
 				if(elements != null && !elements.isEmpty()) {
 					boolean exists = true;
 					for(NamedElement el : elements) {
-						exists &= provider.contains(el.getObjectPath());
-						provider.put(el);
+						exists &= requestProvider.contains(el.getObjectPath());
+						requestProvider.put(el);
 					}
 					response = new HttpResponse(requestMethod,exists ? HttpStatus.OK : HttpStatus.CREATED);
 				} else {
@@ -284,7 +316,7 @@ class CimHandler implements HttpRequestHandler {
 			case DELETE_ELEMENT:
 				path = getObjectPath(request);
 				// System.out.println("Server Deleting "+path);
-				boolean result = provider.delete(path);
+				boolean result = requestProvider.delete(path);
 				response = result ? new HttpResponse(HttpMethod.GET,HttpStatus.OK) :
 					new HttpResponse(requestMethod,HttpStatus.NOT_MODIFIED);
 				break;
@@ -298,7 +330,7 @@ class CimHandler implements HttpRequestHandler {
 				if("null".equalsIgnoreCase(elementNames)) elementNames = null;
 				String locateTypes = request.getXHeader(CimXHeader.LOCATE_SUBCLASS.toString());
 				boolean locateSubTypes = "true".equalsIgnoreCase(locateTypes) ? true : false;
-				elements = provider.getElements(elementTypes, localNameSpaces, elementNames, locateSubTypes);
+				elements = requestProvider.getElements(elementTypes, localNameSpaces, elementNames, locateSubTypes);
 				// TODO: This list can be long, so we may need to send it as a chunked response
 				b = new StringBuilder();
 				NameSpacePath ns0 = null;
@@ -323,7 +355,7 @@ class CimHandler implements HttpRequestHandler {
 				break;
 			case EXECUTE_QUERY:
 				// note that path is ignored, and is normally "/"
-				List<StructureValue> resultset = provider.executeQuery(httpBody.trim());
+				List<StructureValue> resultset = requestProvider.executeQuery(httpBody.trim());
 				b = new StringBuilder("");
 				ns0 = null;
 				for(NamedElement e : resultset){
@@ -346,53 +378,53 @@ class CimHandler implements HttpRequestHandler {
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				break;
 			case HAS_LISTENER:
-				URL clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
-				CimClient client = getClient(clientURL);
-				if(client != null){
+				URL clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
+				CimClient serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				if(serverSideclient != null){
 					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
-					response = provider.hasListener(t, client) ? new HttpResponse(requestMethod,HttpStatus.OK) :
+					response = requestProvider.hasListener(t, serverSideclient) ? new HttpResponse(requestMethod,HttpStatus.OK) :
 						new HttpResponse(requestMethod,HttpStatus.NOT_FOUND);
 				} else {
 					response = new HttpResponse(requestMethod,HttpStatus.NOT_IMPLEMENTED);
 				}
 				break;
 			case ADD_LISTENER:
-				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
-				client = getClient(clientURL);
-				if(client != null){
+				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
+				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				if(serverSideclient != null){
 					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
-					response = provider.addListener(t, client) ? new HttpResponse(requestMethod,HttpStatus.OK) :
+					response = requestProvider.addListener(t, serverSideclient) ? new HttpResponse(requestMethod,HttpStatus.OK) :
 						new HttpResponse(requestMethod,HttpStatus.NOT_MODIFIED);
 				} else {
 					response = new HttpResponse(requestMethod,HttpStatus.NOT_IMPLEMENTED);
 				}
 				break;
 			case REMOVE_LISTENER:
-				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
-				client = getClient(clientURL);
-				if(client != null){
+				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
+				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				if(serverSideclient != null){
 					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
-					provider.removeListener(t, client);
+					requestProvider.removeListener(t, serverSideclient);
 					response = new HttpResponse(requestMethod,HttpStatus.OK);
 				} else {
 					response = new HttpResponse(requestMethod,HttpStatus.NOT_IMPLEMENTED);
 				}
 				break;
 			case REGISTER_PROVIDER:
-				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
-				client = getClient(clientURL);
-				if(client != null){
-					provider.registerChildProvider(client);
+				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
+				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				if(serverSideclient != null){
+					requestProvider.registerChildProvider(serverSideclient);
 					response = new HttpResponse(requestMethod,HttpStatus.OK);
 				} else {
 					response = new HttpResponse(requestMethod,HttpStatus.NOT_IMPLEMENTED);
 				}
 				break;
 			case UNREGISTER_PROVIDER:
-				clientURL = new URL(request.getXHeader(CimXHeader.CIM_URL.toString()));
-				client = getClient(clientURL);
-				if(client != null){
-					provider.unregisterChildProvider(client);
+				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
+				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				if(serverSideclient != null){
+					requestProvider.unregisterChildProvider(serverSideclient);
 					response = new HttpResponse(requestMethod,HttpStatus.OK);
 				} else {
 					response = new HttpResponse(requestMethod,HttpStatus.NOT_IMPLEMENTED);
@@ -401,11 +433,11 @@ class CimHandler implements HttpRequestHandler {
 			case INVOKE_METHOD:
 				path = getObjectPath(request);
 				String methodName = request.getXHeader(CimXHeader.METHOD_NAME.toString());
-				target = provider.get(path);
+				target = requestProvider.get(path);
 				if(target == null || methodName == null || methodName.isEmpty()){
 					break;	// Object not found
 				}
-				parser = new MOFParser(provider);				
+				parser = new MOFParser(requestProvider);				
 				switch(target.getElementType()){
 				case CLASS:
 					CimClass cls = (CimClass) target;
@@ -441,7 +473,7 @@ class CimHandler implements HttpRequestHandler {
 			case FILTER:
 				path = new ObjectPath(request.getXHeader(CimXHeader.OBJECT_PATH.toString()));
 				FqlFilter filter = new FqlFilter(request.getXHeader(CimXHeader.FILTER_STRING.toString()));
-				resultset = provider.filter(path,filter);
+				resultset = requestProvider.filter(path,filter);
 				b = new StringBuilder("");
 				ns0 = null;
 				for(StructureValue e : resultset){
@@ -482,22 +514,22 @@ class CimHandler implements HttpRequestHandler {
 	}
 
 	/**
-	 * Get a cimClient that can talk back to a client side receiver
+	 * Get a server-side cimClient that can talk back to a client side receiver
 	 * @param clientURL - url for the client
+	 * @param localPath - our end point for the current provider
 	 * @return cimClient, or Null if the client could not be constructed
 	 */
-	private CimClient getClient(URL clientURL) {
+	private CimClient getServerSideClient(URL clientURL,String localPath) {
 		if(config != null){
 			try {
-				String ourHost = config.getHostName();
-				int ourPort = config.getServerPort();
-				URL ourURL = new URL(config.isSecure() ? "https" : "http",ourHost+":"+ourPort,"/");
-				return new CimClient(clientURL,ourURL,config.getProxyHost(),config.getProxyPort());
-			} catch (MalformedURLException e) {
-				logger.warning("CimHandler - unable to construct server URL "+e.toString());
+				String uri = (config.isSecure() ? "https://" : "http://")+config.getHostName()+":"+config.getServerPort()+localPath;
+				URI ourURI = new URI(uri);
+				return new CimClient(clientURL,ourURI,config.getProxyHost(),config.getProxyPort());
+			} catch (URISyntaxException e) {
+				throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Unable to construct client to respond");
 			}
-		} else if(provider.getURL() != null){
-			return new CimClient(clientURL,provider.getURL(),null,0);
+		} else if(defaultProvider.getroviderEndpoint() != null){
+			return new CimClient(clientURL,defaultProvider.getroviderEndpoint(),config.getProxyHost(),config.getProxyPort());
 		}
 		return null;
 	}
@@ -571,10 +603,15 @@ class CimHandler implements HttpRequestHandler {
 		}
 		return new HttpResponse(method,status,MimeType.PLAINTEXT, e.toString()+CRLF);
 	}
-	
+
 	@Override
 	public void shutdown() {
-		if(provider != null) provider.shutdown();
+		if(defaultProvider != null) defaultProvider.shutdown();
+		if(!providers.isEmpty()) {
+			for(Provider p : providers.values()) {
+				p.shutdown();
+			}
+		}
 		return;
 	}
 }

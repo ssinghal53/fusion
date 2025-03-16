@@ -40,6 +40,8 @@ import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.ElementType;
 import net.aifusion.metamodel.Export;
+import net.aifusion.metamodel.InMemoryCache;
+import net.aifusion.metamodel.JavaModelMapper;
 import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.ModelUtilities;
 import net.aifusion.metamodel.NameSpacePath;
@@ -265,7 +267,7 @@ public class HttpConfiguration {
 	 * Get the Host name for the server
 	 * @return - host name for the server
 	 */
-	@Export(qualifiers="Description(\"Host Name\")",defaultValue="\""+defaultHost+"\"")
+	@Export(qualifiers="Description(\"Host Name. Replace with IP address if not on DNS\")",defaultValue="\""+defaultHost+"\"")
 	public String getHostName(){
 		return hostName;
 	}
@@ -406,7 +408,7 @@ public class HttpConfiguration {
 	}
 	
 	/**
-	 * Get additional providers to be used if multiple providers are netwprk accessible from the server
+	 * Get additional providers to be used if multiple providers are network accessible from the server
 	 * @return list of providers to add to the server. Each is of the form serverEndpoint|ProviderName|repositoryLocation
 	 */
 	@Export(qualifiers="Description(\"Names of the providers to use in the handler class. Each is of the form serverEndpoint|ProviderClassName[|repository]\")")
@@ -460,6 +462,15 @@ public class HttpConfiguration {
 		repository.shutdown();
 		return null;
 	}
+	
+	
+
+	@Override
+	public String toString() {
+		CimStructure s = (CimStructure) Java2Cim.getModelForClass(getClass(), new InMemoryCache());
+		StructureValue v = JavaModelMapper.createCimValueFromJavaObject(s, this);
+		return v.toMOF();
+	}
 
 	/**
 	 * print out help on the standard output
@@ -489,7 +500,7 @@ public class HttpConfiguration {
 		System.out.println("\t-logenabled [true|false]	# true if logging is enabled [false]");
 		System.out.println("\t-loglevel level			# level for logging [INFO]");
 		System.out.println("\t-logfile filename			# filename for logging [server.log]");
-		System.out.println("\t-providerNames {names}	# names of providers. Each name is a triple endpoint|name|repository [{ }]");
+		System.out.println("\t-providerNames {names}	# names of providers. Each name is a triple endpoint|javaClassname|repository [{ }]");
 		return;
 	}
 	/**
