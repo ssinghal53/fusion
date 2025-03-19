@@ -167,10 +167,11 @@ public class CimClient implements Provider, CimListener {
 	/**
 	 * Create a new CimClient using a configuration
 	 * @param serverURL - CimServer to which this client should connect
-	 * @param configuration - configuration for the client. Maybe null if client configuration is not needed for Http
+	 * @param configuration - configuration for the client. Maybe null if the client does not need to be a listener or network provider
 	 */
 	public CimClient (URL serverURL, HttpConfiguration configuration){
 		this.serverURL = serverURL;
+		System.out.println(serverURL+"  ,  ");
 		if(configuration != null){
 			String proxyHost = configuration.getProxyHost();
 			int proxyPort = configuration.getProxyPort();
@@ -182,13 +183,21 @@ public class CimClient implements Provider, CimListener {
 
 			String hostName = configuration.getHostName();
 			int portNumber = configuration.getServerPort();
+			
 			if(hostName != null && portNumber > 0){
 				try {
 					clientURI = new URI(configuration.isSecure()?"https":"http",hostName+":"+portNumber,"/",null);
 				} catch (URISyntaxException e) {
 					logger.warning("Invalid URI specification for client "+e.toString());
 				}
+			} else {
+				try {
+					clientURI = new URI("/");
+				} catch (URISyntaxException e) {
+					logger.warning("Invalid URI specification for client "+e.toString());
+				}
 			}
+			System.out.println("host: "+hostName+" Port: "+portNumber+" URI: "+clientURI);
 		}
 		return;
 	}
@@ -555,6 +564,7 @@ public class CimClient implements Provider, CimListener {
 		throw new ModelException(ExceptionReason.FAILED,response.status+":"+response.error);
 	}
 
+
 	@Override
 	public void unregisterChildProvider(Provider child) {
 		URI childURI = child.getroviderEndpoint();
@@ -565,7 +575,7 @@ public class CimClient implements Provider, CimListener {
 		if(HttpStatus.OK.equals(response.status)) return;
 		throw new ModelException(ExceptionReason.FAILED,response.error);
 	}
-
+ 
 	@Override
 	public List<String> getPropertyNames(ObjectPath path) {
 		HttpURLConnection connection = getConnection(CimHeader.GET_PROPERTY_NAMES,path);
@@ -754,4 +764,5 @@ public class CimClient implements Provider, CimListener {
 	public URI getroviderEndpoint() {
 		return clientURI;
 	}
+	
 }

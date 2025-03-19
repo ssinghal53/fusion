@@ -58,8 +58,8 @@ import net.aifusion.utils.Java2Cim;
 public class HttpConfiguration {
 	/** Default configuration Key to use */
 	private static final String defaultID = "defaultConfig";
-	/** Default host name */
-	private static final String defaultHost = Constants.defaultHost;
+	/** Default host name. Use default IP address instead of "localhost" to avoid resolution to IP v6 */
+	private static final String defaultHost = "127.0.0.1";
 	/** Default host port */
 	private static final int defaultPort = Constants.defaultPort;
 	/** Use HTTPS for connections */
@@ -263,6 +263,8 @@ public class HttpConfiguration {
 		return id;
 	}
 
+	// TODO: Latest versions of java somehow interpret localhost to be an IP v6 address. To force localhost to be interpreted
+	// as IP v4, we need to use the default hostname to be 127.0.0.1 instead of "localhost"
 	/**
 	 * Get the Host name for the server
 	 * @return - host name for the server

@@ -161,7 +161,7 @@ public class HttpConfigurationTest {
 	public void testGetHostName() {
 		HttpConfiguration conf = new HttpConfiguration();
 		assertNotNull(conf);
-		assertEquals("localhost",conf.getHostName());
+		assertEquals("127.0.0.1",conf.getHostName());
 	}
 
 	/**
@@ -271,7 +271,7 @@ public class HttpConfigurationTest {
 	public void testGetProxyHost() {
 		HttpConfiguration conf = new HttpConfiguration();
 		assertNotNull(conf);
-		assertEquals("localhost",conf.getProxyHost());
+		assertEquals("127.0.0.1",conf.getProxyHost());
 	}
 	
 	/**
@@ -292,7 +292,7 @@ public class HttpConfigurationTest {
 	public void testGetX500Principal() {
 		HttpConfiguration conf = new HttpConfiguration();
 		assertNotNull(conf);
-		assertEquals("CN=localhost, OU=aifusion.net, O=aifusion, C=US, L=Belmont, ST=California",conf.getX500Principal());
+		assertEquals("CN=127.0.0.1, OU=aifusion.net, O=aifusion, C=US, L=Belmont, ST=California",conf.getX500Principal());
 	}
 
 
