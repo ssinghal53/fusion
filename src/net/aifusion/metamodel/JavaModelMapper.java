@@ -949,7 +949,7 @@ public class JavaModelMapper {
 					Object v = javaMethod.invoke(javaObject, (Object[])null);
 					if(v != null) props.put(pName, new DataValue(pType,v));
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					throw new ModelException(ExceptionReason.INVALID_CLASS,"Unable to create StructureValue from "+javaObject.getClass().getName());
+					throw new ModelException(ExceptionReason.INVALID_CLASS,"Unable to create StructureValue from "+javaObject.getClass().getName(),e);
 				}
 			}
 		}
@@ -1181,8 +1181,6 @@ public class JavaModelMapper {
 		}
 		return;
 	}
-	
-	
 	
 	/**
 	 * Validate that a java method can be bound to a CIM Method
