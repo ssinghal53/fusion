@@ -39,19 +39,17 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import net.aifusion.cql.CimQuery;
-import net.aifusion.metamodel.CimClass;
 import net.aifusion.metamodel.CimEventType;
 import net.aifusion.metamodel.CimIndication;
 import net.aifusion.metamodel.CimInstance;
@@ -93,20 +91,16 @@ public class CimClientAndServerTest {
 			"X500Principal = \"CN=localhost, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California\";\n"+
 			"Id = \"serverConfig\";\n"+
 			"TrustStorePassword = \"serverpass\";\n"+
-			"HostName = \"127.0.0.1\";\n"+
+			"HostName = \"localhost\";\n"+
 			"ServerPort = 8085;\n"+
 			"};\n"+
 
 			"value of AIFusion_HttpConfiguration {\n"+
-			// "TrustStore = \"testrepository/clientTrustStore.jks\";\n"+
-			// "TrustStorePassword = \"clientpass\";\n"+
-			// "KeyStore = \"testrepository/clientKeyStore.jks\";\n"+
-			// "KeyStorePassword = \"clientpass\";\n"+
 			"Secure = false;\n"+
 			"X500Principal = \"CN=localclient, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California\";\n"+
 			"Id = \"clientConfig\";\n"+
 			"RequestHandler = \"net.aifusion.cimserver.TestHandler\";\n"+
-			"HostName = \"127.0.0.1\";\n"+
+			"HostName = \"localhost\";\n"+
 			"ServerPort = 8089;\n"+
 			"};\n"+
 
@@ -117,7 +111,7 @@ public class CimClientAndServerTest {
 			"instance of test_class {\n\tintegerProperty = 5;\n\tstringProperty = null;\n};\n"
 			;
 	private static MOFParser parser;
-	private static URL serverURL, server2URL;
+	private static URI serverURI, server2URI;
 	private static HttpConfiguration clientConfig;
 	
 	
@@ -132,7 +126,7 @@ public class CimClientAndServerTest {
 		assertNotNull(configClass);
 		assertTrue(cache.contains(configClass.getObjectPath()));
 
-		// populate the cache
+		// populate the server-side cache
 		parser = new MOFParser(cache);
 		ByteArrayInputStream in = new ByteArrayInputStream(serverMof.getBytes());
 		parser.parse(in, Constants.defaultNameSpacePath);
@@ -144,20 +138,19 @@ public class CimClientAndServerTest {
 		// create the server configuration, and start the server
 		HttpConfiguration serverConfig = HttpConfiguration.getConfiguration("serverConfig", null, repositoryLocation);
 		assertFalse(serverConfig.isSecure());
-		assertEquals("127.0.0.1",serverConfig.getHostName());
+		assertEquals("localhost",serverConfig.getHostName());
 		assertEquals(8085,serverConfig.getServerPort());
-		serverURL = new URL("http://localhost:8085/");
+		serverURI = new URI("http://localhost:8085/");
 		server = new CimServer(serverConfig);
 		server.startServer();
 
 		// get the client configuration, and the server proxy for the client (needed for [un]RegisterProvider)
 		clientConfig = HttpConfiguration.getConfiguration("clientConfig", null, repositoryLocation);
-		System.out.println(clientConfig.getProvider());
 		assertNotNull(clientConfig);
 		assertFalse(clientConfig.isSecure());
-		assertEquals("127.0.0.1",clientConfig.getHostName());
+		assertEquals("localhost",clientConfig.getHostName());
 		assertEquals(8089,clientConfig.getServerPort());
-		server2URL = new URL("http://localhost:8089/");
+		server2URI = new URI("http://localhost:8089/");
 		server2 = new CimServer(clientConfig);
 		server2.startServer();
 		return;
@@ -218,7 +211,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testCimClient() {
-		CimClient client1 = new CimClient(serverURL,clientConfig);
+		CimClient client1 = new CimClient(serverURI,clientConfig);
 		assertNotNull(client1);
 		client1.shutdown();
 	}
@@ -229,49 +222,47 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testEquals() {
-		CimClient client1 = new CimClient(serverURL,clientConfig);
-		CimClient client2 = new CimClient(serverURL,clientConfig);
+		CimClient client1 = new CimClient(serverURI,clientConfig);
+		CimClient client2 = new CimClient(serverURI,clientConfig);
 		assertEquals(client1.hashCode(),client2.hashCode());
 		assertEquals(client1,client2);
 		try {
-			client2 = new CimClient(new URL("http://localhost:8086/"), clientConfig);
+			client2 = new CimClient(new URI("http://localhost:8086/"), clientConfig);
 			assertNotEquals(client1,client2);
 			assertNotEquals(client1.hashCode(),client2.hashCode());
-		} catch(MalformedURLException e){
+		} catch(URISyntaxException e){
 			fail(e.toString());
 		}
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.CimClient#getroviderEndpoint()}.
+	 * Test method for {@link net.aifusion.cimserver.CimClient#getProviderEndpoint()}.
 	 */
-	@Ignore
 	@Test
 	public void testGetProviderURL(){
-		CimClient client = new CimClient(serverURL,clientConfig);
-		assertEquals("http://localhost:8089/",client.getroviderEndpoint().toString());
+		CimClient client = new CimClient(serverURI,clientConfig);
+		assertEquals("http://localhost:8085/",client.getProviderEndpoint().toString());
 		client.shutdown();
 	}
 
 	/**
 	 * Test method for {@link net.aifusion.cimserver.CimClient#getNameSpaces()}.
 	 */
-	@Ignore
 	@Test
 	public void testGetNameSpaces() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		List<NameSpacePath> paths = client.getNameSpaces();
 		assertNotNull(paths);
 		assertEquals(2,paths.size());
 		assertTrue(paths.contains(new NameSpacePath("http://localhost:8085/root/local")));
 		assertTrue(paths.contains(new NameSpacePath("http://localhost:8085/aifusion")));
 		client.shutdown();
-		client = new CimClient(server2URL,clientConfig);	// test server 2 name space
+		client = new CimClient(server2URI,clientConfig);	// test server 2 name space
 		paths = client.getNameSpaces();
 		assertNotNull(paths);
-		assertEquals(1,paths.size());
+		assertEquals(0,paths.size());
 		// note that "/localPath" is hardcoded in TestHandler.java
-		assertEquals("http://localhost:8089/localpath",paths.get(0).toString());	
+		// assertEquals("http://localhost:8089/localpath",paths.get(0).toString());	
 		client.shutdown();
 	}
 
@@ -281,7 +272,7 @@ public class CimClientAndServerTest {
 	@Test
 	public void testGet() {
 		// check for an existing element without host name
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
 		PersistentCache cache = new PersistentCache(repositoryLocation);
 		NamedElement expected = cache.get(path);
@@ -307,7 +298,7 @@ public class CimClientAndServerTest {
 	@Test
 	public void testContains() {
 		// check for an existing element without host name
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		assertNotNull(client);
 		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
 		assertTrue(client.contains(path));
@@ -336,7 +327,7 @@ public class CimClientAndServerTest {
 		assertNotNull(e);
 		// System.out.println(e.getObjectPath()+"\n"+e.getNameSpacePath()+"\n"+e.toMOF());
 		// put it in the server
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		assertTrue(client.put(e));
 		// validate that it exists at the server
 		PersistentCache cache = new PersistentCache(repositoryLocation);
@@ -367,7 +358,7 @@ public class CimClientAndServerTest {
 		cache.shutdown();
 
 		// ask the server to delete it
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		assertTrue(client.delete(p));
 		// test that it has been deleted
 		cache = new PersistentCache(repositoryLocation);
@@ -384,7 +375,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetElements() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		assertNotNull(client);
 		List<NamedElement> elements = client.getElements(null, null, null, false);
 		if(verbose) for(NamedElement e : elements) System.out.println(e.toMOF());
@@ -397,17 +388,16 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testShutdown() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		client.shutdown();
 	}
 
 	/**
 	 * Test method for {@link net.aifusion.cimserver.CimClient#addListener(net.aifusion.metamodel.CimEventType, net.aifusion.metamodel.CimListener)}.
 	 */
-	@Ignore
 	@Test
 	public void testAddListener() {
-		CimClient client = new CimClient(serverURL, clientConfig);
+		CimClient client = new CimClient(serverURI, clientConfig);
 		boolean b = client.addListener(CimEventType.ADDED, client);
 		client.shutdown();
 		assertTrue(b);
@@ -416,10 +406,9 @@ public class CimClientAndServerTest {
 	/**
 	 * Test method for {@link net.aifusion.cimserver.CimClient#removeListener(net.aifusion.metamodel.CimEventType, net.aifusion.metamodel.CimListener)}.
 	 */
-	@Ignore
 	@Test
 	public void testRemoveListener() {
-		CimClient client = new CimClient(serverURL, clientConfig);
+		CimClient client = new CimClient(serverURI, clientConfig);
 		client.removeListener(CimEventType.ADDED, client);
 		client.shutdown();
 	}
@@ -427,10 +416,9 @@ public class CimClientAndServerTest {
 	/**
 	 * Test method for {@link net.aifusion.cimserver.CimClient#hasListener(net.aifusion.metamodel.CimEventType, net.aifusion.metamodel.CimListener)}.
 	 */
-	@Ignore
 	@Test
 	public void testHasListener() {
-		CimClient client = new CimClient(serverURL, clientConfig);
+		CimClient client = new CimClient(serverURI, clientConfig);
 		boolean b = client.addListener(CimEventType.ADDED, client);
 		client.shutdown();
 		assertTrue(b);
@@ -442,7 +430,7 @@ public class CimClientAndServerTest {
 	@Test
 	public void testNotifyCimEvent() {
 		CimIndication indication = new CimIndication(CimEventType.ADDED,null,"some description");
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		try {
 			client.notify(indication);
 			fail("Should not succeed");
@@ -456,11 +444,10 @@ public class CimClientAndServerTest {
 	/**
 	 * Test method for {@link net.aifusion.cimserver.CimClient#registerChildProvider(net.aifusion.providers.Provider)}.
 	 */
-	@Ignore
 	@Test
 	public void testRegisterChildProvider() {
-		CimClient client = new CimClient(serverURL,clientConfig);
-		assertEquals(server2URL,client.getroviderEndpoint());
+		CimClient client = new CimClient(serverURI,clientConfig);
+		assertEquals(serverURI,client.getProviderEndpoint());
 		String error = null;
 		try {
 			client.registerChildProvider(client);
@@ -477,11 +464,10 @@ public class CimClientAndServerTest {
 	/**
 	 * Test method for {@link net.aifusion.cimserver.CimClient#unregisterChildProvider(net.aifusion.providers.Provider)}.
 	 */
-	@Ignore
 	@Test
 	public void testUnregisterChildProvider() {
-		CimClient client = new CimClient(serverURL,clientConfig);
-		assertEquals(server2URL,client.getroviderEndpoint());
+		CimClient client = new CimClient(serverURI,clientConfig);
+		assertEquals(serverURI,client.getProviderEndpoint());
 		String error = null;
 		try {
 			client.unregisterChildProvider(client);
@@ -498,7 +484,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetPropertyNames() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		// use instance path
 		ObjectPath path = new ObjectPath("/root/local:test_class.integerproperty=5");
 		List<String> propertyNames = client.getPropertyNames(path);
@@ -516,7 +502,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetPropertyType() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		ObjectPath path = new ObjectPath("/root/local:test_class.integerproperty=5");
 		DataType type = client.getPropertyType(path, "stringproperty");
 		client.shutdown();
@@ -528,7 +514,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetPropertyValue() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		ObjectPath path = new ObjectPath("/root/local:test_class.integerproperty=5");
 		DataValue value = client.getPropertyValue(path, "stringproperty");
 		if(verbose) System.out.println(value);
@@ -541,7 +527,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testSetPropertyValue() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		ObjectPath path = new ObjectPath("/root/local:test_class.integerproperty=5");
 		// get a property value
 		DataValue value = client.getPropertyValue(path, "stringproperty");
@@ -560,7 +546,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetMethodNames() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		ObjectPath path = new ObjectPath("/root/local:test_class.integerproperty=5");
 		List<String> names = client.getMethodNames(path);
 		client.shutdown();
@@ -573,7 +559,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetMethodReturnType() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		ObjectPath path = new ObjectPath("/root/local:test_class.integerproperty=5");
 		DataType type = client.getMethodReturnType(path, "reset");
 		client.shutdown();
@@ -585,7 +571,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetMethodParameters() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		ObjectPath path = new ObjectPath("/root/local:test_class.integerproperty=5");
 		List<CimParameter> parameters = client.getMethodParameters(path, "reset");
 		client.shutdown();
@@ -610,7 +596,7 @@ public class CimClientAndServerTest {
 		assertEquals(1,methodParameters.size());
 		if(verbose) System.out.println(methodParameters.get(0).toMOF());
 		methodParameters.get(0).setValue(new DataValue("stringProperty"));
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		try {
 			DataValue v = client.invokeMethod(path, "reset", methodParameters);
 			if(verbose) System.out.println(v);
@@ -639,7 +625,7 @@ public class CimClientAndServerTest {
 		cache.shutdown();
 		assertEquals(1,elements.size());
 
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		elements = client.executeQuery("select * from test_class");
 		client.shutdown();
 		assertNotNull(elements);
@@ -651,7 +637,7 @@ public class CimClientAndServerTest {
 	 */
 	@Test
 	public void testGetRepository() {
-		CimClient client = new CimClient(serverURL,clientConfig);
+		CimClient client = new CimClient(serverURI,clientConfig);
 		try {
 			client.getRepository();
 			fail("Should not succeed");

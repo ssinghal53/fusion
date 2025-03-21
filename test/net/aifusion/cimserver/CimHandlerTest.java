@@ -541,7 +541,7 @@ public class CimHandlerTest {
 		output.reset();
 		response.send(output);
 		String outputString = output.toString();
-		System.out.println(outputString);
+		if(verbose) System.out.println(outputString);
 		assertTrue(outputString.startsWith(expect));
 		bodyString = outputString.substring(outputString.indexOf("\r\n\r\n")+4);
 		return;
@@ -603,8 +603,7 @@ public class CimHandlerTest {
 			sb.append(HttpHeader.CONTENT_LENGTH).append(": ").append(buffer.length).append(CRLF);
 		}
 		sb.append(CRLF);
-//		if(verbose) 
-			System.out.println(sb);
+		if(verbose) System.out.println(sb);
 		header = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(sb.toString().getBytes())));
 		input = new BufferedInputStream(new ByteArrayInputStream(buffer));
 		return new HttpRequest(header,input);

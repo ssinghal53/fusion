@@ -35,7 +35,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -92,8 +91,7 @@ class CimHandler implements HttpRequestHandler {
 			// load default provider for this handler
 			String r = config.getRepository();
 			Repository repo = (r == null) ? new InMemoryCache() : new PersistentCache(r);
-			URI uri = new URI("http://127.0.0.1/");
-			System.out.println(uri.toString());
+			URI uri = new URI("http://localhost/");
 			defaultProvider = config.getProvider() != null ? loadProvider(config.getProvider(),uri,repo) : new BasicProvider(repo,uri);
 			// any additional providers if defined
 			if(config.getProviderNames() != null) {
@@ -177,7 +175,7 @@ class CimHandler implements HttpRequestHandler {
 				return new HttpResponse(requestMethod,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,
 						cimRequest+" requires header "+x);
 		}
-		// locate the provider to use
+		// locate the provider to use based on the request URI
 		Provider requestProvider = defaultProvider;
 		try {
 			String endpoint = new URI(request.getURI()).getPath();
@@ -378,8 +376,8 @@ class CimHandler implements HttpRequestHandler {
 				response = new HttpResponse(requestMethod,HttpStatus.OK,MimeType.MOF, b.toString());
 				break;
 			case HAS_LISTENER:
-				URL clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
-				CimClient serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				URI clientURI = new URI(request.getXHeader(CimXHeader.CIM_URL.toString()));
+				CimClient serverSideclient = getServerSideClient(clientURI,requestProvider.getProviderEndpoint().getPath());
 				if(serverSideclient != null){
 					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
 					response = requestProvider.hasListener(t, serverSideclient) ? new HttpResponse(requestMethod,HttpStatus.OK) :
@@ -389,8 +387,8 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case ADD_LISTENER:
-				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
-				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				clientURI = new URI(request.getXHeader(CimXHeader.CIM_URL.toString()));
+				serverSideclient = getServerSideClient(clientURI,requestProvider.getProviderEndpoint().getPath());
 				if(serverSideclient != null){
 					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
 					response = requestProvider.addListener(t, serverSideclient) ? new HttpResponse(requestMethod,HttpStatus.OK) :
@@ -400,8 +398,8 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case REMOVE_LISTENER:
-				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
-				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				clientURI = new URI(request.getXHeader(CimXHeader.CIM_URL.toString()));
+				serverSideclient = getServerSideClient(clientURI,requestProvider.getProviderEndpoint().getPath());
 				if(serverSideclient != null){
 					CimEventType t = CimEventType.valueOf(request.getXHeader(CimXHeader.EVENT_TYPE.toString()));
 					requestProvider.removeListener(t, serverSideclient);
@@ -411,8 +409,8 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case REGISTER_PROVIDER:
-				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
-				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				clientURI = new URI(request.getXHeader(CimXHeader.CIM_URL.toString()));
+				serverSideclient = getServerSideClient(clientURI,requestProvider.getProviderEndpoint().getPath());
 				if(serverSideclient != null){
 					requestProvider.registerChildProvider(serverSideclient);
 					response = new HttpResponse(requestMethod,HttpStatus.OK);
@@ -421,8 +419,8 @@ class CimHandler implements HttpRequestHandler {
 				}
 				break;
 			case UNREGISTER_PROVIDER:
-				clientURL = new URI(request.getXHeader(CimXHeader.CIM_URL.toString())).toURL();
-				serverSideclient = getServerSideClient(clientURL,requestProvider.getroviderEndpoint().getPath());
+				clientURI = new URI(request.getXHeader(CimXHeader.CIM_URL.toString()));
+				serverSideclient = getServerSideClient(clientURI,requestProvider.getProviderEndpoint().getPath());
 				if(serverSideclient != null){
 					requestProvider.unregisterChildProvider(serverSideclient);
 					response = new HttpResponse(requestMethod,HttpStatus.OK);
@@ -515,21 +513,21 @@ class CimHandler implements HttpRequestHandler {
 
 	/**
 	 * Get a server-side cimClient that can talk back to a client side receiver
-	 * @param clientURL - url for the client
+	 * @param clientURI - url for the client
 	 * @param localPath - our end point for the current provider
 	 * @return cimClient, or Null if the client could not be constructed
 	 */
-	private CimClient getServerSideClient(URL clientURL,String localPath) {
+	private CimClient getServerSideClient(URI clientURI,String localPath) {
 		if(config != null){
 			try {
 				String uri = (config.isSecure() ? "https://" : "http://")+config.getHostName()+":"+config.getServerPort()+localPath;
 				URI ourURI = new URI(uri);
-				return new CimClient(clientURL,ourURI,config.getProxyHost(),config.getProxyPort());
+				return new CimClient(clientURI,ourURI,config.getProxyHost(),config.getProxyPort());
 			} catch (URISyntaxException e) {
 				throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Unable to construct client to respond");
 			}
-		} else if(defaultProvider.getroviderEndpoint() != null){
-			return new CimClient(clientURL,defaultProvider.getroviderEndpoint(),config.getProxyHost(),config.getProxyPort());
+		} else if(defaultProvider.getProviderEndpoint() != null){
+			return new CimClient(clientURI,defaultProvider.getProviderEndpoint(),config.getProxyHost(),config.getProxyPort());
 		}
 		return null;
 	}

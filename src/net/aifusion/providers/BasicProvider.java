@@ -29,6 +29,7 @@
 package net.aifusion.providers;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +43,7 @@ import net.aifusion.metamodel.CimInstance;
 import net.aifusion.metamodel.CimListener;
 import net.aifusion.metamodel.CimParameter;
 import net.aifusion.metamodel.CimStructure;
+import net.aifusion.metamodel.Constants;
 import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
 import net.aifusion.metamodel.CimEnumeration;
@@ -78,13 +80,19 @@ public class BasicProvider implements Provider {
 	 */
 	public BasicProvider(Repository repository) {
 		this.repository = (repository != null) ? repository : new InMemoryCache();
+		try {
+			// use the default address with the default port as a default. Note that we do not include the default path here
+			uri = new URI(Constants.defaultScheme+"://"+Constants.defaulAuthority+"/");
+		} catch (URISyntaxException e) {
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Should not happen");
+		}
 		return;
 	}
 	
 	/**
 	 * Create a basic provider accessible through the network
 	 * @param repository - repository to use. If none given, an in-memory cache is used within the provider
-	 * @param uri - uri for this provider. Currently, only the local path of the URI is used to determine the enpoint within a cim server
+	 * @param uri - uri for this provider. Currently, only the local path of the URI is used to determine the endpoint within a cim server
 	 */
 	public BasicProvider(Repository repository, URI uri) {
 		this(repository);
@@ -92,7 +100,8 @@ public class BasicProvider implements Provider {
 		return;
 	}
 	
-	// TODO: We still need to implement a caching strategy, that allows elements to be cached in the local provider once they have been seen
+	// TODO: We still need to implement a caching strategy, that allows elements to be cached in the local provider once 
+	// they have been seen
 	
 	/*
 	 * *************************
@@ -400,6 +409,16 @@ public class BasicProvider implements Provider {
 	}
 	
 	/*
+	 * (non-Javadoc)
+	 * @see net.aifusion.providers.Provider#getProviderEndPoint()
+	 */
+	@Override
+	public URI getProviderEndpoint() {
+		return uri;
+	}
+	
+	
+	/*
 	 * ***********************
 	 * Repository interface methods
 	 * ***********************
@@ -511,32 +530,6 @@ public class BasicProvider implements Provider {
 		return repository.filter(path,filter);
 	}
 
-	/* *******************************
-	 * Local Housekeeping and methods
-	 * *******************************
-	 */
-
-	/**
-	 * Locate a child provider known to this provider that has an element in it
-	 * @param path - ObjectPath of the element to search
-	 * @return - Provider containing the element corresponding to the objectPath, null if none found
-	 */
-	private Provider locateProvider(ObjectPath path){
-		// first check if a provider with the same namespace is known to us
-		if(children.containsKey(path.getNameSpacePath())) return children.get(path.getNameSpacePath());
-		// if not, locate a child that has the same localPath as the given ObjectPath, and knows about this object path
-		// Currently note that in this case an arbitrary child is picked--
-		// there is no guarantee that others do not know about the path
-		String localPath = path.getLocalPath();
-		for(NameSpacePath np : children.keySet()){
-			if(localPath.equals(np.getLocalPath())){
-				Provider candidate = children.get(np);
-				if(candidate.contains(path)) return candidate;
-			}
-		}
-		return null;
-	}
-	
 	/*
 	 * *************************************
 	 * CimEventGenerator methods
@@ -575,11 +568,7 @@ public class BasicProvider implements Provider {
 		return list.contains(listener);
 	}
 	
-	@Override
-	public URI getroviderEndpoint() {
-		return uri;
-	}
-	
+
 	/*
 	 * *************************************
 	 * Helper methods
@@ -600,4 +589,26 @@ public class BasicProvider implements Provider {
 		}
 		return;
 	}
+	
+	/**
+	 * Locate a child provider known to this provider that has an element in it
+	 * @param path - ObjectPath of the element to search
+	 * @return - Provider containing the element corresponding to the objectPath, null if none found
+	 */
+	private Provider locateProvider(ObjectPath path){
+		// first check if a provider with the same namespace is known to us
+		if(children.containsKey(path.getNameSpacePath())) return children.get(path.getNameSpacePath());
+		// if not, locate a child that has the same localPath as the given ObjectPath, and knows about this object path
+		// Currently note that in this case an arbitrary child is picked--
+		// there is no guarantee that others do not know about the path
+		String localPath = path.getLocalPath();
+		for(NameSpacePath np : children.keySet()){
+			if(localPath.equals(np.getLocalPath())){
+				Provider candidate = children.get(np);
+				if(candidate.contains(path)) return candidate;
+			}
+		}
+		return null;
+	}
+	
 }

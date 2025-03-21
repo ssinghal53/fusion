@@ -27,7 +27,7 @@
  */
 package net.aifusion.metamodel;
 
-import java.net.URL;
+import java.net.URI;
 
 /**
  * Interface defining a CIM Listener. Cim Listeners can be registered with CimEventGenerators, and are notified
@@ -42,8 +42,8 @@ public interface CimListener {
 	public void notify(CimEvent event);
 	
 	/**
-	 * Get the URL for this listener.
-	 * @return - URL where this listener can be reached. Null if the listener is not network listener
+	 * Get the address for this listener.
+	 * @return - URI where this listener can be reached. Null if the listener is not network listener
 	 */
-	public URL getURL();
+	public URI getURI();
 }

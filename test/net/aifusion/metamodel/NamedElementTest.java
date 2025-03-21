@@ -29,7 +29,7 @@ package net.aifusion.metamodel;
 
 import static org.junit.Assert.*;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Vector;
 
@@ -271,7 +271,7 @@ public class NamedElementTest implements CimListener {
 	}
 
 	@Override
-	public URL getURL() {
+	public URI getURI() {
 		return null;
 	}
 

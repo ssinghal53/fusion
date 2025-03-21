@@ -79,6 +79,7 @@ public enum CimHeader {
 	SHUT_DOWN("Bye",HttpMethod.HEAD),
 	/** Filter elements at the server */
 	FILTER("Filter",HttpMethod.GET)
+	/** Get provider end points at the server */
 	;
 	
 	/** Http Extension Header to be used to define the Cim header */ 
