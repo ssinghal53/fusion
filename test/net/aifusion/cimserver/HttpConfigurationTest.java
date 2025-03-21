@@ -271,7 +271,7 @@ public class HttpConfigurationTest {
 	public void testGetProxyHost() {
 		HttpConfiguration conf = new HttpConfiguration();
 		assertNotNull(conf);
-		assertEquals("127.0.0.1",conf.getProxyHost());
+		assertNull(conf.getProxyHost());
 	}
 	
 	/**

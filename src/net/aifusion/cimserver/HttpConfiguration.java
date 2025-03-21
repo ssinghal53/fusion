@@ -118,7 +118,7 @@ public class HttpConfiguration {
 	/** directory to store cookies */
 	private String cookieStore = defaultCookieStore;
 	/** proxy host, if any */
-	private String proxyHost = defaultHost;
+	private String proxyHost = null;
 	/** proxy port, if any. 0 implies no proxy being used */
 	private int proxyPort = 0;
 	/** Default Provider to use in the CIM Handler. Null implies a BasicProvider */
