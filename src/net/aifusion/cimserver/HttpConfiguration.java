@@ -58,8 +58,8 @@ import net.aifusion.utils.Java2Cim;
 public class HttpConfiguration {
 	/** Default configuration Key to use */
 	private static final String defaultID = "defaultConfig";
-	/** Default host name. Use default IP address instead of "localhost" to avoid resolution to IP v6 */
-	private static final String defaultHost = "127.0.0.1";
+	/** Default host name */
+	private static final String defaultHost = Constants.defaultHost;
 	/** Default host port */
 	private static final int defaultPort = Constants.defaultPort;
 	/** Use HTTPS for connections */
@@ -201,6 +201,7 @@ public class HttpConfiguration {
 					break;
 				case "provider":
 					providerName = v.toString();
+					break;
 				case "logfile":
 					logFile = v.toString();
 					break;

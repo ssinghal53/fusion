@@ -234,8 +234,8 @@ public class CimHandlerTest {
 		HttpResponse response = serverHandler.serve(request);
 		assertNotNull(response);
 		validate(response,null);
-		assertEquals("http://127.0.0.1:8085/root/local\r\n"
-				+ "http://127.0.0.1:8085/net/aifusion\r\n",bodyString);
+		assertEquals("http://localhost:8085/root/local\r\n"
+				+ "http://localhost:8085/net/aifusion\r\n",bodyString);
 	}
 
 	@Test
