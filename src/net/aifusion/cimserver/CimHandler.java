@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
@@ -70,9 +71,8 @@ class CimHandler implements HttpRequestHandler {
 	// provider information can be accessed by subclasses-- currently only for testing (see TestHandler}
 	/** Underlying default Cim Provider */
 	protected Provider defaultProvider;
-	/** Providers based on end points */
+	/** Providers based on end points, keyed by uri.path */
 	protected HashMap<String,Provider> providers = new HashMap<String,Provider>();
-
 
 	/** Configuration, if any */
 	private HttpConfiguration config = null;
@@ -91,19 +91,19 @@ class CimHandler implements HttpRequestHandler {
 			// load default provider for this handler
 			String r = config.getRepository();
 			Repository repo = (r == null) ? new InMemoryCache() : new PersistentCache(r);
-			URI uri = new URI("http://localhost/");
+			URI uri = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),"/",null,null);
 			defaultProvider = config.getProvider() != null ? loadProvider(config.getProvider(),uri,repo) : new BasicProvider(repo,uri);
 			// any additional providers if defined
 			if(config.getProviderNames() != null) {
 				for(String p : config.getProviderNames()) {
 					// serverEndpoint|providerClassName[|repositoryName]
-					String [] v = p.split("|");
+					String [] v = p.split("\\|");
 					String endpoint = v[0];
 					String providerClassName = v.length > 1 ? v[1] : BasicProvider.class.getName();
-					URI u = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),endpoint,null,null);
+					URI u =uri.resolve(endpoint);
 					Repository rep = v.length > 2 ? new PersistentCache(v[2]) : new InMemoryCache();
 					Provider prov = loadProvider(providerClassName, u, rep);
-					providers.put(endpoint, prov);
+					providers.put(u.getPath(), prov);
 				}
 			}
 		} catch (URISyntaxException e) {
@@ -125,14 +125,22 @@ class CimHandler implements HttpRequestHandler {
 			Class<?> providerClass = loader.loadClass(provider);
 			if(Provider.class.isAssignableFrom(providerClass)){
 				try {
+					// constructor for BasicProvider
 					Constructor<?> constructor = providerClass.getConstructor(Repository.class, URI.class);
 					return (Provider) constructor.newInstance(repo,uri);
 				} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
-				//	try {
-				//		return (Provider) providerClass.getDeclaredConstructor().newInstance();
-				//	} catch (IllegalArgumentException | InvocationTargetException | SecurityException e1) {
-						throw new ModelException("Unable to locate a provider for "+provider,e);
-				//	}
+					try {
+						// constructor for CIM classes that can be bound to the models
+						Constructor<?> constructor = providerClass.getConstructor(Map.class);
+						HashMap<String,Object> args = new HashMap<String,Object>();
+						args.put("EndPoint", uri.getPath());
+						args.put("providerName", provider);
+						args.put("Repository", repo);
+						args.put("Configuration", config);
+						return (Provider) constructor.newInstance(args);
+					} catch (IllegalArgumentException | InvocationTargetException | SecurityException | NoSuchMethodException e1) {
+						throw new ModelException("Unable to locate a provider for "+provider,e1);
+					}
 				}
 			} else {
 				throw new ModelException(provider+" is not a Provider");
@@ -160,7 +168,7 @@ class CimHandler implements HttpRequestHandler {
 		// validate that the request accepts PLAINTEXT and MOF
 		if(!(request.accepts(MimeType.MOF) && request.accepts(MimeType.PLAINTEXT))){
 			return new HttpResponse(requestMethod,HttpStatus.UNSUPPORTED_MEDIA_TYPE,MimeType.PLAINTEXT,
-					"Only plainText and MOF Media types supported");
+					"PlainText and MOF media types must be supported");
 		}
 		CimHeader cimRequest = CimHeader.lookup(request.getXHeader(CimXHeader.INTRINSIC.toString()));
 		// validate the intrinsic request
