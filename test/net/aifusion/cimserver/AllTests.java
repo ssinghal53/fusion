@@ -43,7 +43,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	CimServerConfigurationTest.class,
 	CimHandlerTest.class,
 	CimServerTest.class,
-//	CimClientAndServerTest.class
+	CimClientAndServerTest.class
 	})
 public class AllTests {
 
