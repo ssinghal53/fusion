@@ -74,7 +74,7 @@ import net.aifusion.utils.Java2Cim;
  * @author Sharad Singhal
  */
 public class CimHandlerTest {
-	private static boolean verbose = false;
+	private static boolean verbose = true;
 	private static String CRLF = "\r\n";
 	private static String mof = "#pragma namespace (\"/root/local\")\n"+
 			"Enumeration test_enum : string { enumvalue};\n"+
@@ -91,14 +91,14 @@ public class CimHandlerTest {
 
 	private static InMemoryCache configCache = new InMemoryCache();
 	private static String testRepository = "resources/test";
-	private static ObjectPath serverConfigPath = new ObjectPath("http://localhost:8085/structurevalue/aifusion:aifusion_httpconfiguration.Id=\"serverConfig\"");
-	private static ObjectPath clientConfigPath = new ObjectPath("http://localhost:8080/structurevalue/aifusion:aifusion_httpconfiguration.Id=\"clientConfig\"");
-	private static String serverConfigMof = "value of aifusion_httpconfiguration {\n"+
+	private static ObjectPath serverConfigPath = new ObjectPath("http://localhost:8085/structurevalue/aifusion:aifusion_cimserverconfiguration.Id=\"serverConfig\"");
+	private static ObjectPath clientConfigPath = new ObjectPath("http://localhost:8080/structurevalue/aifusion:aifusion_cimserverconfiguration.Id=\"clientConfig\"");
+	private static String serverConfigMof = "value of aifusion_cimserverconfiguration {\n"+
 			"Id = \"serverConfig\";\n"+
 			"ServerPort = 8085;"+
 			"Repository = \""+testRepository+"/server\";\n"+
 			"};\n"+
-			"value of aifusion_httpconfiguration {\n"+
+			"value of aifusion_cimserverconfiguration {\n"+
 			"Id = \"clientConfig\";\n"+
 			"ServerPort = 8080;"+
 			"Repository = \""+testRepository+"/client\";\n"+
@@ -126,7 +126,7 @@ public class CimHandlerTest {
 		System.out.print("CimHandler ");
 		deleteFiles(testRepository);
 		// Create server configuration for the handler
-		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, configCache);
+		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(CimServerConfiguration.class, configCache);
 		assertNotNull(configClass);
 		assertTrue(configCache.contains(configClass.getObjectPath()));
 		if(verbose) System.out.println(configClass.getObjectPath().toURL()+"\n"+configClass.toMOF());
@@ -141,7 +141,7 @@ public class CimHandlerTest {
 			System.out.println(configCache.get(clientConfigPath).toMOF());
 		}
 		
-		HttpConfiguration clientConfig = new HttpConfiguration((StructureValue) configCache.get(clientConfigPath));
+		CimServerConfiguration clientConfig = new CimServerConfiguration((StructureValue) configCache.get(clientConfigPath));
 		clientServer = new CimServer(clientConfig);
 		clientServer.startServer();
 		return;
@@ -183,7 +183,7 @@ public class CimHandlerTest {
 		// create server-side configuration
 		StructureValue sv = (StructureValue) configCache.get(serverConfigPath);
 		assertNotNull(sv);
-		HttpConfiguration config = new HttpConfiguration(sv);
+		CimServerConfiguration config = new CimServerConfiguration(sv);
 		assertNotNull(config);
 		
 		// clean out the server-side cache, and reinsert all definitions

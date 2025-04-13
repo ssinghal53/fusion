@@ -30,6 +30,7 @@ package net.aifusion.cimserver;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import net.aifusion.metamodel.ExceptionReason;
 import net.aifusion.metamodel.ModelException;
 
 /**
@@ -56,7 +57,9 @@ interface HttpRequestHandler {
 		if(handlerName == null) return new DefaultHandler(config);
 		switch(handlerName){
 		case "CimHandler":
-			return new CimHandler(config);
+			if(!(config instanceof CimServerConfiguration))
+				throw new ModelException(ExceptionReason.INVALID_PARAMETER, "Expected instance of CimServerConfiguration, found "+config.getClass());
+			return new CimHandler((CimServerConfiguration) config);
 		case "HttpHandler":
 			return new HttpHandler(config);
 		case "DefaultHandler":

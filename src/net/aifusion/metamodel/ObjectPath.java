@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2018, Sharad Singhal, All Rights Reserved
+ * Copyright 2013, 2018, 2025 Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Dec 29, 2013 by Sharad Singhal
- * Last Modified Jan 2, 2018
+ * Last Modified April 2, 2025
  */
 package net.aifusion.metamodel;
 
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 
 /**
  * Class to represent a CIM ObjectPath. An object path represents the globally unique name of a named element, and can be used to access that
- * element.
+ * element if it is network-accessible.
  * @author Sharad Singhal
  */
 public class ObjectPath {
@@ -48,24 +48,24 @@ public class ObjectPath {
 	private ElementType type;
 	/** Name of the object (required) */
 	private String objectName;
-    /** Alias if any */
-    private String alias = null;
-    /** Key dataValue pairs in this object name (for instances) */
-    private TreeMap<String, DataValue> keyValues = null;
-    /** NameSpace Path for this object */
-    private NameSpacePath nameSpacePath = null;
-    /** Pattern to parse the ObjectName (in DSP0004 format) */
-    private static Pattern pattern = Pattern.compile("^(([a-zA-Z0-9+-]+):)?(//([^/]+))?((/[^:]*):)?(([a-zA-Z0-9]+_)?\\w+)(\\.(.+))?$");
-	
-    
-    /**
-     * Create an object path based on its type, name, name space path, and key-value pairs
-     * @param type - type of named object (must be non-null)
-     * @param objectName - name of the object (must be non-null)
-     * @param path - Name space path for this object (must be non-null)
-     * @param keys - keys associated with this object (must be non-null for instances; must be null or empty for all other element types)
-     * @param alias - alias, if any defined on this object.
-     */
+	/** Alias if any */
+	private String alias = null;
+	/** Key dataValue pairs in this object name (for instances) */
+	private TreeMap<String, DataValue> keyValues = null;
+	/** NameSpace Path for this object */
+	private NameSpacePath nameSpacePath = null;
+	/** Pattern to parse the ObjectName (in DSP0004 format) */
+	private static Pattern pattern = Pattern.compile("^(([a-zA-Z0-9+-]+):)?(//([^/]+))?((/[^:]*):)?(([a-zA-Z0-9]+_)?\\w+)(\\.(.+))?$");
+
+
+	/**
+	 * Create an object path based on its type, name, name space path, and key-value pairs
+	 * @param type - type of named object (must be non-null)
+	 * @param objectName - name of the object (must be non-null)
+	 * @param path - Name space path for this object (must be non-null)
+	 * @param keys - keys associated with this object (must be non-null for instances; must be null or empty for all other element types)
+	 * @param alias - alias, if any defined on this object.
+	 */
 	public ObjectPath(ElementType type, String objectName, NameSpacePath path, Map<String,DataValue> keys, String alias) {
 		if(type == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected non-null ElementType, found null");
 		if(path == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected non-null NameSpacePath, found null");
@@ -79,20 +79,20 @@ public class ObjectPath {
 		if(keys != null && !keys.isEmpty()){
 			if(type != ElementType.INSTANCE && type != ElementType.STRUCTUREVALUE) 
 				throw new ModelException(ExceptionReason.INVALID_PARAMETER,objectName+
-					"Only instances or structure values can have keys defined - found type "+type);
+						"Only instances or structure values can have keys defined - found type "+type);
 			keyValues = new TreeMap<String,DataValue>();
 			for(String key : keys.keySet()){
 				DataValue keyValue = keys.get(key);
 				DataType keyType = keyValue.getType();
 				if(keyType.isArray() || !(keyType.isPrimitive() || keyType.isReference())) 
 					throw new ModelException(ExceptionReason.INVALID_PARAMETER,objectName+
-						" objectPath can only have non-array primitive or reference key values, found "+keyValue);
+							" objectPath can only have non-array primitive or reference key values, found "+keyValue);
 				keyValues.put(key.toLowerCase(), keyValue);
 			}
 		}
 		return;
 	}
-	
+
 	/**
 	 * Create an object path based on a class name and an instance alias, where alias is of the form "$" [a-zA-Z0-9_]+<br>
 	 * @param elementType Type of this element (instance or structurevalue)
@@ -112,139 +112,149 @@ public class ObjectPath {
 		}
 		return;
 	}
-    
+
 	/**
-     * Create an object path from a path specification as defined in DSP0004 and extended for CimV3. The following forms are recognized<br>
-     * className: schemaName "_" identifier<br>
-     * instanceName : className "." key "=" dataValue [, key "=" dataValue]*<br>
-     * localClassPath : ["/elementType"] "/" pathName ["/" pathName]* ":" className<br>
-     * localInstancePath : ["/instanceType"] "/" pathName ["/" pathName]* ":" instanceName<br>
-     * classPath : scheme "://" authority localClassPath<br>
-     * instancePath : scheme "://" authority localInstancePath<br>
-     * where<br>
-     * schemaName : [A-Za-z0-9]+<br>
-     * identifier : [A-Za-z0-9_]+<br>
-     * scheme : [A-Za-z0-9+-.]+<br>
-     * authority : ascii char set not including "/"<br>
-     * The term "/elementType" above can take the forms "/" ["class" | "structure" | "enumeration" | "qualifiertype" | "interface"]<br>
-     * The term "/instanceType" above can take the forms "/" ["instance" | "structurevalue"] 
-     * @param objectName - string dataValue containing object name
-     */
+	 * Create an object path from a path specification as defined in DSP0004 and extended for CimV3. The following forms are recognized<br>
+	 * className: schemaName "_" identifier<br>
+	 * instanceName : className "." key "=" dataValue [, key "=" dataValue]*<br>
+	 * localClassPath : ["/elementType"] "/" pathName ["/" pathName]* ":" className<br>
+	 * localInstancePath : ["/instanceType"] "/" pathName ["/" pathName]* ":" instanceName<br>
+	 * classPath : scheme "://" authority localClassPath<br>
+	 * instancePath : scheme "://" authority localInstancePath<br>
+	 * where<br>
+	 * schemaName : [A-Za-z0-9]+<br>
+	 * identifier : [A-Za-z0-9_]+<br>
+	 * scheme : [A-Za-z0-9+-.]+<br>
+	 * authority : ascii char set not including "/"<br>
+	 * The term "/elementType" above can take the forms "/" ["class" | "structure" | "enumeration" | "qualifiertype" | "interface"]<br>
+	 * The term "/instanceType" above can take the forms "/" ["instance" | "structurevalue"]<br>
+	 * A "+" can be used as pathName to serve as a delimiter between the resource name and the object namespace name, e.g., /cimv2/+/pathname
+	 * will use scheme://authority/cimv2/ as the resource access point, and will use /pathname as the namespace part of the object reference 
+	 * @param objectName - string dataValue containing object name
+	 */
 	public ObjectPath(String objectName){
 		// null dataValue is illegal
 		if(objectName == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"ObjectPath: ObjectName must be non-null");
 		// check for a valid name dataValue
-        Matcher m = pattern.matcher(objectName);
-        if (!m.matches() || m.groupCount() != 10) {
-            throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: Malformed reference " + objectName);
-        }
-        // for(int i=0; i<=9;i++) System.out.println("["+i+"] "+m.group(i));
-        // this will throw exception if localPath is null
-        String path = m.group(6);
-        if(path != null) {
-        	String [] pathElements = m.group(6).split("/");
-        	switch(pathElements[1]) {
-        	case "class":
-        	case "instance":
-        	case "structure":
-        	case "enumeration":
-        	case "qualifiertype":
-        	case "interface":
-        	case "structurevalue":
-        		type = ElementType.valueOf(pathElements[1].toUpperCase());
-        		path = path.substring(pathElements[1].length()+1);
-        		break;
-        	default:
-        		break;
-        	}
-        	// for(String s : pathElements) System.out.print("["+s+"]");
-        	// System.out.println(type+" "+path);
-        }
-        this.nameSpacePath = new NameSpacePath(m.group(2) /* scheme */,m.group(4) /*authority*/,path/*m.group(6) localPath*/);
-        String className = m.group(7); // className - must not be null
-        if (className == null) {
-            throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: className not found in " + objectName);
-        } else {
-        	this.objectName = className;
-        }
-        // objectName must contain _ unless it is a qualifierType
-        if(!ElementType.QUALIFIERTYPE.equals(type) && !objectName.contains("_")) {
-        	throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: ObjectName must be of form schema_name, found " + objectName);
-        }
-        
-        String value = m.group(10); // keyValue pairs
-        // System.out.println(dataValue);
-        // note that care is needed to parse, since separators can occur in quoted strings
-        if (value != null) {
-            StringBuilder b = new StringBuilder();
-            int i = 0;
-            char c;
-            while (i < value.length()) {
-            	// get the key name
-                b.setLength(0);
-                while (i < value.length()) {
-                    c = value.charAt(i++);
-                    if (c == '=')
-                        break;
-                    b.append(c);
-                }
-                String key = b.toString().toLowerCase();
-                DataValue val = null;
-                // System.out.println("Key: "+key);
-                // get the key dataValue
-                b.setLength(0);
-                while (i < value.length()) {
-                    c = value.charAt(i++);
-                    if (c == '"') {
-                        // read a string dataValue (includes dates).
-                    	// TODO: need to interpret escape characters in strings
-                        while (i < value.length()) {
-                            c = value.charAt(i++);
-                            if (c == '"')
-                                break;
-                            if (c == '\\')
-                                c = value.charAt(i++);
-                            b.append(c);
-                        }
-                        val = new DataValue(b.toString());
-                        break;
-                    } else if (value.regionMatches(true, i - 1, "true", 0, 4)) {
-                        // boolean true
-                        val = new DataValue(true);
-                        i += 3;
-                        break;
-                    } else if (value.regionMatches(true, i - 1, "false", 0, 5)) {
-                        // boolean false
-                        val = new DataValue(false);
-                        i += 4;
-                        break;
-                    } else if (c == '+' || c == '-' || (c >= '0' && c <= '9')) {
-                        // numerical dataValue
-                        val = getNumericalValue(i - 1, value, b);
-                        i += b.length() - 1;
-                        break;
-                    } else {
-                        throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: Malformed reference " + objectName);
-                    }
-                }
-                if (key != null && value != null)
-               //  System.out.println("***Found key,dataValue pair ["+val.getType()+"] "+key+"="+val);
-                addKey(key, val);
-                if (i < value.length()) {
-                    if(value.charAt(i) != ',') throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: Malformed reference " + objectName);
-                    i++;
-                }
-            }
-        }
-        if(type == null) type = keyValues == null ? ElementType.CLASS : ElementType.INSTANCE;
-        return;
+		Matcher m = pattern.matcher(objectName);
+		if (!m.matches() || m.groupCount() != 10) {
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: Malformed reference " + objectName);
+		}
+		// for(int i=0; i<=9;i++) System.out.println("["+i+"] "+m.group(i));
+		// this will throw exception if localPath is null
+		// TODO: This is inefficient-- need a cleaner way of parsing this
+		String path = m.group(6);
+		if(path != null) {
+			String [] pathElements = m.group(6).split("/");
+			StringBuilder b = new StringBuilder();
+			for(String s : pathElements) {
+				if(s.isEmpty()) continue;
+				// System.out.print("["+s+"]");
+				switch(s.toLowerCase()) {
+				case "class":
+				case "instance":
+				case "structure":
+				case "enumeration":
+				case "qualifiertype":
+				case "interface":
+				case "structurevalue":
+					type = ElementType.valueOf(s.toUpperCase());
+					break;
+				default:
+					b.append("/").append(s);
+					break;	// see line 241. If no type is defined, it will either be a class or an instance depending on key/values
+				}
+			}
+			path = b.toString();
+		}
+		this.nameSpacePath = new NameSpacePath(m.group(2) /* scheme */,m.group(4) /*authority*/,path/*m.group(6) localPath*/);
+		String className = m.group(7); // className - must not be null
+		if (className == null) {
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: className not found in " + objectName);
+		} else {
+			this.objectName = className;
+		}
+		// objectName must contain _ unless it is a qualifierType
+		if(!ElementType.QUALIFIERTYPE.equals(type) && !objectName.contains("_")) {
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: ObjectName must be of form schema_name, found " + objectName);
+		}
+
+		String value = m.group(10); // keyValue pairs
+		// System.out.println(dataValue);
+		// Care is needed to parse keyValues, since separators can occur in quoted strings
+		if (value != null) {
+			StringBuilder b = new StringBuilder();
+			int i = 0;
+			char c;
+			while (i < value.length()) {
+				// get the key name
+				b.setLength(0);
+				while (i < value.length()) {
+					c = value.charAt(i++);
+					if (c == '=')
+						break;
+					b.append(c);
+				}
+				String key = b.toString().toLowerCase();
+				DataValue val = null;
+				// System.out.println("Key: "+key);
+				// get the key dataValue
+				b.setLength(0);
+				while (i < value.length()) {
+					c = value.charAt(i++);
+					if (c == '"') {
+						// read a string dataValue (includes dates).
+						// TODO: need to interpret escape characters in strings
+						while (i < value.length()) {
+							c = value.charAt(i++);
+							if (c == '"')
+								break;
+							if (c == '\\')
+								c = value.charAt(i++);
+							b.append(c);
+						}
+						val = new DataValue(b.toString());
+						break;
+					} else if (value.regionMatches(true, i - 1, "true", 0, 4)) {
+						// boolean true
+						val = new DataValue(true);
+						i += 3;
+						break;
+					} else if (value.regionMatches(true, i - 1, "false", 0, 5)) {
+						// boolean false
+						val = new DataValue(false);
+						i += 4;
+						break;
+					} else if (c == '+' || c == '-' || (c >= '0' && c <= '9')) {
+						// numerical dataValue
+						val = getNumericalValue(i - 1, value, b);
+						i += b.length() - 1;
+						break;
+					} else {
+						throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: Malformed reference " + objectName);
+					}
+				}
+				if (key != null && value != null)	// keys cannot have null values for object names
+					//  System.out.println("***Found key,dataValue pair ["+val.getType()+"] "+key+"="+val);
+					addKey(key, val);
+				if (i < value.length()) {
+					if(value.charAt(i) != ',') throw new ModelException(ExceptionReason.INVALID_PARAMETER, "ObjectPath: Malformed reference " + objectName);
+					i++;
+				}
+			}
+		}
+		if(type == null) type = (keyValues == null) ? ElementType.CLASS : ElementType.INSTANCE;
+		return;
 	}
-	
+
 	/**
 	 * Construct an object path from a URI
 	 * @param uri - Properly constructed URI. In the URI, the localPath is expected to be of the form:<br>
 	 * uri = '/' elementType '/' localPathElement [ ('/' localPathElement)* ] '/' ElementName [InstanceLocator]
 	 * instanceLocator = '?' keyName ',' dataType '=' value (['&amp;' keyName ',' dataType '=' value)*
+	 * A "+" can be used as a localPathElement to serve as a delimiter between the resource name and the object namespace name,
+	 * e.g., /cimv2/+/pathname will use scheme://authority/cimv2/ as the resource access point, and will use /pathname as the 
+	 * namespace part of the object reference 
 	 */
 	public ObjectPath(URI uri){
 		if(uri == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Null URI passed to ObjectPath");
@@ -264,8 +274,9 @@ public class ObjectPath {
 		nameSpacePath = new NameSpacePath(uri.getScheme(),uri.getAuthority(),b.toString());
 		// if elementType is instance or structureValue, we must have a query defining the instance keys
 		if(type == ElementType.INSTANCE || type == ElementType.STRUCTUREVALUE){
-			keyValues = new TreeMap<String,DataValue>();
 			String query = uri.getQuery();
+			if(query == null) throw new ModelException(ExceptionReason.INVALID_PARAMETER,uri+" does not define keys for structurevalue or instance");
+			keyValues = new TreeMap<String,DataValue>();
 			String [] queryElements = query.split("&");
 			for(String queryElement : queryElements){
 				if(queryElement.isEmpty()) continue;
@@ -275,108 +286,108 @@ public class ObjectPath {
 		}
 		return;
 	}
-	
+
 	/**
-     * Scan a numerical dataValue from a string
-     * @param linePosition position in the string to start scanning from
-     * @param currentLine - input string
-     * @param b - string builder to construct dataValue
-     * @return - DataValue containing numerical dataValue
-     */
-    private DataValue getNumericalValue(int linePosition, String currentLine, StringBuilder b) {
-        boolean isHex = false, seenDecimal = false, signEnabled = true;
-        boolean needDigit = true, isBool = true, isInt = true;
+	 * Scan a numerical dataValue from a string
+	 * @param linePosition position in the string to start scanning from
+	 * @param currentLine - input string
+	 * @param b - string builder to construct dataValue
+	 * @return - DataValue containing numerical dataValue
+	 */
+	private DataValue getNumericalValue(int linePosition, String currentLine, StringBuilder b) {
+		boolean isHex = false, seenDecimal = false, signEnabled = true;
+		boolean needDigit = true, isBool = true, isInt = true;
 
-        int lineLength = currentLine.length();
-        int initPosition = linePosition;
-        // initial + or -
-        while (linePosition < lineLength) {
-            char c = currentLine.charAt(linePosition);
-            if (Character.isDigit(c)) {
-                b.append(c);
-                signEnabled = needDigit = false;
-                if (isBool && (c != '0' && c != '1')) {
-                    isBool = false;
-                }
+		int lineLength = currentLine.length();
+		int initPosition = linePosition;
+		// initial + or -
+		while (linePosition < lineLength) {
+			char c = currentLine.charAt(linePosition);
+			if (Character.isDigit(c)) {
+				b.append(c);
+				signEnabled = needDigit = false;
+				if (isBool && (c != '0' && c != '1')) {
+					isBool = false;
+				}
 
-            } else if (isHex && (c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f')) {
-                b.append(c);
-                needDigit = signEnabled = isBool = false;
+			} else if (isHex && (c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f')) {
+				b.append(c);
+				needDigit = signEnabled = isBool = false;
 
-            } else if ((c == 'x' || c == 'X')) {
-                if ((b.length() == 1 && b.charAt(0) == '0')
-                    || (b.length() == 2 && b.charAt(1) == '0' && (b.charAt(0) == '+' || b
-                        .charAt(0) == '-'))) {
-                    // we ignore the 'x' in the output
-                    // b.append(c);
-                    needDigit = isHex = true;
-                    signEnabled = isBool = false;
-                } else {
-                    break;
-                }
+			} else if ((c == 'x' || c == 'X')) {
+				if ((b.length() == 1 && b.charAt(0) == '0')
+						|| (b.length() == 2 && b.charAt(1) == '0' && (b.charAt(0) == '+' || b
+						.charAt(0) == '-'))) {
+					// we ignore the 'x' in the output
+					// b.append(c);
+					needDigit = isHex = true;
+					signEnabled = isBool = false;
+				} else {
+					break;
+				}
 
-            } else if (c == '.') {
-                // check for decimal rules
-                if (isHex || seenDecimal)
-                    break;
-                b.append(c);
-                signEnabled = isBool = isHex = false;
-                needDigit = seenDecimal = true;
+			} else if (c == '.') {
+				// check for decimal rules
+				if (isHex || seenDecimal)
+					break;
+				b.append(c);
+				signEnabled = isBool = isHex = false;
+				needDigit = seenDecimal = true;
 
-            } else if (signEnabled && (c == '+' || c == '-')) {
-                // sign can only be at the beginning or after (e | E)
-                // we ignore the '+' sign for the output
-                if (c == '-')
-                    b.append(c);
-                signEnabled = false;
+			} else if (signEnabled && (c == '+' || c == '-')) {
+				// sign can only be at the beginning or after (e | E)
+				// we ignore the '+' sign for the output
+				if (c == '-')
+					b.append(c);
+				signEnabled = false;
 
-            } else if (!needDigit && seenDecimal && (c == 'E' || c == 'e')) {
-                b.append(c);
-                signEnabled = needDigit = true;
+			} else if (!needDigit && seenDecimal && (c == 'E' || c == 'e')) {
+				b.append(c);
+				signEnabled = needDigit = true;
 
-            } else if (isBool && (c == 'B' || c == 'b')) {
-                // boolean termination reached. change isInt = false
-                // b.append(c);
-            	isInt = false;
-                linePosition++;
-                break;
+			} else if (isBool && (c == 'B' || c == 'b')) {
+				// boolean termination reached. change isInt = false
+				// b.append(c);
+				isInt = false;
+				linePosition++;
+				break;
 
-            } else {
-                // reached a non-number character
-                break;
-            }
-            linePosition++;
-        }
-        linePosition -= initPosition;
-        if(isInt && isBool) isBool = false;
-        DataValue value = null;
-        if (isHex) {
-            value = new DataValue(Integer.parseInt(b.toString(), 16));
-        } else if (isBool) {
-            value = new DataValue(Integer.parseInt(b.toString(), 2));
-        } else if (seenDecimal) {
-            value = new DataValue(Double.parseDouble(b.toString()));
-        } else {
-        	// TODO: Check if integer dataValue is needed, or if a long dataValue is needed
-        	// dataValue = new DataValue(Long.parseLong(b.toString()));
-           value = new DataValue(Integer.parseInt(b.toString()));
-        }
-        b.setLength(linePosition);
-        // System.out.println("Number Token ["+b.toString()+"] length "+linePosition+":"+b.length());
-        return value;
-    }
-    
-    /**
-     * Add a {Key,Value} pair from some key property to this object path
-     * @param key - (String) name of property
-     * @param dataValue - (DataValue) dataValue of the property
-     */
-    private void addKey(String key, DataValue value) {
-        if (keyValues == null)
-            keyValues = new TreeMap<String, DataValue>();
-        keyValues.put(key.toLowerCase(), value);
-        return;
-    }
+			} else {
+				// reached a non-number character
+				break;
+			}
+			linePosition++;
+		}
+		linePosition -= initPosition;
+		if(isInt && isBool) isBool = false;
+		DataValue value = null;
+		if (isHex) {
+			value = new DataValue(Integer.parseInt(b.toString(), 16));
+		} else if (isBool) {
+			value = new DataValue(Integer.parseInt(b.toString(), 2));
+		} else if (seenDecimal) {
+			value = new DataValue(Double.parseDouble(b.toString()));
+		} else {
+			// TODO: Check if integer dataValue is needed, or if a long dataValue is needed
+			// dataValue = new DataValue(Long.parseLong(b.toString()));
+			value = new DataValue(Integer.parseInt(b.toString()));
+		}
+		b.setLength(linePosition);
+		// System.out.println("Number Token ["+b.toString()+"] length "+linePosition+":"+b.length());
+		return value;
+	}
+
+	/**
+	 * Add a {Key,Value} pair from some key property to this object path
+	 * @param key - (String) name of property
+	 * @param dataValue - (DataValue) dataValue of the property
+	 */
+	private void addKey(String key, DataValue value) {
+		if (keyValues == null)
+			keyValues = new TreeMap<String, DataValue>();
+		keyValues.put(key.toLowerCase(), value);
+		return;
+	}
 
 	/**
 	 * Get the element type represented in this object path
@@ -385,7 +396,7 @@ public class ObjectPath {
 	public ElementType getElementType(){
 		return type;
 	}
-	
+
 	/**
 	 * Get the name of the element in this path
 	 * @return - name of the element in the path
@@ -393,7 +404,7 @@ public class ObjectPath {
 	public String getName(){
 		return objectName;
 	}
-	
+
 	/**
 	 * Get the normalized case name of the element in this path
 	 * @return - lower case name of the element in the path
@@ -401,7 +412,7 @@ public class ObjectPath {
 	public String getLowerCaseName(){
 		return objectName.toLowerCase();
 	}
-	
+
 	/**
 	 * Get the name space path associated with this object path
 	 * @return - name space path associated with this object path. Null is returned if 
@@ -410,7 +421,7 @@ public class ObjectPath {
 	public NameSpacePath getNameSpacePath(){
 		return nameSpacePath;
 	}
-	
+
 	/**
 	 * Get the localPath corresponding to this objectPath
 	 * @return - local path for this objectPath. Default is returned if none specified
@@ -419,7 +430,16 @@ public class ObjectPath {
 		NameSpacePath ns = getNameSpacePath();
 		return ns != null ? nameSpacePath.getLocalPath() : Constants.defaultLocalPath;
 	}
-	
+
+	/**
+	 * Get the resource path corresponding to this object path
+	 * @return - resource path for this object path. Default is returned if none specified
+	 */
+	public String getResourcePath() {
+		NameSpacePath ns = getNameSpacePath();
+		return ns != null ? nameSpacePath.getResourcePath() : Constants.defaultResourcePath;
+	}
+
 	/**
 	 * Get the alias value associated with this object path
 	 * @return - alias value. Null if no alias is set in this object path
@@ -427,7 +447,7 @@ public class ObjectPath {
 	public String getAlias(){
 		return alias;
 	}
-	
+
 	/**
 	 * Get the value associated with a given key in this object path
 	 * @param keyName - case insensitive name of the key property
@@ -436,19 +456,113 @@ public class ObjectPath {
 	public DataValue getKeyValue(String keyName) {
 		return keyValues != null && keyName !=null ? keyValues.get(keyName.toLowerCase()) : null;
 	}
-	
+	/**
+	 * get a UUID value based on this objectPath. Note that the UUID depends on the element type, local path, object name and keys,
+	 * but does NOT depend on the hostname, authority, and resource path in the namespace
+	 * @return - Type 3 (Name-based) UUID based on this objectPath
+	 */
+	public UUID getUUID() {
+		StringBuilder b = new StringBuilder(getElementType().toString());
+		b.append(":");
+		b.append(getLocalPath().toLowerCase());
+		b.append(":");
+		b.append(objectName.toLowerCase());
+		if (keyValues != null && !keyValues.isEmpty()) {
+			b.append(".");
+			for (String key : keyValues.keySet()) {
+				b.append(key);
+				b.append("=");
+				DataValue v = keyValues.get(key);
+				b.append(v != null ? v.toMOF() : "\"null\"");
+				b.append(",");
+			}
+			b.setLength(b.length() - 1);
+		} else if((type == ElementType.INSTANCE || type == ElementType.STRUCTUREVALUE) && alias != null){
+			b.append(".");
+			b.append(alias);
+		}
+		return UUID.nameUUIDFromBytes(b.toString().getBytes());
+	}
+
+	/**
+	 * Create a URL based on this object path. The scheme/authority/resourcePath are extracted from this path, or replaced by defaults if null
+	 * @return - URL based on this object path
+	 */
+	public URL toURL(){
+		NameSpacePath ns = nameSpacePath != null ? nameSpacePath : Constants.defaultNameSpacePath;
+		return getURL(ns.getScheme(),ns.getAuthority(), ns.getResourcePath());
+	}
+
+	/**
+	 * Create a URL for this objectPath targeted at a given host
+	 * @param scheme - scheme used for this URL. Replaced by a default if null
+	 * @param authority - authority used for this URL. Replaced by a default if null
+	 * @param resourcePath - resource path used for this URL. Replaced by empty string if null
+	 * @return - URL constructed based on this ObjectPath
+	 * @see Constants#defaultScheme
+	 * @see Constants#defaulAuthority
+	 */
+	public URL getURL(String scheme, String authority, String resourcePath) {
+		if(scheme == null) scheme = Constants.defaultScheme;
+		if(authority == null) authority = Constants.defaulAuthority;
+		// construct the path
+		StringBuilder path = new StringBuilder();
+		if(resourcePath != null) {
+			path.append(resourcePath);
+			if(!resourcePath.endsWith("/")) path.append("/");
+		} else {
+			path.append("/");
+		}
+
+		// query represents {key,value} pairs needed to locate instances
+		// note that the language allows only non-array primitive types and object references as keys
+		String query = null;
+		if(getElementType() == ElementType.INSTANCE || getElementType() == ElementType.STRUCTUREVALUE){
+			StringBuilder b = new StringBuilder();
+			// query is keyName ',' datatype '=' value ['&' keyName ',' datatype '=' value]*
+			// for aliased instances/structureValues with no keys defined, query is alias
+			if(keyValues != null && !keyValues.isEmpty()){
+				for (String key : keyValues.keySet()) {
+					b.append(key);
+					DataValue v = keyValues.get(key);
+					b.append(",");
+					b.append(v.getType().toString().toLowerCase());
+					b.append("=");
+					b.append(v != null ? v.toMOF() : "\"null\"");
+					b.append("&");
+				}
+				b.setLength(b.length() - 1);
+				query = b.toString();
+			} else if(alias != null){
+				query = alias;
+			} else {
+				throw new ModelException("ObjectPath defined with no keys or alias for "+objectName+"["+type+"]");
+			}
+		}
+		try {
+			// construct the URI, and return it
+			return new URI(scheme,authority,path.toString(),query,null).toURL();
+		} catch(URISyntaxException | MalformedURLException e){
+			throw new ModelException("ObjectName error in constructing URL " + scheme +"://"+authority + path+"?" + query);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see net.aifusion.metamodel.NameSpacePath#toString()
 	 */
 	@Override
 	public String toString() {
+		// note that the toString() method returns the ObjectPath in a DSP0004 format
 		// if an alias is given with no keyValues this is an alias
 		if (alias != null && keyValues == null) {
 			return alias;
 		}
+		// TODO: This needs to be fixed to return a format that can be used in the ObjectPath(ObjectName) constructor
 		try {
-			URI objectPath = new URI(nameSpacePath.getScheme(),nameSpacePath.getAuthority(),"/"+type.toString().toLowerCase()+nameSpacePath.getLocalPath(),null,null);
+			URI objectPath = new URI(nameSpacePath.getScheme(),nameSpacePath.getAuthority(),"/"+type.toString().toLowerCase()+
+					(Constants.defaultResourcePath.equals(nameSpacePath.getResourcePath()) ? "" : nameSpacePath.getResourcePath()+"+")+
+					nameSpacePath.getLocalPath(),null,null);
 			StringBuilder b = new StringBuilder(objectPath.toString());
 			if (b.length() > 0 && b.charAt(b.length() - 1) != ':')
 				b.append(":");
@@ -487,88 +601,5 @@ public class ObjectPath {
 		ObjectPath other = (ObjectPath) obj;
 		if(type != other.type) return false;
 		return getUUID().equals(other.getUUID());
-	}
-
-	/**
-	 * get a UUID value based on this objectPath. Note that the UUID depends on the element type, local path, and object name and keys,
-	 * but does NOT depend on the hostname and authority in the namespace
-	 * @return - Type 3 (Name-based) UUID based on this objectPath
-	 */
-	public UUID getUUID() {
-		StringBuilder b = new StringBuilder(getElementType().toString());
-		b.append(":");
-		b.append(getLocalPath().toLowerCase());
-		b.append(":");
-		b.append(objectName.toLowerCase());
-		if (keyValues != null && !keyValues.isEmpty()) {
-			b.append(".");
-			for (String key : keyValues.keySet()) {
-				b.append(key);
-				b.append("=");
-				DataValue v = keyValues.get(key);
-				b.append(v != null ? v.toMOF() : "\"null\"");
-				b.append(",");
-			}
-			b.setLength(b.length() - 1);
-		} else if((type == ElementType.INSTANCE || type == ElementType.STRUCTUREVALUE) && alias != null){
-			b.append(".");
-			b.append(alias);
-		}
-		return UUID.nameUUIDFromBytes(b.toString().getBytes());
-	}
-	
-	/**
-	 * Create a URL based on this object path. The scheme/authority are extracted from this path, or replaced by defaults if null
-	 * @return - URL based on this object path
-	 */
-	public URL toURL(){
-		NameSpacePath ns = nameSpacePath != null ? nameSpacePath : Constants.defaultNameSpacePath;
-		return getURL(ns.getScheme(),ns.getAuthority());
-	}
-	
-	/**
-	 * Create a URL for this objectPath targeted at a given host
-	 * @param scheme - scheme used for this URL. Replaced by a default if null
-	 * @param authority - authority used for this URL. Replaced by a default if null
-	 * @return - URL constructed based on this ObjectPath
-	 * @see Constants#defaultScheme
-	 * @see Constants#defaulAuthority
-	 */
-	public URL getURL(String scheme, String authority) {
-		if(scheme == null) scheme = Constants.defaultScheme;
-		if(authority == null) authority = Constants.defaulAuthority;
-		// elementType localPath and className are embedded in the URL path as /elementType/localPath/className
-		String localPath = "/" + getElementType().toString().toLowerCase() + getLocalPath() + "/" + objectName;
-		// query represents {key,value} pairs needed to locate instances
-		// note that the language allows only non-array primitive types and object references as keys
-		String query = null;
-		if(getElementType() == ElementType.INSTANCE || getElementType() == ElementType.STRUCTUREVALUE){
-			StringBuilder b = new StringBuilder();
-			// query is keyName ',' datatype '=' value ['&' keyName ',' datatype '=' value]*
-			// for aliased instances/structureValues with no keys defined, query is alias
-			if(keyValues != null && !keyValues.isEmpty()){
-				for (String key : keyValues.keySet()) {
-					b.append(key);
-					DataValue v = keyValues.get(key);
-					b.append(",");
-					b.append(v.getType().toString().toLowerCase());
-					b.append("=");
-					b.append(v != null ? v.toMOF() : "\"null\"");
-					b.append("&");
-				}
-				b.setLength(b.length() - 1);
-				query = b.toString();
-			} else if(alias != null){
-				query = alias;
-			} else {
-				throw new ModelException("ObjectPath defined with no keys or alias for "+objectName+"["+type+"]");
-			}
-		}
-		try {
-			// construct the URI, and return it
-			return new URI(scheme,authority,localPath,query,null).toURL();
-		} catch(URISyntaxException | MalformedURLException e){
-			throw new ModelException("ObjectName error in constructing URL " + scheme +"://"+authority + localPath+"?" + query);
-		}
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Sharad Singhal, All Rights Reserved
+ * Copyright 2025 Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- * Created Aug 19, 2017 by sharad
+ * Created Apr 11, 2025 by Sharad Singhal
  */
 package net.aifusion.cimserver;
 
@@ -55,7 +55,7 @@ import net.aifusion.utils.Java2Cim;
  * @author Sharad Singhal
  *
  */
-public class HttpConfigurationTest {
+public class CimServerConfigurationTest {
 	private static String testRepository = "testRepository";
 	private static PersistentCache cache;
 	
@@ -72,7 +72,7 @@ public class HttpConfigurationTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		System.out.print("HttpConfiguration ");
+		System.out.print("CimServerConfiguration ");
 		// get a default configuration
 		HashMap<String,DataValue> propertyValues = new HashMap<String,DataValue>();
 		propertyValues.put("Id", new DataValue(DataType.STRING,"confKey"));
@@ -83,14 +83,17 @@ public class HttpConfigurationTest {
 		propertyValues.put("ServerPort", new DataValue(DataType.SINT32,8080));
 		propertyValues.put("TrustStore", new DataValue(DataType.STRING,testRepository+"/trustStore.jks"));
 		propertyValues.put("KeyStore", new DataValue(DataType.STRING,testRepository+"/keyStore.jks"));
+		propertyValues.put("Repository", new DataValue(DataType.STRING,testRepository));
 		propertyValues.put("RequestHandler", new DataValue(DataType.STRING,"CimHandler"));
 		propertyValues.put("Secure", new DataValue(DataType.BOOLEAN,true));
 		propertyValues.put("X500Principal", new DataValue(DataType.STRING,"CN=localhost,OU=cimfusion.com,O=cimfusion,C=US"));
 		propertyValues.put("HostName", new DataValue(DataType.STRING,"localhost"));
-		
+		propertyValues.put("Provider", new DataValue(DataType.STRING,"net.aifusion.providers.BasicProvider"));
+		propertyValues.put("ProviderNames", new DataValue(DataType.STRING_ARRAY,new String []{"/ep1|BasicProvider|ep1",
+				"/ep2|BasicProvider|ep2"}));
 		deleteFiles(testRepository);
 		cache = new PersistentCache(testRepository);
-		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, cache);
+		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(CimServerConfiguration.class, cache);
 		assertNotNull(configClass);
 		assertTrue(cache.contains(configClass.getObjectPath()));
 		StructureValue configInstance = StructureValue.createStructureValue(configClass, propertyValues, null);
@@ -132,174 +135,206 @@ public class HttpConfigurationTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#HttpConfiguration()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#CimServerConfiguration()}.
 	 */
 	@Test
 	public void testServerConfiguration() {
-		HttpConfiguration config = new HttpConfiguration();
+		CimServerConfiguration config = new CimServerConfiguration();
 		assertNotNull(config);
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getId()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getId()}.
 	 */
 	@Test
 	public void testGetId() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals("defaultConfig",conf.getId());
 		
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getHostName()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getHostName()}.
 	 */
 	@Test
 	public void testGetHostName() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals("localhost",conf.getHostName());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getServerPort()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getRepository()}.
+	 */
+	@Test
+	public void testGetRepository() {
+		CimServerConfiguration conf = new CimServerConfiguration();
+		assertNotNull(conf);
+		assertNull(conf.getRepository());
+	}
+
+	/**
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getServerPort()}.
 	 */
 	@Test
 	public void testGetServerPort() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals(8085,conf.getServerPort());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getServerTimeout()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getServerTimeout()}.
 	 */
 	@Test
 	public void testGetServerTimeout() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals(5000,conf.getServerTimeout());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getMaxSessions()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getMaxSessions()}.
 	 */
 	@Test
 	public void testGetMaxSessions() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals(0,conf.getMaxSessions());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#isSecure()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#isSecure()}.
 	 */
 	@Test
 	public void testIsSecure() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals(false,conf.isSecure());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getKeyStore()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getKeyStore()}.
 	 */
 	@Test
 	public void testGetKeyStore() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals("resources/keyStore.jks",conf.getKeyStore());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getKeyStorePassword()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getKeyStorePassword()}.
 	 */
 	@Test
 	public void testGetKeyStorePassword() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertNull(conf.getKeyStorePassword());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getCookieStore()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getCookieStore()}.
 	 */
 	@Test
 	public void testGetCookieStore() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals(null,conf.getCookieStore());
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getTrustStore()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getTrustStore()}.
 	 */
 	@Test
 	public void testGetTrustStore() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals("resources/trustStore.jks",conf.getTrustStore());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getTrustStorePassword()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getTrustStorePassword()}.
 	 */
 	@Test
 	public void testGetTrustStorePassword() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertNull(conf.getTrustStorePassword());
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getProxyHost()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getProxyHost()}.
 	 */
 	@Test
 	public void testGetProxyHost() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertNull(conf.getProxyHost());
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getProxyPort()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getProxyPort()}.
 	 */
 	@Test
 	public void testGetProxyPort() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals(0,conf.getProxyPort());
 	}
 
 	
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getX500Principal()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getX500Principal()}.
 	 */
 	@Test
 	public void testGetX500Principal() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals("CN=localhost, OU=aifusion.net, O=aifusion, C=US, L=Belmont, ST=California",conf.getX500Principal());
 	}
 
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getRequestHandler()}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getRequestHandler()}.
 	 */
 	@Test
 	public void testGetRequestHandler() {
-		HttpConfiguration conf = new HttpConfiguration();
+		CimServerConfiguration conf = new CimServerConfiguration();
 		assertNotNull(conf);
 		assertEquals("CimHandler",conf.getRequestHandler());
 	}
+	
+	/**
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getProvider()}.
+	 */
+	@Test
+	public void testGetProvider() {
+		CimServerConfiguration conf = new CimServerConfiguration();
+		assertNotNull(conf);
+		assertEquals(null,conf.getProvider());
+	}
 
 	/**
-	 * Test method for {@link net.aifusion.cimserver.HttpConfiguration#getConfiguration(java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getConfiguration(java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testGetConfiguration() {
-		HttpConfiguration conf = HttpConfiguration.getConfiguration("confKey", null, testRepository);
+		CimServerConfiguration conf = CimServerConfiguration.getConfiguration("confKey", null, testRepository);
 		assertNotNull(conf);
+	}
+	
+	/** 
+	 * Test method for {@link net.aifusion.cimserver.CimServerConfiguration#getProviders()}
+	 */
+	@Test
+	public void testGetProviders() {
+		CimServerConfiguration conf = CimServerConfiguration.getConfiguration("confKey", null, testRepository);
+		assertNotNull(conf);
+		assertEquals(2,conf.getProviderNames().length);
+		assertEquals("/ep1|BasicProvider|ep1",conf.getProviderNames()[0]);
+		assertEquals("/ep2|BasicProvider|ep2",conf.getProviderNames()[1]);
 	}
 
 }

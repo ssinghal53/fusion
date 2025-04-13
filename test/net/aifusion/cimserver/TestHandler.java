@@ -39,7 +39,7 @@ public class TestHandler extends CimHandler {
 	 * A test handler that provides access to the underlying providers for server-side testing
 	 * @param config - server configuration
 	 */
-	public TestHandler(HttpConfiguration config) {
+	public TestHandler(CimServerConfiguration config) {
 		super(config);
 		return;
 	}

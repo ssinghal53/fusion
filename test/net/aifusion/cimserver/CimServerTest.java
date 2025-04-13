@@ -64,18 +64,18 @@ import net.aifusion.utils.Java2Cim;
  * Class to test HTTPServer, HttpSession
  * @author Sharad Singhal
  */
-public class HttpServerTest {
+public class CimServerTest {
 	private static boolean verbose = false;
-	private static Logger logger = Logger.getLogger(HttpServerTest.class.getName());
+	private static Logger logger = Logger.getLogger(CimServerTest.class.getName());
 	private static String repositoryLocation = "testrepository";
-	private static HttpServer server;
-	private static String serverMof = "value of aifusion_httpconfiguration {\n"+
+	private static CimServer server;
+	private static String serverMof = "value of aifusion_cimserverconfiguration {\n"+
 			"KeyStorePassword = \"serverpass\";\n"+
 			"MaxSessions = 0;\n"+
 			"TrustStore = \"testrepository/serverTrustStore.jks\";\n"+
 			"KeyStore = \"testrepository/serverKeyStore.jks\";\n"+
 			"ServerTimeout = 5000;\n"+
-//			"Repository = \"testrepository\";\n"+
+			"Repository = \"testrepository\";\n"+
 			"RequestHandler = \"net.aifusion.cimserver.DefaultHandler\";\n"+
 			"Secure = false;\n"+
 			"X500Principal = \"CN=localhost, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California\";\n"+
@@ -85,13 +85,13 @@ public class HttpServerTest {
 			"ServerPort = 8085;\n"+
 			"};\n"+
 			
-			"value of aifusion_httpconfiguration {\n"+
+			"value of aifusion_cimserverconfiguration {\n"+
 			"KeyStorePassword = \"serverpass\";\n"+
 			"MaxSessions = 0;\n"+
 			"TrustStore = \"testrepository/serverTrustStore.jks\";\n"+
 			"KeyStore = \"testrepository/serverKeyStore.jks\";\n"+
 			"ServerTimeout = 5000;\n"+
-//			"Repository = \"testrepository\";\n"+
+			"Repository = \"testrepository\";\n"+
 			"RequestHandler = \"net.aifusion.cimserver.DefaultHandler\";\n"+
 			"Secure = true;\n"+
 			"X500Principal = \"CN=localhost, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California IP=127.0.0.1\";\n"+
@@ -101,7 +101,7 @@ public class HttpServerTest {
 			"ServerPort = 8085;\n"+
 			"};\n"+
 			
-			"value of aifusion_httpconfiguration {\n"+
+			"value of aifusion_cimserverconfiguration {\n"+
 			"KeyStorePassword = \"clientpass\";\n"+
 			"TrustStore = \"testrepository/clientTrustStore.jks\";\n"+
 			"KeyStore = \"testrepository/clientKeyStore.jks\";\n"+
@@ -120,7 +120,7 @@ public class HttpServerTest {
 			;
 	private static MOFParser parser;
 	private static URL serverURL;
-	private static HttpConfiguration serverConfig, clientConfig;
+	private static CimServerConfiguration serverConfig, clientConfig;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -128,7 +128,7 @@ public class HttpServerTest {
 		deleteFiles(repositoryLocation);	// clean up from prior tests
 		// create the server-side cache, and server configuration definition
 		PersistentCache cache = new PersistentCache(repositoryLocation);
-		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, cache);
+		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(CimServerConfiguration.class, cache);
 		assertNotNull(configClass);
 		assertTrue(cache.contains(configClass.getObjectPath()));
 		// create instances at the server. Note that normally we should not mix configuration with content information
@@ -139,17 +139,17 @@ public class HttpServerTest {
 		in.close();
 		cache.shutdown();
 		List<NamedElement> elements = cache.getElements(null, null, null, false);
-		assertEquals(8,elements.size());
+		assertEquals(9,elements.size());
 		// create the client configuration
-		clientConfig = HttpConfiguration.getConfiguration("clientConfig", null, repositoryLocation);
+		clientConfig = CimServerConfiguration.getConfiguration("clientConfig", null, repositoryLocation);
 		assertNotNull(clientConfig);
 		// create the server configuration
-		serverConfig = HttpConfiguration.getConfiguration("serverConfig", null, repositoryLocation);
+		serverConfig = CimServerConfiguration.getConfiguration("serverConfig", null, repositoryLocation);
 		assertNotNull(serverConfig);
 		if(verbose) System.out.println(serverConfig.getRequestHandler());
 		// create the server, and start it
 		serverURL = new URI("http://localhost:8085/").toURL();
-		server = new HttpServer(serverConfig);
+		server = new CimServer(serverConfig);
 		server.startServer();
 		return;
 		

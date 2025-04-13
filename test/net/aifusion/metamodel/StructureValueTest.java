@@ -199,8 +199,9 @@ public class StructureValueTest {
 		assertEquals(path,v.getObjectPath());
 		URI u;
 		try {
-			u = new URI("http","localhost","/structurevalue/aifusion/name","kz,boolean=false",null);
-			assertEquals(u.toURL(),v.getObjectPath().getURL("http","localhost"));
+			u = new URI("http","localhost","/","kz,boolean=false",null);
+			// u = new URI("http","localhost","/structurevalue/aifusion/name","kz,boolean=false",null);
+			assertEquals(u.toURL(),v.getObjectPath().getURL("http","localhost", null));
 		} catch (URISyntaxException | MalformedURLException e) {
 			e.printStackTrace();	// should not happen
 			fail();

@@ -38,7 +38,6 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -234,16 +233,9 @@ public class CimClient implements Provider, CimListener {
 	 * @return - connection for the next request
 	 */
 	private HttpURLConnection getConnection(CimHeader h, ObjectPath path){
-		// TODO: target URL to use. We seem to be conflating the object path with the resource path here
-		// The server side CIMHandler can get the required URLs from the providers there and return them to us
-		// the server side HttpConfiguration is not available at the client side
-		
-		// we already have a GET_NAMESPACES method. Can we return <namespacePath, ServerURI> pairs?
-		
-		// Can we add a header (GetEndPoints) to CimHeader, and an Auth heder to CimXHeader
-		// Need to understand the security implications of making all providers visible to the client...
-		
-		// URL url = (path == null) ? serverURL : path.getURL(serverURL.getProtocol(), serverURL.getAuthority());
+		// TODO: target URL to use. CimHandler uses NameSpacePath#getResourceEndpoint() to load providers?
+		// we should use serverURI.resolve(ObjectPath.getURL()).toURL() as the target?
+		// Since each request/response pair uses a separate connection, we should be able to target different server-side providers
 		
 		try {
 			URL url = serverURI.toURL();
@@ -764,6 +756,7 @@ public class CimClient implements Provider, CimListener {
 	public URI getURI() {
 		return clientURI;
 	}
+	
 	// This call should return the server-side (not the client-side) URI
 	// it is part of the provider API, which delegates all calls to the server
 	@Override

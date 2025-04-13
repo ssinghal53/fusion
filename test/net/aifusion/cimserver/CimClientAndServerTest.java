@@ -79,7 +79,7 @@ public class CimClientAndServerTest {
 	private static CimServer server;
 	private static CimServer server2;
 
-	private static String serverMof = "value of AIFusion_HttpConfiguration {\n"+
+	private static String serverMof = "value of AIFusion_CimServerConfiguration {\n"+
 			"KeyStorePassword = \"serverpass\";\n"+
 			"MaxSessions = 0;\n"+
 			"TrustStore = \"testrepository/serverTrustStore.jks\";\n"+
@@ -95,11 +95,11 @@ public class CimClientAndServerTest {
 			"ServerPort = 8085;\n"+
 			"};\n"+
 
-			"value of AIFusion_HttpConfiguration {\n"+
+			"value of AIFusion_CimServerConfiguration {\n"+
 			"Secure = false;\n"+
 			"X500Principal = \"CN=localclient, OU=cimfusion.com, O=cimfusion, C=US, L=Belmont, ST=California\";\n"+
 			"Id = \"clientConfig\";\n"+
-			"RequestHandler = \"net.aifusion.cimserver.TestHandler\";\n"+
+			"RequestHandler = \"CimHandler\";\n"+
 			"HostName = \"localhost\";\n"+
 			"ServerPort = 8089;\n"+
 			"};\n"+
@@ -112,7 +112,7 @@ public class CimClientAndServerTest {
 			;
 	private static MOFParser parser;
 	private static URI serverURI, server2URI;
-	private static HttpConfiguration clientConfig;
+	private static CimServerConfiguration clientConfig;
 	
 	
 	@BeforeClass
@@ -122,7 +122,7 @@ public class CimClientAndServerTest {
 		deleteFiles(repositoryLocation);	// clean up from prior tests
 		PersistentCache cache = new PersistentCache(repositoryLocation);	// create a new cache
 		// add server configuration definition to the cache
-		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(HttpConfiguration.class, cache);
+		CimStructure configClass = (CimStructure) Java2Cim.getModelForClass(CimServerConfiguration.class, cache);
 		assertNotNull(configClass);
 		assertTrue(cache.contains(configClass.getObjectPath()));
 
@@ -132,11 +132,11 @@ public class CimClientAndServerTest {
 		parser.parse(in, Constants.defaultNameSpacePath);
 		in.close();
 		List<NamedElement> elements = cache.getElements(null, null, null, false);
-		assertEquals(7,elements.size());
+		assertEquals(8,elements.size());
 		cache.shutdown();
 
 		// create the server configuration, and start the server
-		HttpConfiguration serverConfig = HttpConfiguration.getConfiguration("serverConfig", null, repositoryLocation);
+		CimServerConfiguration serverConfig = CimServerConfiguration.getConfiguration("serverConfig", null, repositoryLocation);
 		assertFalse(serverConfig.isSecure());
 		assertEquals("localhost",serverConfig.getHostName());
 		assertEquals(8085,serverConfig.getServerPort());
@@ -145,7 +145,7 @@ public class CimClientAndServerTest {
 		server.startServer();
 
 		// get the client configuration, and the server proxy for the client (needed for [un]RegisterProvider)
-		clientConfig = HttpConfiguration.getConfiguration("clientConfig", null, repositoryLocation);
+		clientConfig = CimServerConfiguration.getConfiguration("clientConfig", null, repositoryLocation);
 		assertNotNull(clientConfig);
 		assertFalse(clientConfig.isSecure());
 		assertEquals("localhost",clientConfig.getHostName());
@@ -273,7 +273,7 @@ public class CimClientAndServerTest {
 	public void testGet() {
 		// check for an existing element without host name
 		CimClient client = new CimClient(serverURI,clientConfig);
-		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
+		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_CimServerConfiguration.id=\"clientConfig\"");
 		PersistentCache cache = new PersistentCache(repositoryLocation);
 		NamedElement expected = cache.get(path);
 		assertNotNull(expected);
@@ -283,7 +283,7 @@ public class CimClientAndServerTest {
 		// System.out.println("Retrieved "+retrieved.toMOF());
 		assertEquals(expected.toMOF(),retrieved.toMOF());
 		// check for a non-existent element
-		path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"otherConfig\"");
+		path = new ObjectPath("/structurevalue/aifusion:AIFusion_CimServerConfiguration.id=\"otherConfig\"");
 		assertFalse(cache.contains(path));
 		retrieved = client.get(path);
 		assertNull(retrieved);
@@ -300,13 +300,13 @@ public class CimClientAndServerTest {
 		// check for an existing element without host name
 		CimClient client = new CimClient(serverURI,clientConfig);
 		assertNotNull(client);
-		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
+		ObjectPath path = new ObjectPath("/structurevalue/aifusion:AIFusion_CimServerConfiguration.id=\"clientConfig\"");
 		assertTrue(client.contains(path));
 		// check for an existing element with the host name
-		path = new ObjectPath("http://localhost:8085/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"clientConfig\"");
+		path = new ObjectPath("http://localhost:8085/structurevalue/aifusion:AIFusion_CimServerConfiguration.id=\"clientConfig\"");
 		assertTrue(client.contains(path));
 		// check for a non-existent element
-		path = new ObjectPath("/structurevalue/aifusion:AIFusion_HttpConfiguration.id=\"otherConfig\"");
+		path = new ObjectPath("/structurevalue/aifusion:AIFusion_CimServerConfiguration.id=\"otherConfig\"");
 		assertFalse(client.contains(path));
 		client.shutdown();
 	}
@@ -379,7 +379,7 @@ public class CimClientAndServerTest {
 		assertNotNull(client);
 		List<NamedElement> elements = client.getElements(null, null, null, false);
 		if(verbose) for(NamedElement e : elements) System.out.println(e.toMOF());
-		assertEquals(7,elements.size());
+		assertEquals(8,elements.size());
 		client.shutdown();
 	}
 

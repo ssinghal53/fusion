@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, Sharad Singhal, All Rights Reserved
+ * Copyright 2017, 2025 Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Jan 29, 2017 by Sharad Singhal
- * Last Modified May 29, 2021 by Sharad Singhal
+ * Last Modified Mar 31, 2025 by Sharad Singhal
  */
 package net.aifusion.cimserver;
 
@@ -62,6 +62,8 @@ public class HttpConfiguration {
 	private static final String defaultHost = Constants.defaultHost;
 	/** Default host port */
 	private static final int defaultPort = Constants.defaultPort;
+	/** Default resource path */
+	private static final String defaultResourcePath = Constants.defaultResourcePath;
 	/** Use HTTPS for connections */
 	private static final boolean defaultSecure = false;
 	/** Time to wait on idle connection (ms) */
@@ -76,8 +78,6 @@ public class HttpConfiguration {
 	private static final String defaultX500Principal = "CN="+defaultHost+", OU=aifusion.net, O=aifusion, C=US, L=Belmont, ST=California";
 	/** Default handler for responses */
 	private static final String defaultHandler = "CimHandler";
-	/** Default CIM repository. Null implies an in-memory cache */
-	private static final String defaultRepository = null;
 	/** Default location for storing cookies */
 	private static final String defaultCookieStore = null;
 	/** Server Configuration class version */
@@ -95,14 +95,14 @@ public class HttpConfiguration {
 	private String hostName = defaultHost;
 	/** Server TCP port */
 	private int port = defaultPort;
+	/** Server resource path */
+	private String resourcePath = defaultResourcePath;
 	/** true if server is secure */
 	private boolean isSecure = defaultSecure;
 	/** server socket time out in ms */
 	private int timeout = defaultTimeout;
 	/** maximum sessions, 0 implies no maximum */
 	private int maxSessions = defaultMaxSessions;
-	/** Name of the repository to use */
-	private String repositoryName = defaultRepository;
 	/** Name of the key store to use, if any. The key store contains the server credentials */
 	private String keyStoreName = defaultKeyStore;
 	/** Name of the trust store to use, if any. The trust store contains trusted foreign certificates */
@@ -157,6 +157,9 @@ public class HttpConfiguration {
 				case "hostname":
 					hostName = v.toString();
 					break;
+				case "resourcepath":
+					resourcePath = v.toString();
+					break;
 				case "serverport":
 					port =  (Integer) v.getValue();
 					break;
@@ -196,12 +199,6 @@ public class HttpConfiguration {
 				case "requesthandler":
 					requestHandler = v.toString();
 					break;
-				case "repository":
-					repositoryName = v.toString();
-					break;
-				case "provider":
-					providerName = v.toString();
-					break;
 				case "logfile":
 					logFile = v.toString();
 					break;
@@ -211,11 +208,8 @@ public class HttpConfiguration {
 				case "loglevel":
 					loglevel = v.toString().toUpperCase();
 					break;
-				case "providernames":
-					providerNames = (String []) v.getValue(); 
-					break;
 				default:
-					throw new ModelException("HttpConfiguration- Property "+pName+" not yet handled");
+					break;
 				}
 			}
 		}
@@ -264,8 +258,6 @@ public class HttpConfiguration {
 		return id;
 	}
 
-	// TODO: Latest versions of java somehow interpret localhost to be an IP v6 address. To force localhost to be interpreted
-	// as IP v4, we need to use the default hostname to be 127.0.0.1 instead of "localhost"
 	/**
 	 * Get the Host name for the server
 	 * @return - host name for the server
@@ -276,14 +268,14 @@ public class HttpConfiguration {
 	}
 	
 	/**
-	 * Get the name of the repository to use
-	 * @return - name of the repository. Null if none defined
+	 * Get the resource path for the server
+	 * @return -resource path for the server
 	 */
-	@Export(qualifiers="Description(\"Repository Name\")")
-	public String getRepository(){
-		return repositoryName;
+	@Export(qualifiers="Description(\"Default resource path for the host\")",defaultValue="\""+defaultResourcePath+"\"")
+	public String getResourcePath(){
+		return resourcePath;
 	}
-
+	
 	/**
 	 * Get the server port
 	 * @return - server port for the server
@@ -399,24 +391,6 @@ public class HttpConfiguration {
 	@Export(qualifiers="Description(\"Proxy Port\")")
 	public int getProxyPort(){
 		return proxyPort;
-	}
-	
-	/**
-	 * Get the CIM provider used in CimHandler
-	 * @return - name of the class to use in CimHandler
-	 */
-	@Export(qualifiers="Description(\"Name of the default provider to use in the handler class\")")
-	public String getProvider(){
-		return providerName;
-	}
-	
-	/**
-	 * Get additional providers to be used if multiple providers are network accessible from the server
-	 * @return list of providers to add to the server. Each is of the form serverEndpoint|ProviderName|repositoryLocation
-	 */
-	@Export(qualifiers="Description(\"Names of the providers to use in the handler class. Each is of the form serverEndpoint|ProviderClassName[|repository]\")")
-	public String [] getProviderNames() {
-		return providerNames;
 	}
 	
 	/**

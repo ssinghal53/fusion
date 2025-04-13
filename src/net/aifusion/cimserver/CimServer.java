@@ -34,7 +34,7 @@ import java.io.IOException;
  * @author Sharad Singhal
  */
 public class CimServer extends HttpServer {
-	public CimServer(HttpConfiguration config) throws IOException {
+	public CimServer(CimServerConfiguration config) throws IOException {
 		super(config);
 	}
 	
@@ -74,7 +74,7 @@ public class CimServer extends HttpServer {
 				break;
 			}
 		}
-		HttpConfiguration config = HttpConfiguration.getConfiguration(id, path, directory);
+		CimServerConfiguration config = CimServerConfiguration.getConfiguration(id, path, directory);
 		if(config == null){
 			System.out.println("CimServer: No configuration found at ("+id+","+path+","+directory+")");
 			return;

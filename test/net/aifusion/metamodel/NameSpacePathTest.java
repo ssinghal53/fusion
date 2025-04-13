@@ -149,6 +149,17 @@ public class NameSpacePathTest {
 		assertTrue(p.getLocalPath().equals("/root/cimv2"));
 		assertEquals("http://user:Info@host:8000/root/cimv2",p.toString());
 	}
+	
+	/**
+	 * Test method for {@link net.aifusion.metamodel.NameSpacePath#getResourcePath()}.
+	 */
+	@Test
+	public final void testGetResourcePath() {
+		NameSpacePath p = new NameSpacePath("http","user:Info@host:8000","/root/+/cimv2");
+		assertTrue(p.getLocalPath().equals("/cimv2"));
+		assertTrue(p.getResourcePath().equals("/root/"));
+		assertEquals("http://user:Info@host:8000/root/+/cimv2",p.toString());
+	}
 
 	/**
 	 * Test method for {@link net.aifusion.metamodel.NameSpacePath#toString()}.
@@ -157,18 +168,39 @@ public class NameSpacePathTest {
 	public final void testToString() {
 		String scheme = "http+Cim-xml";
 		String authority = "user:password@localhost:5050";
-		String path = "/root/cimv2";
+		String path = "/root/+/cimv2";
 		String [] expect = {
-				"/root/cimv2",
-				"http+Cim-xml:/root/cimv2",
-				"//user:password@localhost:5050/root/cimv2",
-				"http+Cim-xml://user:password@localhost:5050/root/cimv2"
+				"/root/+/cimv2",
+				"http+Cim-xml:/root/+/cimv2",
+				"//user:password@localhost:5050/root/+/cimv2",
+				"http+Cim-xml://user:password@localhost:5050/root/+/cimv2"
 		};
 			
 		for(int i = 0; i<4; i++){
 			NameSpacePath p = new NameSpacePath((i&0x1)!= 0 ? scheme : null,(i&0x2)!=0 ? authority : null,path);
-			assertTrue(p.toString().equals(expect[i]));
+			assertEquals(expect[i],p.toString());
 		}
+	}
+	
+	@Test
+	public final void testCombinations() {
+		NameSpacePath p = new NameSpacePath("http://hostname/resource/+/path");
+		assertEquals("http",p.getScheme());
+		assertEquals("hostname",p.getAuthority());
+		assertEquals("/resource/",p.getResourcePath());
+		assertEquals("/path",p.getLocalPath());
+		p = new NameSpacePath("/resource/+/path");
+		assertEquals(null,p.getScheme());
+		assertEquals(null,p.getAuthority());
+		assertEquals("/resource/",p.getResourcePath());
+		assertEquals("/path",p.getLocalPath());
+		p = new NameSpacePath("/resource//path");
+		assertEquals(null,p.getScheme());
+		assertEquals(null,p.getAuthority());
+		assertEquals("/",p.getResourcePath());
+		assertEquals("/resource/path",p.getLocalPath());
+		
+		return;
 	}
 
 }

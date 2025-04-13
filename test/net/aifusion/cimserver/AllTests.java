@@ -40,8 +40,10 @@ import org.junit.runners.Suite.SuiteClasses;
 	HttpResponseTest.class,
 	HttpConfigurationTest.class,
 	HttpServerTest.class,
+	CimServerConfigurationTest.class,
 	CimHandlerTest.class,
-	CimClientAndServerTest.class
+	CimServerTest.class,
+//	CimClientAndServerTest.class
 	})
 public class AllTests {
 

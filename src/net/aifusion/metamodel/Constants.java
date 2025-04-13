@@ -22,7 +22,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Nov 29, 2014 by Sharad Singhal
- * Last Modified Mar 2, 2025 by Sharad Singhal
+ * Last Modified Mar 31, 2025 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
@@ -46,6 +46,8 @@ public class Constants {
 	public static final String defaulAuthority = defaultHost+":"+defaultPort;
 	/** Default local path if none specified (/aifusion)*/
 	public static final String defaultLocalPath = "/aifusion";
+	/** Default resource path if none specified (/)*/
+	public static final String defaultResourcePath = "/";
 	/** Default name space path ("http://localhost:8085/aifusion")*/
 	public static final NameSpacePath defaultNameSpacePath = new NameSpacePath(defaultScheme+"://"+defaulAuthority+defaultLocalPath);
 	/** Default repository location for persistent objects (repository)*/
@@ -83,7 +85,7 @@ public class Constants {
 			"OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\r\n" + 
 			"OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\r\n";
 	/** Current library version (1.0.0-R1")*/
-	public static final String libraryVersion = "1.1.0-R1";
+	public static final String libraryVersion = "2.0.0-R1";
 	/**
 	 * Global Constants
 	 * This class only contains static constants used in the metamodel classes. It should not be instantiated.

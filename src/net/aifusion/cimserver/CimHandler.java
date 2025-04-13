@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Jul 16, 2017 by Sharad Singhal
- * Last Modified March 10, 2025 by Sharad Singhal
+ * Last Modified March 28, 2025 by Sharad Singhal
  */
 package net.aifusion.cimserver;
 
@@ -85,25 +85,28 @@ class CimHandler implements HttpRequestHandler {
 	 * Create a CimHandler from a server configuration
 	 * @param config server configuration to use
 	 */
-	public CimHandler(HttpConfiguration config) {
+	public CimHandler(CimServerConfiguration config) {
 		try {
 			this.config = config;
 			// load default provider for this handler
 			String r = config.getRepository();
 			Repository repo = (r == null) ? new InMemoryCache() : new PersistentCache(r);
-			URI uri = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),"/",null,null);
-			defaultProvider = config.getProvider() != null ? loadProvider(config.getProvider(),uri,repo) : new BasicProvider(repo,uri);
+			// baseURI should normally be "http://hostname:port/"
+			URI baseUri = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),config.getResourcePath(),null,null);
+			defaultProvider = config.getProvider() != null ? loadProvider(config.getProvider(),baseUri,repo) : new BasicProvider(repo,baseUri);
 			// any additional providers if defined
 			if(config.getProviderNames() != null) {
 				for(String p : config.getProviderNames()) {
-					// serverEndpoint|providerClassName[|repositoryName]
+					// serverEndpoint[|providerClassName[|repositoryName]]
 					String [] v = p.split("\\|");
 					String endpoint = v[0];
 					String providerClassName = v.length > 1 ? v[1] : BasicProvider.class.getName();
-					URI u =uri.resolve(endpoint);
+					// serverEnpoint is resolved against baseURI. See RFC 3986 for resolution rules 
+					URI u =baseUri.resolve(endpoint);	
 					Repository rep = v.length > 2 ? new PersistentCache(v[2]) : new InMemoryCache();
 					Provider prov = loadProvider(providerClassName, u, rep);
 					providers.put(u.getPath(), prov);
+//					providers.put(prov.getProviderEndpoint().toString(), prov);	
 				}
 			}
 		} catch (URISyntaxException e) {
@@ -119,18 +122,19 @@ class CimHandler implements HttpRequestHandler {
 	 * @param repo - repository to use for the provider
 	 * @return - the provider instance
 	 */
-	private Provider loadProvider(String provider,URI uri, Repository repo) {
+	private Provider loadProvider(String provider, URI uri, Repository repo) {
 		try {
 			ClassLoader loader = CimHandler.class.getClassLoader();
 			Class<?> providerClass = loader.loadClass(provider);
 			if(Provider.class.isAssignableFrom(providerClass)){
 				try {
-					// constructor for BasicProvider
+					// constructor when the provider extends BasicProvider (normal case)
 					Constructor<?> constructor = providerClass.getConstructor(Repository.class, URI.class);
 					return (Provider) constructor.newInstance(repo,uri);
 				} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
+					logger.warning(e.toString()+" : "+provider+" does not implement BasicProvider constructor. Trying general args.");
 					try {
-						// constructor for CIM classes that can be bound to the models
+						// constructor when an exported (bound) class implements the Provider interface
 						Constructor<?> constructor = providerClass.getConstructor(Map.class);
 						HashMap<String,Object> args = new HashMap<String,Object>();
 						args.put("EndPoint", uri.getPath());
@@ -143,7 +147,7 @@ class CimHandler implements HttpRequestHandler {
 					}
 				}
 			} else {
-				throw new ModelException(provider+" is not a Provider");
+				throw new ModelException(ExceptionReason.INVALID_PARAMETER, provider+" is not a Provider");
 			}
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			throw new ModelException(ExceptionReason.INVALID_CLASS,"CimHandler: Unable to load class "+provider, e);
@@ -183,17 +187,22 @@ class CimHandler implements HttpRequestHandler {
 				return new HttpResponse(requestMethod,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,
 						cimRequest+" requires header "+x);
 		}
-		// locate the provider to use based on the request URI
+		// locate the provider to use based on the request URI. Use the provider with the longest
+		// matching prefix contained in the requested endpoint
 		Provider requestProvider = defaultProvider;
 		try {
 			String endpoint = new URI(request.getURI()).getPath();
-			if(providers.containsKey(endpoint)) {
-				requestProvider = providers.get(endpoint);
+			String key = config.getResourcePath();
+			for(String k : providers.keySet()) {
+				if(endpoint.startsWith(k) && k.length() > key.length()) {
+					key = k;
+					requestProvider = providers.get(key);
+				}
 			}
 		} catch (URISyntaxException e) {
 			return new HttpResponse(requestMethod,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,
 					cimRequest+" has bad target "+request.getURI());
-		}		
+		}
 		// null response implies that HttpStatus.NOT_FOUND will be sent to client
 		HttpResponse response = null;
 		try {
@@ -222,7 +231,7 @@ class CimHandler implements HttpRequestHandler {
 					b.append(element.toMOF());
 					switch(element.getElementType()) {
 					case STRUCTUREVALUE:
-						b.append(";");
+						b.append(";").append(CRLF);
 					case INSTANCE:
 						b.append(CRLF);
 						break;

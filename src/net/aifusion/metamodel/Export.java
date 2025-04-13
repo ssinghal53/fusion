@@ -54,7 +54,7 @@ public @interface Export {
 	String nameSpace() default Constants.defaultLocalPath;
 	
     /**
-     * CIM Model Schema used when annotating classes. Default is "CimFusion". Schema names must be of the form "[a-zA-Z]\\w*_\\w+"
+     * CIM Model Schema used when annotating classes. Default is "AIFusion". Schema names must be of the form "[a-zA-Z]\\w*_\\w+"
      * @return schema associated with the model class
      * */
     String schema() default Constants.defaultSchema;

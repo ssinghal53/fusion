@@ -48,22 +48,33 @@ import org.junit.Test;
  * @author Sharad Singhal
  */
 public class ObjectPathTest {
+	
+	// TODO: Add cases here for the resource/path forms
+	
+	
 	private static ElementType elementTypes [] = {
 			ElementType.CLASS, ElementType.CLASS,ElementType.INSTANCE,ElementType.INSTANCE,
 			ElementType.STRUCTURE, ElementType.STRUCTUREVALUE, ElementType.ENUMERATION,
-			ElementType.QUALIFIERTYPE, ElementType.INTERFACE
+			ElementType.QUALIFIERTYPE, ElementType.INTERFACE,ElementType.STRUCTURE,ElementType.STRUCTURE
 	};
 	private static ObjectPath paths [] = null;
 	private static String pathNames [] = {
-		"http://user:pass@localhost:80/root:cim_class",						// class (old form)
-		"http://user:pass@localhost:80/class/root:cim_class",				// class (new form)
-		"http://user:pass@localhost:80/root:cim_class.k1=true",				// instance (old form)
-		"http://user:pass@localhost:80/instance/root:cim_class.k1=true",	// instance (new form)
-		"http://user:pass@localhost:80/structure/root:cim_class",			// structure
+		"http://user:pass@localhost:80/root:cim_class",							// class (old form with no type defined)
+		"http://user:pass@localhost:80/class/root:cim_class",					// class (new form with type definition)
+		"http://user:pass@localhost:80/root:cim_class.k1=true",					// instance (old form without type)
+		"http://user:pass@localhost:80/instance/root:cim_class.k1=true",		// instance (new form with type)
+		"http://user:pass@localhost:80/structure/root:cim_class",				// structure
 		"http://user:pass@localhost:80/structurevalue/root:cim_class.k1=true",	// structure value
-		"http://user:pass@localhost:80/enumeration/root:cim_class",			// enumeration
-		"http://user:pass@localhost:80/qualifiertype/root:cim_class",		// qualifier type
-		"http://user:pass@localhost:80/interface/root:cim_class"			// interface
+		"http://user:pass@localhost:80/enumeration/root:cim_class",				// enumeration
+		"http://user:pass@localhost:80/qualifiertype/root:cim_class",			// qualifier type
+		"http://user:pass@localhost:80/interface/root:cim_class",				// interface
+		"http://user:pass@localhost:80/end/point/+/structure/root:cim_class",	// structure (with end point)
+		"http://user:pass@localhost:80/+/structure/root:cim_class",				// structure (with trivial end point)
+	};
+	private static String endpoint [] = {
+			"/", "/","/","/",
+			"/", "/","/",
+			"/", "/","/end/point/","/"
 	};
 	
 	@AfterClass
@@ -89,6 +100,7 @@ public class ObjectPathTest {
 			assertNotNull(paths[i]);
 		}
 		assertEquals(elementTypes.length,paths.length);
+		assertEquals(endpoint.length,paths.length);
 	}
 	
 	/**
@@ -97,6 +109,7 @@ public class ObjectPathTest {
 	@Test
 	public final void testNameForm() {
 		for(int i = 0; i < paths.length; i++) {
+		//	System.out.println(i+" "+paths[i].getResourcePath()+" "+paths[i].getLocalPath());
 			assertEquals(elementTypes[i],paths[i].getElementType());
 		}
 	}
@@ -255,8 +268,9 @@ public class ObjectPathTest {
 	@Test
 	public final void testToString() {
 		ObjectPath p = new ObjectPath("http://user:pass@localhost:80/root:CIM_class.k2=true,k1=false");
-
 		assertEquals("http://user:pass@localhost:80/instance/root:CIM_class.k1=false,k2=true",p.toString());
+		 p = new ObjectPath("http://user:pass@localhost:80/root/+/cimv3:CIM_class.k2=true,k1=false");
+			assertEquals("http://user:pass@localhost:80/instance/root/+/cimv3:CIM_class.k1=false,k2=true",p.toString());
 
 		p = new ObjectPath(ElementType.INSTANCE,"Cim_Class", "$abc");
 		assertEquals("$abc",p.toString());
@@ -280,8 +294,20 @@ public class ObjectPathTest {
 	 */
 	@Test
 	public final void testGetLocalPath() {
+		for(int i = 0; i < paths.length; i++) {
+			assertEquals("/root",paths[i].getLocalPath());
+		}
 		ObjectPath p = new ObjectPath("http://user:pass@localhost:80/root:cim_class.k1=true");
 		assertEquals("/root",p.getLocalPath());
+	}
+	/**
+	 * Test method for {@link net.aifusion.metamodel.ObjectPath#getResourcePath()}.
+	 */
+	@Test
+	public final void testGetResourcePath() {
+		for(int i = 0; i < paths.length; i++) {
+			assertEquals(endpoint[i],paths[i].getResourcePath());
+		}
 	}
 	/**
 	 * Test method for {@link net.aifusion.metamodel.ObjectPath#getNameSpacePath()}.
@@ -315,10 +341,11 @@ public class ObjectPathTest {
 		assertNotNull(p);
 		URL uri = p.toURL();
 		assertNotNull(uri);
-		assertEquals("http://user:pass@localhost:80/instance/root/cim_class?k1,boolean=false&k2,boolean=true",uri.toString());
+//		assertEquals("http://user:pass@localhost:80/instance/root/cim_class?k1,boolean=false&k2,boolean=true",uri.toString());
+		assertEquals("http://user:pass@localhost:80/?k1,boolean=false&k2,boolean=true",uri.toString());
 		
 		p = new ObjectPath(ElementType.QUALIFIERTYPE,"Abstract",new NameSpacePath("/cimv3"), null, null);
-		assertEquals("http://localhost:8085/qualifiertype/cimv3/Abstract",p.toURL().toString());
+		assertEquals("http://localhost:8085/",p.toURL().toString());
 		
 	}
 	
@@ -344,5 +371,4 @@ public class ObjectPathTest {
 		assertNull(p0.getKeyValue("nonExistentKey"));
 		assertEquals(new DataValue(true),p0.getKeyValue("k2"));
 	}
-
 }
