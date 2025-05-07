@@ -51,7 +51,6 @@ public class FqlFilter implements CimFilter {
 
 	/**
 	 * Create a null CimFilter-- selects all elements of the given type
-	 * @param objectPath path to the structure to be searched
 	 */
 	public FqlFilter() {
 		this.fql = "";
