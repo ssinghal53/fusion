@@ -42,7 +42,6 @@ import net.aifusion.metamodel.ElementType;
 import net.aifusion.metamodel.Export;
 import net.aifusion.metamodel.InMemoryCache;
 import net.aifusion.metamodel.JavaModelMapper;
-import net.aifusion.metamodel.ModelException;
 import net.aifusion.metamodel.ModelUtilities;
 import net.aifusion.metamodel.NameSpacePath;
 import net.aifusion.metamodel.ObjectPath;
@@ -121,10 +120,6 @@ public class HttpConfiguration {
 	private String proxyHost = null;
 	/** proxy port, if any. 0 implies no proxy being used */
 	private int proxyPort = 0;
-	/** Default Provider to use in the CIM Handler. Null implies a BasicProvider */
-	private String providerName = null;
-	/** Providers to use in the CIM Handler. Null implies that only the default provider is known */
-	private String [] providerNames = null;
 	/** Server log file */
 	private String logFile = defaultLogFile;
 	/** Flag to indicate if logging is enabled */
@@ -213,7 +208,7 @@ public class HttpConfiguration {
 				}
 			}
 		}
-		/* create the keystore and trust stores if we are given that info
+		/* TODO: create the keystore and trust stores if we are given that info
 		if(keyStoreName != null && trustStoreName != null && keyStorePassword != null && trustStorePassword != null){
 			try {
 				KeyStore keyStore = Credentials.getKeyStore(keyStoreName,keyStorePassword.toCharArray());

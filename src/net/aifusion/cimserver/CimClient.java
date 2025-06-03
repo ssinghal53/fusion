@@ -89,7 +89,7 @@ public class CimClient implements Provider, CimListener {
 	private static final int connectionTimeout = 10000;
 	/** Server to which this client is talking */
 	private URI serverURI;
-	/** Proxy to use, if any */
+	/** out-bound Proxy to use, if any */
 	private Proxy proxy = null;
 	/** Debugging flag */
 	private boolean debug = false;
@@ -148,8 +148,8 @@ public class CimClient implements Provider, CimListener {
 	 * Create a CimClient using a server URL and an optional proxy
 	 * @param serverURI - server to which this client should connect
 	 * @param clientURI - client URI for inbound communication.
-	 * @param proxyHost - outbound HTTP proxy host, if any
-	 * @param proxyPort - outbound HTTP proxy port, if any
+	 * @param proxyHost - out-bound HTTP proxy host, if any
+	 * @param proxyPort - out-bound HTTP proxy port, if any
 	 */
 	public CimClient(URI serverURI, URI clientURI, String proxyHost, int proxyPort){
 		this.serverURI = serverURI;
@@ -167,9 +167,9 @@ public class CimClient implements Provider, CimListener {
 	/**
 	 * Create a new CimClient using a configuration
 	 * @param serverURI - CimServer to which this client should connect
-	 * @param configuration - configuration for the client. Maybe null if the client does not need to be a listener or network provider
+	 * @param configuration - Client-side configuration. Maybe null if the client does not need to be a listener or network provider
 	 */
-	public CimClient (URI serverURI, HttpConfiguration configuration){
+	public CimClient (URI serverURI, CimServerConfiguration configuration){
 		this.serverURI = serverURI;
 		if(configuration != null){
 			// TODO: Proxy needs to be checked...
@@ -186,7 +186,7 @@ public class CimClient implements Provider, CimListener {
 			
 			if(hostName != null && portNumber > 0){
 				try {
-					clientURI = new URI(configuration.isSecure()?"https":"http",hostName+":"+portNumber,"/",null,null);
+					clientURI = new URI(configuration.isSecure()?"https":"http",hostName+":"+portNumber,configuration.getResourcePath(),null,null);
 				} catch (URISyntaxException e) {
 					logger.warning("Invalid URI specification for client "+e.toString());
 				}
@@ -236,9 +236,8 @@ public class CimClient implements Provider, CimListener {
 		// TODO: target URL to use. CimHandler uses NameSpacePath#getResourceEndpoint() to load providers?
 		// we should use serverURI.resolve(ObjectPath.getURL()).toURL() as the target?
 		// Since each request/response pair uses a separate connection, we should be able to target different server-side providers
-		
 		try {
-			URL url = serverURI.toURL();
+			URL url = path == null ? serverURI.toURL() : serverURI.resolve(new URI(path.getResourcePath())).toURL();
 			HttpURLConnection connection = (HttpURLConnection)(proxy != null ? url.openConnection(proxy) : url.openConnection());
 			connection.setRequestMethod(h.getHttpMethod().toString());
 			connection.setRequestProperty(HttpHeader.HOST.toString(), url.getHost());
@@ -250,7 +249,7 @@ public class CimClient implements Provider, CimListener {
 			connection.setConnectTimeout(connectionTimeout);
 			connection.setReadTimeout(connectionTimeout);
 			return connection;
-		} catch (IOException e) {
+		} catch (IOException | URISyntaxException e) {
 			throw new ModelException("CimClient-Unable to create connection to "+serverURI,e);
 		}
 	}

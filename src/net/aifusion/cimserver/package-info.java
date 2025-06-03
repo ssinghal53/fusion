@@ -5,8 +5,8 @@ CIM Operations over HTTP (DSP0200)</a>, the server uses MOF and text files direc
 <p>All underlying data is saved in MOF form by the server using a {@link net.aifusion.metamodel.Repository}. The CIM Client presents a 
 {@link net.aifusion.providers.Provider} interface to the application, and communicates to the server over HTTP to retrieve information from
 the server-side repository.</p>
-<p>The server is configured using {@link net.aifusion.cimserver.HttpConfiguration} that is also stored in MOF format by the server. Both the CIM server
-and the HTTPConfiguration classes can be used from the command line (they have <code>main()</code> methods) to manage the server and its configuration,
+<p>The server is configured using {@link net.aifusion.cimserver.CimServerConfiguration} that is also stored in MOF format by the server. Both the CIM server
+and the CimServerConfiguration classes can be used from the command line (they have <code>main()</code> methods) to manage the server and its configuration,
 respectively.</p> 
 */
 package net.aifusion.cimserver;

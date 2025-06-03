@@ -75,7 +75,7 @@ class CimHandler implements HttpRequestHandler {
 	protected HashMap<String,Provider> providers = new HashMap<String,Provider>();
 
 	/** Configuration, if any */
-	private HttpConfiguration config = null;
+	private CimServerConfiguration config = null;
 	/** Line terminator */
 	private static final String CRLF = "\r\n";
 	/** flag to indicate logging */
@@ -94,6 +94,7 @@ class CimHandler implements HttpRequestHandler {
 			// baseURI should normally be "http://hostname:port/"
 			URI baseUri = new URI(config.isSecure()?"https":"http",null,config.getHostName(),config.getServerPort(),config.getResourcePath(),null,null);
 			defaultProvider = config.getProvider() != null ? loadProvider(config.getProvider(),baseUri,repo) : new BasicProvider(repo,baseUri);
+			providers.put(baseUri.getPath(), defaultProvider);
 			// any additional providers if defined
 			if(config.getProviderNames() != null) {
 				for(String p : config.getProviderNames()) {
@@ -104,8 +105,7 @@ class CimHandler implements HttpRequestHandler {
 					// serverEnpoint is resolved against baseURI. See RFC 3986 for resolution rules 
 					URI u =baseUri.resolve(endpoint);	
 					Repository rep = v.length > 2 ? new PersistentCache(v[2]) : new InMemoryCache();
-					Provider prov = loadProvider(providerClassName, u, rep);
-					providers.put(u.getPath(), prov);
+					providers.put(u.getPath(), loadProvider(providerClassName, u, rep));
 //					providers.put(prov.getProviderEndpoint().toString(), prov);	
 				}
 			}
@@ -189,10 +189,10 @@ class CimHandler implements HttpRequestHandler {
 		}
 		// locate the provider to use based on the request URI. Use the provider with the longest
 		// matching prefix contained in the requested endpoint
-		Provider requestProvider = defaultProvider;
+		Provider requestProvider = null;
 		try {
 			String endpoint = new URI(request.getURI()).getPath();
-			String key = config.getResourcePath();
+			String key = "";
 			for(String k : providers.keySet()) {
 				if(endpoint.startsWith(k) && k.length() > key.length()) {
 					key = k;
@@ -203,6 +203,9 @@ class CimHandler implements HttpRequestHandler {
 			return new HttpResponse(requestMethod,HttpStatus.BAD_REQUEST,MimeType.PLAINTEXT,
 					cimRequest+" has bad target "+request.getURI());
 		}
+		
+		if(requestProvider == null) return new HttpResponse(requestMethod,HttpStatus.NOT_FOUND,MimeType.PLAINTEXT,
+				cimRequest+" unknown target "+request.getURI());
 		// null response implies that HttpStatus.NOT_FOUND will be sent to client
 		HttpResponse response = null;
 		try {

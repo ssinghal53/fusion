@@ -74,6 +74,7 @@ public class CimServerConfiguration extends HttpConfiguration {
 	 * Create a default configuration
 	 */
 	public CimServerConfiguration(){
+		super();
 		return;
 	}
 
@@ -249,37 +250,19 @@ public class CimServerConfiguration extends HttpConfiguration {
 		
 		// get the arguments from the command line to construct the configuration
 		HashMap<String,String> options = new HashMap<String,String>();
-		options = ModelUtilities.getArgs(args);
-		
+		options = ModelUtilities.getArgs(args);		
 		String repo = options.containsKey("cp") ? options.get("cp") : defaultConfigDirectory;
 		NameSpacePath path = options.containsKey("n") ? new NameSpacePath(options.get("n")) : Constants.defaultNameSpacePath;
+		if(!options.containsKey("keystorepassword")) options.put("keystorepassword",ModelUtilities.getRandomString(18));
+		if(!options.containsKey("truststorepassword")) options.put("truststorepassword",ModelUtilities.getRandomString(18));
+		if(!options.containsKey("id")) options.put("id", "defaultID");
 		
 		PersistentCache repository = new PersistentCache(repo);
-		
 		// get the configuration class
-		ObjectPath configClassPath = new ObjectPath(ElementType.STRUCTURE,"aifusion_HttpConfiguration",path,null, null);
+		ObjectPath configClassPath = new ObjectPath(ElementType.STRUCTURE,"aifusion_CimServerConfiguration",path,null, null);
 		CimStructure configClass = repository.contains(configClassPath) ? (CimStructure) repository.get(configClassPath) : 
 			(CimStructure) Java2Cim.getModelForClass(CimServerConfiguration.class, repository);
-		
-		// get the configuration instance
-		for(Entry<String,String> entry : options.entrySet()){
-			String key = entry.getKey();
-			String value = entry.getValue();
-			// System.out.println("<"+key+" ::= "+value+">");
-			if(configClass.hasProperty(key)){
-				// System.out.println("Add <"+key+" ::= "+value+">");
-				propertyValues.put(key.toLowerCase(), new DataValue(configClass.getPropertyType(key).toString(),value));
-			}
-		}
-		
-		// if keystore or truststore passwords are not defined, create random passwords
-		for(String v : new String[]{"keystorepassword","truststorepassword"}){
-			DataValue pass = propertyValues.get(v);
-			if(pass == null || pass.getValue() == null){
-				propertyValues.put(v, new DataValue(ModelUtilities.getRandomString(18)));
-			}
-		}
-		StructureValue config = StructureValue.createStructureValue(configClass, propertyValues, null);
+		StructureValue config = StructureValue.createStructureValue(configClass, ModelUtilities.getProperties(configClass, options), null);
 		repository.put(config);
 		repository.shutdown();
 		return;
