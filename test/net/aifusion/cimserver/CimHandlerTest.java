@@ -74,7 +74,7 @@ import net.aifusion.utils.Java2Cim;
  * @author Sharad Singhal
  */
 public class CimHandlerTest {
-	private static boolean verbose = true;
+	private static boolean verbose = false;
 	private static String CRLF = "\r\n";
 	private static String mof = "#pragma namespace (\"/root/local\")\n"+
 			"Enumeration test_enum : string { enumvalue};\n"+
