@@ -28,6 +28,7 @@
  */
 package net.aifusion.metamodel;
 
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -143,6 +144,7 @@ public class ObjectPath {
 		// for(int i=0; i<=9;i++) System.out.println("["+i+"] "+m.group(i));
 		// this will throw exception if localPath is null
 		// TODO: This is inefficient-- need a cleaner way of parsing this
+		// Can we insert /+/ in the path name where the type is?
 		String path = m.group(6);
 		if(path != null) {
 			String [] pathElements = m.group(6).split("/");
@@ -427,8 +429,7 @@ public class ObjectPath {
 	 * @return - local path for this objectPath. Default is returned if none specified
 	 */
 	public String getLocalPath() {
-		NameSpacePath ns = getNameSpacePath();
-		return ns != null ? nameSpacePath.getLocalPath() : Constants.defaultLocalPath;
+		return nameSpacePath != null ? nameSpacePath.getLocalPath() : Constants.defaultLocalPath;
 	}
 
 	/**
@@ -437,7 +438,7 @@ public class ObjectPath {
 	 */
 	public String getResourcePath() {
 		NameSpacePath ns = getNameSpacePath();
-		return ns != null ? nameSpacePath.getResourcePath() : Constants.defaultResourcePath;
+		return ns != null ? ns.getResourcePath() : Constants.defaultResourcePath;
 	}
 
 	/**
