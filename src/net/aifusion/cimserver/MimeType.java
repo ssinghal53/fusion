@@ -44,7 +44,7 @@ public enum MimeType {
 	// note that BINARY must be first occurrence of application/octet-stream
 	/** Binary stream type */
 	BINARY("bin","application/octet-stream"),
-	/** Chunked ang zipped type */
+	/** Chunked and zipped type */
 	ZIP("zip","application/octet-stream");
 	
 	private String extension;
