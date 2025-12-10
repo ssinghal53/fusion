@@ -13,7 +13,7 @@ class GOLF_Base {
     string InstanceID;
 
         [Description ( 
-          "A a short textual description (one- line string) of the "
+          "A short textual description (one- line string) of the "
           "instance." ), 
          MaxLen (64)]
     string Caption;
