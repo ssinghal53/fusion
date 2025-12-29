@@ -46,7 +46,7 @@ public class LargeInteger extends AsnValue {
 	 * @param value value for this large integer
 	 */
 	public LargeInteger(BigInteger value) {
-		super(Tag.INTEGER.getTagNumber(),Tag.INTEGER.getTagClass(),Tag.INTEGER.getTagEncoding());
+		super(Tag.INTEGER.getTagClass(),Tag.INTEGER.getTagEncoding(),Tag.INTEGER.getTagNumber());
 		this.value = value;
 	}
 
@@ -57,7 +57,7 @@ public class LargeInteger extends AsnValue {
 	 * @param encoding - encoding for this value
 	 */
 	private LargeInteger(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 
 	/* (non-Javadoc)
@@ -66,7 +66,7 @@ public class LargeInteger extends AsnValue {
 	@Override
 	public byte[] getEncodedValue() {
 		if(encodedValue != null) return encodedValue;
-		byte [] header = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] header = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		byte[] content = value.toByteArray();
 		long bytesInContentLength = getRequiredBytesForLength(content.length);
 		encodedValue = new byte[(int) (header.length+bytesInContentLength+content.length)];

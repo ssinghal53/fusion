@@ -55,7 +55,7 @@ public class IA5StringValue extends AsnValue {
 	}
 	
 	private IA5StringValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 		return;
 	}
 	
@@ -108,7 +108,7 @@ public class IA5StringValue extends AsnValue {
 	@Override
 	public byte[] getEncodedValue() {
 		if(encodedValue != null) return Arrays.copyOf(encodedValue, encodedValue.length);
-		byte [] header = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] header = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		byte[] content;
 		content = value.getBytes();
 		long bytesInContentLength = getRequiredBytesForLength(content.length);

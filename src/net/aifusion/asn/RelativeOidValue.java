@@ -46,7 +46,7 @@ public class RelativeOidValue extends AsnValue {
 	 * @param oidValues - array containing relative OID components, with oidValues[0] being the leftmost component
 	 */
 	public RelativeOidValue(long [] oidValues) {
-		super(Tag.RELATIVE_OID.getTagNumber(),Tag.RELATIVE_OID.getTagClass(),Tag.RELATIVE_OID.getTagEncoding());
+		super(Tag.RELATIVE_OID.getTagClass(),Tag.RELATIVE_OID.getTagEncoding(),Tag.RELATIVE_OID.getTagNumber());
 		if(oidValues.length < 1) throw new ModelException(ExceptionReason.INVALID_PARAMETER,
 				this+" Expected at least 1 component. Found "+oidValues.length);
 		this.oidValues = oidValues;
@@ -65,7 +65,7 @@ public class RelativeOidValue extends AsnValue {
 				encoded.add(Byte.valueOf(b));
 			}
 		}
-		byte [] tagBytes = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] tagBytes = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		encodedValue = new byte [tagBytes.length+getRequiredBytesForLength(encoded.size())+encoded.size()];
 		int cursor = 0;
 		for(; cursor < tagBytes.length; cursor++) {
@@ -79,7 +79,7 @@ public class RelativeOidValue extends AsnValue {
 	}
 	
 	private RelativeOidValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 	
 	public static RelativeOidValue create(byte [] buffer, int blen, int cursor) {

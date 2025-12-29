@@ -49,7 +49,7 @@ public class IntegerValue extends AsnValue {
 	 * @see LargeInteger
 	 */
 	public IntegerValue(long value) {
-		super(Tag.INTEGER.getTagNumber(),Tag.INTEGER.getTagClass(),Tag.INTEGER.getTagEncoding());
+		super(Tag.INTEGER.getTagClass(),Tag.INTEGER.getTagEncoding(),Tag.INTEGER.getTagNumber());
 		this.value = value;
 		int length = getRequiredLength(value);	// encoding length 1 <= length <= 8
 		// coded as tag, length, MSB .. LSB
@@ -72,7 +72,7 @@ public class IntegerValue extends AsnValue {
 	 * @param encoding - tag encoding
 	 */
 	private IntegerValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 
 	/**

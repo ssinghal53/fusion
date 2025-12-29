@@ -37,7 +37,7 @@ public final class NullValue extends AsnValue {
 	 * ASN.1 Null Value
 	 */
 	public NullValue() {
-		super(Tag.NULL.getTagNumber(),Tag.NULL.getTagClass(),Tag.NULL.getTagEncoding());
+		super(Tag.NULL.getTagClass(),Tag.NULL.getTagEncoding(),Tag.NULL.getTagNumber());
 		return;
 	}
 	

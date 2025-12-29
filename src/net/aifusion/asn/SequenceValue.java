@@ -49,7 +49,7 @@ public class SequenceValue extends AsnValue {
 	 * @param values values to be included in the sequence
 	 */
 	public SequenceValue(List<AsnValue> values) {
-		super(Tag.SEQUENCE.getTagNumber(),Tag.SEQUENCE.getTagClass(),Tag.SEQUENCE.getTagEncoding());
+		super(Tag.SEQUENCE.getTagClass(),Tag.SEQUENCE.getTagEncoding(),Tag.SEQUENCE.getTagNumber());
 		this.values = values;
 		seqId = nextId++;
 		encodedValue = getEncodedValue();
@@ -63,7 +63,7 @@ public class SequenceValue extends AsnValue {
 	 * @param encoding - tag encoding for this sequence
 	 */
 	private SequenceValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 		seqId = nextId++;
 		return;
 	}

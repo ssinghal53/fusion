@@ -56,7 +56,7 @@ public class NumericStringValue extends AsnValue {
 	}
 	
 	private NumericStringValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 
 	public static NumericStringValue create(byte [] buffer, int blen, int cursor) {
@@ -93,7 +93,7 @@ public class NumericStringValue extends AsnValue {
 	@Override
 	public byte[] getEncodedValue() {
 		if(encodedValue != null) return Arrays.copyOf(encodedValue, encodedValue.length);
-		byte [] header = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] header = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		byte[] content;
 		content = value.getBytes();
 		long bytesInContentLength = getRequiredBytesForLength(content.length);

@@ -83,7 +83,7 @@ public class OidValue extends AsnValue {
 				encoded.add(Byte.valueOf(b));
 			}
 		}
-		byte [] tagBytes = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] tagBytes = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		encodedValue = new byte [tagBytes.length+getRequiredBytesForLength(encoded.size())+encoded.size()];
 		int cursor = 0;
 		for(; cursor < tagBytes.length; cursor++) {
@@ -97,7 +97,7 @@ public class OidValue extends AsnValue {
 	}
 	
 	private OidValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 	
 	/**

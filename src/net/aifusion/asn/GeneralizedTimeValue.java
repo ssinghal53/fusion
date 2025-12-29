@@ -49,7 +49,7 @@ public class GeneralizedTimeValue extends AsnValue {
 	 * @param value - String representation of the time value ("yyyyMMddHHmmssZ")
 	 */
 	public GeneralizedTimeValue(String value) {
-		super(Tag.GENERALIZED_TIME.getTagNumber(),Tag.GENERALIZED_TIME.getTagClass(),Tag.GENERALIZED_TIME.getTagEncoding());
+		super(Tag.GENERALIZED_TIME.getTagClass(),Tag.GENERALIZED_TIME.getTagEncoding(),Tag.GENERALIZED_TIME.getTagNumber());
 		this.value = value;
 		try {
 			date = getDate(value);
@@ -60,7 +60,7 @@ public class GeneralizedTimeValue extends AsnValue {
 	}
 	
 	private GeneralizedTimeValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 	
 	/**
@@ -111,7 +111,7 @@ public class GeneralizedTimeValue extends AsnValue {
 	@Override
 	public byte[] getEncodedValue() {
 		if(encodedValue != null) return Arrays.copyOf(encodedValue, encodedValue.length);
-		byte [] header = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] header = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		byte[] content;
 		try {
 			content = value.getBytes("UTF-8");

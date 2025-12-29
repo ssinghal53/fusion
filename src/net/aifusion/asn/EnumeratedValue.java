@@ -47,7 +47,7 @@ public class EnumeratedValue extends AsnValue {
 	 * @param value - integer value associated with the Enumerated Value
 	 */
 	public EnumeratedValue(int value) {
-		super(Tag.ENUMERATED.getTagNumber(),Tag.ENUMERATED.getTagClass(),Tag.ENUMERATED.getTagEncoding());
+		super(Tag.ENUMERATED.getTagClass(),Tag.ENUMERATED.getTagEncoding(),Tag.ENUMERATED.getTagNumber());
 		if(value < 0) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Expected positive integer, found "+value);
 		this.value = value;
 		int length = getRequiredLength(value);	// encoding length 1 <= length <= 8
@@ -65,7 +65,7 @@ public class EnumeratedValue extends AsnValue {
 	}
 
 	private EnumeratedValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 
 	@Override

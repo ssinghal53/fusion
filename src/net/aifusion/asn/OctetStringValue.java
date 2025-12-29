@@ -45,13 +45,13 @@ public class OctetStringValue extends AsnValue {
 	 * @param value - byte [] containing the octets
 	 */
 	public OctetStringValue(byte [] value) {
-		super(Tag.OCTET_STRING.getTagNumber(),Tag.OCTET_STRING.getTagClass(),Tag.OCTET_STRING.getTagEncoding());
+		super(Tag.OCTET_STRING.getTagClass(),Tag.OCTET_STRING.getTagEncoding(),Tag.OCTET_STRING.getTagNumber());
 		this.value = Arrays.copyOf(value, value.length);
 		return;
 	}
 	
 	private OctetStringValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 	
 	/**

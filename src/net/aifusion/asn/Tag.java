@@ -37,80 +37,182 @@ import net.aifusion.metamodel.ModelException;
 public enum Tag {
 	// (tagNumber, tagClass, tagEncoding)
 	/** End of content */
-	END_OF_CONTENT(0,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	END_OF_CONTENT(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,0),
 	/** BOOLEAN value */
-	BOOLEAN(1,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	BOOLEAN(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,1),
 	/** Integer value */
-	INTEGER(2,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	INTEGER(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,2),
 	/** an arbitrary string of bits (ones and zeroes) */
-	BIT_STRING(3,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	BIT_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,3),
 	/** an arbitrary string of octets (eight-bit values) */
-	OCTET_STRING(4,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	OCTET_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,4),
 	/** a null value */
-	NULL(5,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	NULL(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,5),
 	/** an object identifier */
-	OBJECT_IDENTIFIER(6,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	OBJECT_IDENTIFIER(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,6),
 	/** Object Descriptor */
-	OBJECT_DESCRIPTOR(7,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	OBJECT_DESCRIPTOR(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,7),
 	/** Instance of */
-	INSTANCE_OF(8,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	INSTANCE_OF(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,8),
 	/** External */
-	EXTERNAL(8,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	EXTERNAL(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,8),
 	/** Real number */
-	REAL(9,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	REAL(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,9),
 	/** Enumerated value */
-	ENUMERATED(10,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	ENUMERATED(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,10),
 	/** Embedded PDV value */
-	EMBEDDED_PDV(11,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	EMBEDDED_PDV(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,11),
 	/** utf-8 string value */
-	UTF8_STRING(12,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	UTF8_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,12),
 	/** Relative OID */
-	RELATIVE_OID(13,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	RELATIVE_OID(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,13),
 	// 14 and 15 are reserved for future use
 	/** Reserved */
-	RESERVED_1(14,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	RESERVED_1(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,14),
 	/** Reserved */
-	RESERVED_2(15,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	RESERVED_2(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,15),
 	/** an ordered collection of zero or more types */
-	SEQUENCE(16,TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED),
+	SEQUENCE(TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED,16),
 	/** an ordered collection of one or more occurrences of a given type */
-	SEQUENCE_OF(16,TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED),
+	SEQUENCE_OF(TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED,16),
 	/** an unordered collection of zero or more types */
-	SET(17,TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED),
+	SET(TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED,17),
 	/** an unordered collection of one or more types */
-	SET_OF(17,TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED),
+	SET_OF(TagClass.UNIVERSAL,TagEncoding.CONSTRUCTED,17),
 	/** Numeric string */
-	NUMERIC_STRING(18,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	NUMERIC_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,18),
 	/** an arbitrary string of printable characters */
-	PRINTABLE_STRING(19,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	PRINTABLE_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,19),
 	/** an arbitrary string of T.61 (eight-bit) characters */
-	T61_STRING(20,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	T61_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,20),
 	/** Teletex string */
-	TELETEX_STRING(20,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	TELETEX_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,20),
 	/** VideoTex String */
-	VIDEOTEX_STRING(21,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	VIDEOTEX_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,21),
 	/** an arbitrary string of IA5 (ASCII) characters */
-	IA5_STRING(22,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	IA5_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,22),
 	/** a "coordinated universal time" or Greenwich Mean Time (GMT) value */
-	UTC_TIME(23,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	UTC_TIME(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,23),
 	/** Generalized Time value */
-	GENERALIZED_TIME(24,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	GENERALIZED_TIME(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,24),
 	/** Graphic string */
-	GRAPHIC_STRING(25,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	GRAPHIC_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,25),
 	/** Visible String */
-	VISIBLE_STRING(26,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	VISIBLE_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,26),
 	/** ISO 646 String */
-	ISO646_STRING(26,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	ISO646_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,26),
 	/** General String value */
-	GENERAL_STRING(27,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	GENERAL_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,27),
 	/** Universal String value */
-	UNIVERSAL_STRING(28,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	UNIVERSAL_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,28),
 	/** Character String value */
-	CHARACTER_STRING(29,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	CHARACTER_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,29),
 	/** BMP String value. */
-	BMP_STRING(30,TagClass.UNIVERSAL,TagEncoding.PRIMITIVE),
+	BMP_STRING(TagClass.UNIVERSAL,TagEncoding.PRIMITIVE,30),
 	/** User Defined tag */
-	USER_DEFINED(31,TagClass.CONTEXT_SPECIFIC,TagEncoding.PRIMITIVE);
+	USER_DEFINED(TagClass.CONTEXT_SPECIFIC,TagEncoding.PRIMITIVE,31),
+	
+	/* *************************************************************
+	 * Fusion specific tags
+	 * 
+	 * We will use TagClass.PRIVATE for our tags.
+	 * We will use TagEncoding.PRIMITIVE for non-array tags, and
+	 * TagEncoding.CONTEXT_SPECIFIC to indicate array tags. This will
+	 * allow us to use 6 bits (5 tag bits + PRIMITIVE/CONTEXT_SPECIFIC)
+	 * for tag numbers and all Fusion tags will fit in one byte.
+	 * 
+	 * TODO: Since many of the Fusion tags represent fixed length values,
+	 * we will also change the TLV structure to omit L values in the
+	 * encoding as necessary.
+	 * 
+	 * TODO: In Fusion, we want to separate out the overloaded use of tags
+	 * specified in ASN.1-- that's garbage-- if we have to have the
+	 * class definition for decoding, all this TLV stuff is no longer
+	 * self-describing. 
+	 * *************************************************************
+	 */
+	VOID(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 0),
+	/** Boolean type (Boolean | boolean) */
+	BOOL(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 1),
+	/** Unsigned 8-bit Integer (UInt8) */
+	UINT8(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 2),
+	/** Unsigned 16-bit Integer (UInt16) */
+	UINT16(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 3),
+	/** Unsigned 32-bit Integer (UInt32) */
+	UINT32(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 4),
+	/** Unsigned 64-bit Integer (UInt64) */
+	UINT64(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 5),
+	/** Signed 8-bit Integer (Byte | byte) */
+	SINT8(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 6),
+	/** Signed 16-bit Integer (Short | short) */
+	SINT16(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 7),
+	/** Signed 32-bit Integer (Integer | int) */
+	SINT32(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 8),
+	/** Signed 64-bit Integer (Long | long) */
+	SINT64(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 9),
+	/** IEEE 4-byte real number (Float | float) */
+	REAL32(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 10),
+	/** IEEE 8-byte real number (Double | double) */
+	REAL64(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 11),
+	/** 16-bit UCS-2 Character (Character | char) */
+	CHAR16(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 12),
+	/** 16-bit UCS-2 String (String) */
+	STRING(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 13),
+	/** Date time  (DateTime) */
+	DATETIME(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 14),
+	/** OctetString value (OctetString) */
+	OCTETSTRING(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 15),
+	/** Object Name (ObjectPath) */
+	OBJECTPATH(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 16),
+	/** Enumeration value (EnumerationValue) */
+	ENUMERATIONVALUE(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 17),
+	/** CimStructure value (StructureValue) */
+	STRUCTUREVALUE(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 18),
+	/** Instance value (CimInstance) */
+	INSTANCEVALUE(TagClass.PRIVATE,TagEncoding.PRIMITIVE, 19),
+	
+	// tags <PRIVATE,PRIMITIVE {20-31}> are undefined
+	
+	/** Boolean array (Boolean[] | boolean[]) */
+	BOOL_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 1),
+	/** Unsigned 8-bit Integer array (UInt8[]) */
+	UINT8_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 2),
+	/** Unsigned 16-bit Integer array (UInt16[]) */
+	UINT16_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 3),
+	/** Unsigned 32-bit Integer array (UInt32[]) */
+	UINT32_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 4),
+	/** Unsigned 64-bit Integer array (UInt64[]) */
+	UINT64_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 5),
+	/** Signed 8-bit Integer array (Byte[] | byte[]) */
+	SINT8_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 6),
+	/** Signed 16-bit Integer array (Short[] | short[]) */
+	SINT16_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 7),
+	/** Signed 32-bit Integer array (Integer[] | int[]) */
+	SINT32_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 8),
+	/** Signed 64-bit Integer array (Long[] | long[]) */
+	SINT64_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 9),
+	/** IEEE 4-byte real number array (Float[] | float[]) */
+	REAL32_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 10),
+	/** IEEE 8-byte real number array (Double[] | double[]) */
+	REAL64_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 11),
+	/** 16-bit UCS-2 Character array (Character[] | char[]) */
+	CHAR16_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 12),
+	/** 16-bit UCS-2 String array (String[]) */
+	STRING_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 13),
+	/** Date time array (DateTime[]) */
+	DATETIME_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 14),
+	/** OctetString array value (OctetString[]) */
+	OCTETSTRING_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 15),
+	/** Object Name array (ObjectPath[]) */
+	OBJECTPATH_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 16),
+	/** Enumeration value array (EnumerationValue) */
+	ENUMERATIONVALUE_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 17),
+	/** CimStructure value (StructureValue) */
+	STRUCTUREVALUE_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 18),
+	/** Instance value (CimInstance) */
+	INSTANCEVALUE_ARRAY(TagClass.PRIVATE,TagEncoding.CONSTRUCTED, 19);
+	
+	// Tags <PRIVATE,CONSTRUCTED, {20-31}> are undefined
 
 	/** Tag identifier for this tag */
 	private final long tagNumber;
@@ -123,11 +225,11 @@ public enum Tag {
 
 	/**
 	 * Create the ASN tag for universal classes
-	 * @param tagNumber - value associated with this tag
 	 * @param tagClass - tag class associated with this type
 	 * @param tagEncoding - tag encoding associated with this tag
+	 * @param tagNumber - value associated with this tag
 	 */
-	private Tag(long tagNumber,TagClass tagClass, TagEncoding tagEncoding){
+	private Tag(TagClass tagClass,TagEncoding tagEncoding, long tagNumber){
 		this.tagNumber = tagNumber;
 		this.tagClass = tagClass;
 		this.tagEncoding = tagEncoding;
@@ -145,7 +247,7 @@ public enum Tag {
 
 	/**
 	 * Get the class associated with this tag
-	 * @return - UNIVERSAL or CONTEXT_SPECIFIC
+	 * @return - UNIVERSAL, APPLICATION, CONTEXT_SPECIFIC, or PRIVATE
 	 */
 	public TagClass getTagClass() {
 		return tagClass;
@@ -188,14 +290,24 @@ public enum Tag {
 	 * Note that in some cases (e.g., SEQUENCE and SEQUENCE_OF) two tags have the same identifier.
 	 * In that case the first tag in the enum will be returned.
 	 * @param identifier - identifier for the tag to locate
-	 * @return - corresponding tag, if pre-defined
+	 * @return - corresponding tag, if pre-defined. Null otherwise
 	 */
 	public static Tag locate(byte identifier) {
-		long tagNumber = identifier & 0x01F;
 		for(Tag t : Tag.values()) {
-			if(t.tagNumber == tagNumber) return t;
+			if(t.identifier== identifier) return t;
 		}
-		return null; // should not happen, since all numbers [0..31] are defined
+		return null;
+	}
+	
+	/**
+	 * Locate the tag corresponding to a given class, encoding, and number
+	 * @param tagClass associated tag class
+	 * @param tagEncoding associated tag encoding
+	 * @param tagNumber tag number
+	 * @return corresponding tag. Null returned if the tag is not predefined
+	 */
+	public static Tag locate(TagClass tagClass, TagEncoding tagEncoding, long tagNumber) {
+		return locate(getEncoded(tagClass,tagEncoding,tagNumber)[0]);
 	}
 
 	/**
@@ -227,12 +339,15 @@ public enum Tag {
 	 * The least number of following octets should be encoded; that is, bits 1..7 should not all be 0 in the first following octet.<br>
 	 * Note that the standard allows the tag number to be an arbitrary precision unsigned integer.
 	 * We restrict the tag length to be no more than 63 bits to fit in a long.
-	 * @param tagNumber - tag number
+	 * 
+	 * For Fusion tags, we will use TagClass = PRIVATE. TagEncoding.PRIMITIVE will indicate non-array
+	 * values, and TagEncoding.CONSTRUCTED will indicate array values
 	 * @param c - tag class
 	 * @param e - encoding type
+	 * @param tagNumber - tag number
 	 * @return - byte sequence containing the encoded value of the tag (identifier + tagNumber)
 	 */
-	public static byte [] getEncoded(long tagNumber, TagClass c, TagEncoding e) {
+	public static byte [] getEncoded(TagClass c, TagEncoding e, long tagNumber) {
 		if(tagNumber < 0) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Tag cannot be negative, found "+tagNumber);
 		if(tagNumber < 31) {
 			return new byte[] {(byte) (tagNumber | c.getTagClass() | e.getTagEncoding())};
@@ -256,7 +371,7 @@ public enum Tag {
 	 */
 	public static long getTagNumber(byte [] encoding, int cursor) {
 		if(encoding == null || encoding.length <= cursor) throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Null or short-length encoding");
-		if((encoding[cursor] & 0x1F) < 31) {
+		if((encoding[cursor] & 0x01F) < 31) {
 			return encoding[cursor] & 0x01F;
 		}
 		long tag = 0;

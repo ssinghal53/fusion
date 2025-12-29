@@ -50,7 +50,7 @@ public class BitStringValue extends AsnValue {
 	 * @param bits - byte array containing bits in the Bit String
 	 */
 	public BitStringValue(byte [] bits) {
-		super(Tag.BIT_STRING.getTagNumber(),Tag.BIT_STRING.getTagClass(),Tag.BIT_STRING.getTagEncoding());
+		super(Tag.BIT_STRING.getTagClass(),Tag.BIT_STRING.getTagEncoding(),Tag.BIT_STRING.getTagNumber());
 		bitSet = BitSet.valueOf(bits);
 		StringBuilder b = new StringBuilder("'");
 		for(int i = 0; i < bitSet.length(); i += 8) {
@@ -70,7 +70,7 @@ public class BitStringValue extends AsnValue {
 	 * @param bitString - bit string using the ASN.1 bit string format 'nnn...'[B|H]
 	 */
 	public BitStringValue(String bitString) {
-		super(Tag.BIT_STRING.getTagNumber(),Tag.BIT_STRING.getTagClass(),Tag.BIT_STRING.getTagEncoding());
+		super(Tag.BIT_STRING.getTagClass(),Tag.BIT_STRING.getTagEncoding(),Tag.BIT_STRING.getTagNumber());
 		this.value = bitString;
 		bitSet = new BitSet();
 		if(bitString.startsWith("'") && bitString.endsWith("'B")){
@@ -102,7 +102,7 @@ public class BitStringValue extends AsnValue {
 	}
 	
 	private BitStringValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 	
 	/**

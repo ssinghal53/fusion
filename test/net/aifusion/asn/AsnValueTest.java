@@ -56,13 +56,13 @@ public class AsnValueTest {
 		public TestValue(Tag tag) {
 			super(tag);
 		}
-		public TestValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-			super(tagNumber, tagClass, encoding);
+		public TestValue(TagClass tagClass, TagEncoding encoding, long tagNumber) {
+			super(tagClass, encoding, tagNumber);
 		}
 		@Override
 		public byte[] getEncodedValue() {
 			if(getTag() != null) return getTag().getEncoded();
-			return Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+			return Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		}
 	}
 	
@@ -110,7 +110,7 @@ public class AsnValueTest {
 	}
 	
 	/**
-	 * Test method for {@link net.aifusion.asn.AsnValue#AsnValue(long, net.aifusion.asn.TagClass, net.aifusion.asn.TagEncoding)}.
+	 * Test method for {@link net.aifusion.asn.AsnValue#AsnValue(net.aifusion.asn.TagClass, net.aifusion.asn.TagEncoding, long)}.
 	 * Test method for {@link net.aifusion.asn.AsnValue#getTag()}.
 	 * Test method for {@link net.aifusion.asn.AsnValue#getTagNumber()}.
 	 * Test method for {@link net.aifusion.asn.AsnValue#getTagClass()}.
@@ -121,16 +121,12 @@ public class AsnValueTest {
 		for(long tagNumber : new long[] {4,5,30,31,64,128,4096,75000000}) {
 			for(TagClass c : TagClass.values()) {
 				for(TagEncoding e : TagEncoding.values()) {
-					TestValue v = new TestValue(tagNumber,c,e);
+					TestValue v = new TestValue(c,e,tagNumber);
 					assertNotNull(v);
-					if(c == TagClass.UNIVERSAL && tagNumber < 32) {
-						assertEquals(Tag.locate((byte) tagNumber),v.getTag());
-					} else {
-						assertNull(v.getTag());
-					}
 					assertEquals(tagNumber,v.getTagNumber());
 					assertEquals(c,v.getTagClass());
 					assertEquals(e,v.getTagEncoding());
+					assertEquals(v.getTag(),Tag.locate(c, e, tagNumber));
 				}
 			}
 		}
@@ -157,7 +153,7 @@ public class AsnValueTest {
 		};
 		assertEquals(tagNumber.length,expected.length);
 		for(int i=0; i < tagNumber.length; i++) {
-			TestValue v = new TestValue(tagNumber[i],TagClass.CONTEXT_SPECIFIC,TagEncoding.CONSTRUCTED);
+			TestValue v = new TestValue(TagClass.CONTEXT_SPECIFIC,TagEncoding.CONSTRUCTED,tagNumber[i]);
 			// System.out.println(Utilities.toHex(v.getEncodedValue()));
 			assertArrayEquals(expected[i],v.getEncodedValue());
 			assertEquals(tagNumber[i],v.getTagNumber());
@@ -266,8 +262,13 @@ public class AsnValueTest {
 		assertEquals(buffer.length,expected.length);
 		for(int i = 0; i < expected.length; i++) {
 			assertEquals(TagClass.CONTEXT_SPECIFIC,TagClass.getTagClass(buffer[i][0]));
-			if(i == 0) assertEquals(Tag.SEQUENCE,Tag.locate(buffer[i][0]));
-			else assertEquals(Tag.USER_DEFINED,Tag.locate(buffer[i][0]));
+			if(i != 0) {
+				assertEquals(Tag.USER_DEFINED,Tag.locate(buffer[i][0]));
+			} else {
+				// 0x090 is CONTEXT_SPECIFIC, SEQUENCE combination, and does not have a pre-defined
+				// identifier. Tag.locate() will return null
+				assertNull(Tag.locate(buffer[i][0]));
+			}
 			assertEquals(expected[i],AsnValue.getTagNumber(buffer[i], buffer[i].length, 0));
 		}
 	}
@@ -332,7 +333,7 @@ public class AsnValueTest {
 	public void testToAsnStringString() {
 		TestValue v = new TestValue(Tag.INTEGER);
 		assertEquals("\t[INTEGER] ",v.toAsnString("\t"));
-		v = new TestValue(34,TagClass.APPLICATION,TagEncoding.PRIMITIVE);
+		v = new TestValue(TagClass.APPLICATION,TagEncoding.PRIMITIVE,34);
 		assertEquals("\t[34] [null] ",v.toAsnString("\t"));
 	}
 

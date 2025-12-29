@@ -57,7 +57,7 @@ public class VisibleStringValue extends AsnValue {
 	}
 
 	private VisibleStringValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 	
 	/**
@@ -107,7 +107,7 @@ public class VisibleStringValue extends AsnValue {
 	@Override
 	public byte[] getEncodedValue() {
 		if(encodedValue != null) return Arrays.copyOf(encodedValue, encodedValue.length);
-		byte [] header = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] header = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		byte[] content;
 		content = value.getBytes(StandardCharsets.US_ASCII);
 		long bytesInContentLength = getRequiredBytesForLength(content.length);

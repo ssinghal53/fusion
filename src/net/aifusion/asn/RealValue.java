@@ -47,7 +47,7 @@ public class RealValue extends AsnValue {
 	 * @param value - value to use
 	 */
 	public RealValue(double value) {
-		super(Tag.REAL.getTagNumber(),Tag.REAL.getTagClass(),Tag.REAL.getTagEncoding());
+		super(Tag.REAL.getTagClass(),Tag.REAL.getTagEncoding(),Tag.REAL.getTagNumber());
 		this.value = value;
 		if(value == 0) {
 			// zero value is encoded as a zero length value with tag REAL
@@ -111,7 +111,7 @@ public class RealValue extends AsnValue {
 	}
 	
 	private RealValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 
 

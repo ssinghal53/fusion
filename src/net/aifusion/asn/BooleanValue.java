@@ -53,7 +53,7 @@ public class BooleanValue extends AsnValue {
 	}
 	
 	private BooleanValue(long tagNumber, TagClass tagClass, TagEncoding tagEncoding) {
-		super(tagNumber, tagClass,tagEncoding);
+		super(tagClass, tagEncoding,tagNumber);
 		return;
 	}
 

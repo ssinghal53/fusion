@@ -29,6 +29,8 @@ package net.aifusion.asn;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -45,7 +47,7 @@ public class TagTest {
 	public static void setupBefore() throws Exception {
 		System.out.print("TagTest");
 	}
-	
+
 	@AfterClass
 	public static void tearDownAfter() throws Exception {
 		System.out.print("\n");
@@ -63,7 +65,7 @@ public class TagTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		assertEquals(37,Tag.values().length);
+		assertEquals(76,Tag.values().length);
 	}
 
 	/**
@@ -76,8 +78,11 @@ public class TagTest {
 	@Test
 	public void testGetTagValues() {
 		for(Tag t : Tag.values()) {
-			// all predefined tags are UNIVERSAL, except USER_DEFINED tags, which are context specific
-			assertEquals(t != Tag.USER_DEFINED ? TagClass.UNIVERSAL : TagClass.CONTEXT_SPECIFIC,t.getTagClass());
+			// all ASN.1 predefined tags are UNIVERSAL, except USER_DEFINED tags, which are context specific
+			// All Fusion tags are PRIVATE
+
+
+			//			assertEquals(t != Tag.USER_DEFINED ? TagClass.UNIVERSAL : TagClass.CONTEXT_SPECIFIC,t.getTagClass());
 			switch(t) {
 			case BIT_STRING:
 				assertEquals(3,t.getTagNumber());
@@ -275,7 +280,242 @@ public class TagTest {
 				assertEquals(-97,t.getIdentifier());
 				assertArrayEquals(new byte[] {-97},t.getEncoded());
 				break;
+			case BOOL:
+				assertEquals(1,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-63,t.getIdentifier());
+				assertArrayEquals(new byte[] {-63},t.getEncoded());
+				break;
+			case BOOL_ARRAY:
+				assertEquals(1,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(1-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {1-32},t.getEncoded());
+				break;
+			case CHAR16:
+				assertEquals(12,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-52,t.getIdentifier());
+				assertArrayEquals(new byte[] {-52},t.getEncoded());
+				break;
+			case CHAR16_ARRAY:
+				assertEquals(12,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(12-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {12-32},t.getEncoded());
+				break;
+			case DATETIME:
+				assertEquals(14,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(14-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {14-64},t.getEncoded());
+				break;
+			case DATETIME_ARRAY:
+				assertEquals(14,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(14-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {14-32},t.getEncoded());
+				break;
+			case ENUMERATIONVALUE:
+				assertEquals(17,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(17-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {17-64},t.getEncoded());
+				break;
+			case ENUMERATIONVALUE_ARRAY:
+				assertEquals(17,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(17-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {17-32},t.getEncoded());
+				break;
+			case INSTANCEVALUE:
+				assertEquals(19,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(19-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {19-64},t.getEncoded());
+				break;
+			case INSTANCEVALUE_ARRAY:
+				assertEquals(19,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(19-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {19-32},t.getEncoded());
+				break;
+			case OBJECTPATH:
+				assertEquals(16,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(16-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {16-64},t.getEncoded());
+				break;
+			case OBJECTPATH_ARRAY:
+				assertEquals(16,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(16-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {16-32},t.getEncoded());
+				break;
+			case OCTETSTRING:
+				assertEquals(15,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(15-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {15-64},t.getEncoded());
+				break;
+			case OCTETSTRING_ARRAY:
+				assertEquals(15,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(15-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {15-32},t.getEncoded());
+				break;
+			case REAL32:
+				assertEquals(10,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-54,t.getIdentifier());
+				assertArrayEquals(new byte[] {-54},t.getEncoded());
+				break;
+			case REAL32_ARRAY:
+				assertEquals(10,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(10-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {10-32},t.getEncoded());
+				break;
+			case REAL64:
+				assertEquals(11,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-53,t.getIdentifier());
+				assertArrayEquals(new byte[] {-53},t.getEncoded());
+				break;
+			case REAL64_ARRAY:
+				assertEquals(11,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(11-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {11-32},t.getEncoded());
+				break;
+			case SINT16:
+				assertEquals(7,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-57,t.getIdentifier());
+				assertArrayEquals(new byte[] {-57},t.getEncoded());
+				break;
+			case SINT16_ARRAY:
+				assertEquals(7,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(7-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {7-32},t.getEncoded());
+				break;
+			case SINT32:
+				assertEquals(8,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-56,t.getIdentifier());
+				assertArrayEquals(new byte[] {-56},t.getEncoded());
+				break;
+			case SINT32_ARRAY:
+				assertEquals(8,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(8-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {8-32},t.getEncoded());
+				break;
+			case SINT64:
+				assertEquals(9,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-55,t.getIdentifier());
+				assertArrayEquals(new byte[] {-55},t.getEncoded());
+				break;
+			case SINT64_ARRAY:
+				assertEquals(9,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(9-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {9-32},t.getEncoded());
+				break;
+			case SINT8:
+				assertEquals(6,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-58,t.getIdentifier());
+				assertArrayEquals(new byte[] {-58},t.getEncoded());
+				break;
+			case SINT8_ARRAY:
+				assertEquals(6,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(6-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {6-32},t.getEncoded());
+				break;
+			case STRING:
+				assertEquals(13,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(13-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {13-64},t.getEncoded());
+				break;
+			case STRING_ARRAY:
+				assertEquals(13,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(13-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {13-32},t.getEncoded());
+				break;
+			case STRUCTUREVALUE:
+				assertEquals(18,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(18-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {18-64},t.getEncoded());
+				break;
+			case STRUCTUREVALUE_ARRAY:
+				assertEquals(18,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(18-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {18-32},t.getEncoded());
+				break;
+			case UINT16:
+				assertEquals(3,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-61,t.getIdentifier());
+				assertArrayEquals(new byte[] {-61},t.getEncoded());
+				break;
+			case UINT16_ARRAY:
+				assertEquals(3,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(3-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {3-32},t.getEncoded());
+				break;
+			case UINT32:
+				assertEquals(4,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-60,t.getIdentifier());
+				assertArrayEquals(new byte[] {-60},t.getEncoded());
+				break;
+			case UINT32_ARRAY:
+				assertEquals(4,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(4-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {4-32},t.getEncoded());
+				break;
+			case UINT64:
+				assertEquals(5,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-59,t.getIdentifier());
+				assertArrayEquals(new byte[] {-59},t.getEncoded());
+				break;
+			case UINT64_ARRAY:
+				assertEquals(5,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(5-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {5-32},t.getEncoded());
+				break;
+			case UINT8:
+				assertEquals(2,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-62,t.getIdentifier());
+				assertArrayEquals(new byte[] {-62},t.getEncoded());
+				break;
+			case UINT8_ARRAY:
+				assertEquals(2,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(2-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {2-32},t.getEncoded());
+				break;
+			case VOID:
+				assertEquals(0,t.getTagNumber());
+				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
+				assertEquals(-64,t.getIdentifier());
+				assertArrayEquals(new byte[] {-64},t.getEncoded());
+				break;
 			default:
+				fail("Unhandled case "+t);
 				break;
 			}
 		}
@@ -292,14 +532,10 @@ public class TagTest {
 		}
 	}
 
-	/**
-	 * Test method for {@link net.aifusion.asn.Tag#locate(byte)}.
-	 */
 	@Test
-	public void testLocate() {
+	public void testLocate1() {
 		for(Tag c : Tag.values()) {
-			long tagValue = c.getTagNumber();
-			Tag found = Tag.locate((byte) tagValue);
+			Tag found = Tag.locate(c.getTagClass(),c.getTagEncoding(),c.getTagNumber());
 			// handle tags that have duplicate tag numbers
 			switch(c) {
 			case EXTERNAL:
@@ -325,6 +561,65 @@ public class TagTest {
 	}
 
 	/**
+	 * Test method for {@link net.aifusion.asn.Tag#locate(byte)}.
+	 */
+	@Test
+	public void testLocate() {
+		for(Tag c : Tag.values()) {
+			long identifier = c.getIdentifier();
+			Tag found = Tag.locate((byte) identifier);
+			// handle tags that have duplicate tag numbers
+			switch(c) {
+			case EXTERNAL:
+				assertEquals(Tag.INSTANCE_OF,found);
+				break;
+			case SEQUENCE_OF:
+				assertEquals(Tag.SEQUENCE,found);
+				break;
+			case SET_OF:
+				assertEquals(Tag.SET,found);
+				break;
+			case TELETEX_STRING:
+				assertEquals(Tag.T61_STRING,found);
+				break;
+			case ISO646_STRING:
+				assertEquals(Tag.VISIBLE_STRING,found);
+				break;
+			default:
+				assertEquals(c,found);
+				break;
+			}
+		}
+	}
+	/**
+	 * Test method to ensure that all tag identifiers are unique except for the exceptions in ASN.1
+	 */
+	@Test
+	public void testUnique() {
+		for(Tag c1 : Tag.values()) {
+			byte i1 = c1.getIdentifier();
+			for(Tag c2 : Tag.values()) {
+				byte i2 = c2.getIdentifier();
+				//				System.out.println("Compare: "+c1+"("+i1+") "+c2+"("+i2+")");
+				if(c1 == c2) {
+					assertEquals(i1,i2);
+				} else if((c1 == Tag.INSTANCE_OF && c2 == Tag.EXTERNAL || c1 == Tag.EXTERNAL && c2 == Tag.INSTANCE_OF) ||
+						(c1 == Tag.SEQUENCE_OF && c2 == Tag.SEQUENCE || c1 == Tag.SEQUENCE && c2 == Tag.SEQUENCE_OF) ||
+						(c1 == Tag.SET_OF && c2 == Tag.SET || c1 == Tag.SET && c2 == Tag.SET_OF) ||
+						(c1 == Tag.ISO646_STRING && c2 == Tag.VISIBLE_STRING || c1 == Tag.VISIBLE_STRING && c2 == Tag.ISO646_STRING) ||
+						(c1 == Tag.TELETEX_STRING && c2 == Tag.T61_STRING || c1 == Tag.T61_STRING && c2 == Tag.TELETEX_STRING)
+						) {
+					assertEquals(i1,i2);
+				} else {
+					assertNotSame(i1,i2);
+				}
+			}
+		}
+
+
+	}
+
+	/**
 	 * Test method for {@link net.aifusion.asn.Tag#getEncoded()}.
 	 */
 	@Test
@@ -335,7 +630,7 @@ public class TagTest {
 	}
 
 	/**
-	 * Test method for {@link net.aifusion.asn.Tag#getEncoded(long, net.aifusion.asn.TagClass, net.aifusion.asn.TagEncoding)}.<br>
+	 * Test method for {@link net.aifusion.asn.Tag#getEncoded(net.aifusion.asn.TagClass, net.aifusion.asn.TagEncoding, long)}.<br>
 	 * Test method for {@link net.aifusion.asn.Tag#getTagNumber(byte[], int)}.<br>
 	 * Test method for {@link net.aifusion.asn.Tag#getRequiredLength(long)}.
 	 */
@@ -357,7 +652,7 @@ public class TagTest {
 		};
 		assertEquals(tags.length,expected.length);
 		for(int i=0; i < tags.length; i++) {
-			byte [] encoded = Tag.getEncoded(tags[i], TagClass.UNIVERSAL, TagEncoding.PRIMITIVE);
+			byte [] encoded = Tag.getEncoded(TagClass.UNIVERSAL, TagEncoding.PRIMITIVE, tags[i]);
 			assertArrayEquals(expected[i],encoded);
 			assertEquals(tags[i],Tag.getTagNumber(encoded, 0));
 			assertEquals(expected[i].length,Tag.getRequiredLength(tags[i]));

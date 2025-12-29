@@ -39,7 +39,7 @@ public abstract class AsnValue {
 	// We retain both the tag and the tag value, since multiple tags may map to the same tag value (e.g., SEQUENCE & SEQUENCE_OF)
 	/** Tag associated with this value, if any */
 	private Tag tag = null;
-	/** ASN.1 tag value associated with this value */
+	/** ASN.1 tag number associated with this value */
 	private long tagNumber;
 	/** ASN.1 Tag class (Universal, Application, Private, Context_Sensitive) */
 	private TagClass tagClass;
@@ -68,15 +68,15 @@ public abstract class AsnValue {
 
 	/**
 	 * Values with given tag number, class, and encoding
-	 * @param tagNumber - ASN.1 Tag number associated with this value
 	 * @param tagClass - ASN.1 TagClass (Universal, Application, Context_Sensitive, Private)
 	 * @param encoding - ASN.1 Encoding (Primitive, Constructed}
+	 * @param tagNumber - ASN.1 Tag number associated with this value
 	 */
-	protected AsnValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
+	protected AsnValue(TagClass tagClass, TagEncoding encoding, long tagNumber) {
 		this.tagNumber = tagNumber;
 		this.tagClass = tagClass;
 		this.tagEncoding = encoding;
-		if(tagClass == TagClass.UNIVERSAL && tagNumber < 32) tag = Tag.locate((byte) tagNumber);
+		tag = Tag.locate(tagClass,tagEncoding,tagNumber);
 		return;
 	}
 	
@@ -88,8 +88,7 @@ public abstract class AsnValue {
 
 	/**
 	 * Get the ASN.1 predefined (UNIVERSAL) tag associated with this value
-	 * @return - associated tag, if any. Null if the tag is context
-	 * specific or not a pre-defined tag
+	 * @return - associated tag, if any. Null if the tag is not a pre-defined tag
 	 */
 	public Tag getTag() {
 		return tag;

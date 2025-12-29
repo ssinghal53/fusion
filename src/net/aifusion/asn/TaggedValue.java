@@ -94,14 +94,14 @@ public class TaggedValue extends AsnValue {
 	
 	
 	public TaggedValue(long tagNumber, AsnValue value) {
-		super(tagNumber,TagClass.CONTEXT_SPECIFIC,TagEncoding.CONSTRUCTED);
+		super(TagClass.CONTEXT_SPECIFIC,TagEncoding.CONSTRUCTED,tagNumber);
 		this.value = value;
 		encodedValue = getEncodedValue();
 		return;
 	}
 	
 	private TaggedValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class TaggedValue extends AsnValue {
 		if(encodedValue != null) return encodedValue;
 		
 		byte [] content = value.getEncodedValue();
-		byte [] encodedTag = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] encodedTag = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		encodedValue = new byte[encodedTag.length+getRequiredBytesForLength(content.length)+content.length];
 		
 		for(int i = 0; i < encodedTag.length; i++) {

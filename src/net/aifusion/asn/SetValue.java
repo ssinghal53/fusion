@@ -51,7 +51,7 @@ public class SetValue extends AsnValue {
 	 * @param values - values to include in set
 	 */
 	public SetValue(Set<AsnValue> values) {
-		super(Tag.SET.getTagNumber(),Tag.SET.getTagClass(),Tag.SET.getTagEncoding());
+		super(Tag.SET.getTagClass(),Tag.SET.getTagEncoding(),Tag.SET.getTagNumber());
 		this.values = values;
 		setId = nextId++;
 		encodedValue = getEncodedValue();
@@ -59,7 +59,7 @@ public class SetValue extends AsnValue {
 	}
 	
 	private SetValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 		setId = nextId++;
 	}
 

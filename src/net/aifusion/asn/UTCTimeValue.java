@@ -51,7 +51,7 @@ public class UTCTimeValue extends AsnValue {
 	 * @see GeneralizedTimeValue
 	 */
 	public UTCTimeValue(String value) {
-		super(Tag.UTC_TIME.getTagNumber(),Tag.UTC_TIME.getTagClass(),Tag.UTC_TIME.getTagEncoding());
+		super(Tag.UTC_TIME.getTagClass(),Tag.UTC_TIME.getTagEncoding(),Tag.UTC_TIME.getTagNumber());
 		this.value = value;
 		try {
 			date = getDate(value);
@@ -62,7 +62,7 @@ public class UTCTimeValue extends AsnValue {
 	}
 	
 	private UTCTimeValue(long tagNumber, TagClass tagClass, TagEncoding encoding) {
-		super(tagNumber, tagClass, encoding);
+		super(tagClass, encoding, tagNumber);
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class UTCTimeValue extends AsnValue {
 	@Override
 	public byte[] getEncodedValue() {
 		if(encodedValue != null) return Arrays.copyOf(encodedValue, encodedValue.length);
-		byte [] header = Tag.getEncoded(getTagNumber(), getTagClass(), getTagEncoding());
+		byte [] header = Tag.getEncoded(getTagClass(), getTagEncoding(), getTagNumber());
 		byte[] content;
 		try {
 			content = value.getBytes("UTF-8");
