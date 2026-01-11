@@ -28,7 +28,6 @@
  */
 package net.aifusion.metamodel;
 
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
