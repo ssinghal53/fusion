@@ -1,5 +1,5 @@
 /**
- * Copyright 2014, Sharad Singhal, All Rights Reserved
+ * Copyright 2014-2026, Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Jun 1, 2014 by Sharad Singhal
- * Updated Jan 5, 2020 by Sharad Singhal
+ * Updated Jan 11, 2026 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
@@ -159,9 +159,14 @@ public enum StandardQualifierType {
 	// The MOF Parser will translate OVERIDE(STRING) to OVERRIDE(Boolean)
 	// and translate UMLPackagePath to PackagePath
 	
-	// additional cimfusion related qualifiers
+	// additional Fusion related qualifiers
 	/** Qualifier IMPLEMENTS : String[], Scope(CLASS, ASSOCIATION), Policy(RESTRICTED) */
-	IMPLEMENTS("Implements",DataType.STRING_ARRAY,null, new Scope[]{Scope.CLASS,Scope.STRUCTURE}, Policy.RESTRICTED);
+	IMPLEMENTS("Implements",DataType.STRING_ARRAY,null, new Scope[]{Scope.CLASS,Scope.STRUCTURE}, Policy.RESTRICTED),
+	/** Qualifier OID : STRING, Scope(STRUCTURE,CLASS,INTERFACE,ENUMERATION),Policy(DISABLEOVERRIDE) */
+	OID("OID",DataType.STRING,null,new Scope[] {Scope.STRUCTURE,Scope.CLASS,Scope.INTERFACE,
+			Scope.ENUMERATION},Policy.DISABLEOVERRIDE),
+	/** Qualifier TAG : Int32,null, Scope(Property,Reference,EnumerationValue), Policy(EnableOverride) */
+	TAG("Tag",DataType.SINT32,null,new Scope[]{Scope.PROPERTY,Scope.REFERENCE,Scope.ENUMERATIONVALUE},null);
 	
 	/** MOF name for this qualifier type */
 	private final String mofName;
@@ -354,7 +359,7 @@ public enum StandardQualifierType {
 	}
 	
 	/**
-	 * Get the QualifierType dataValue corresponding to this CimStandardQualifier
+	 * Get the QualifierType corresponding to this CimStandardQualifier
 	 * @return - qualifier type for this Standard Qualifier Type
 	 * @see Constants#defaultNameSpacePath
 	 */

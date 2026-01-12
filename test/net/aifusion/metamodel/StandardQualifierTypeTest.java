@@ -76,7 +76,9 @@ public class StandardQualifierTypeTest {
 		StandardQualifierType.VERSION,
 		StandardQualifierType.WRITE,
 		StandardQualifierType.XMLNAMESPACENAME,
-		StandardQualifierType.IMPLEMENTS
+		StandardQualifierType.IMPLEMENTS,
+		StandardQualifierType.OID,
+		StandardQualifierType.TAG
 	};
 	/** Mof Representation */
 	private static String [] mof = new String []{
@@ -110,7 +112,9 @@ public class StandardQualifierTypeTest {
 		"Qualifier Version : String Scope(Interface, Class, Association, Enumeration, Structure) Policy(Restricted);\n",
 		"Qualifier Write : Boolean = false Scope(Property, Reference);\n",
 		"Qualifier XMLNamespaceName : String = null Scope(Parameter, Property, Reference, Method);\n",
-		"Qualifier Implements : String[] Scope(Class, Structure) Policy(Restricted);\n"
+		"Qualifier Implements : String[] Scope(Class, Structure) Policy(Restricted);\n",
+		"Qualifier OID : String Scope(Structure, Class, Interface, Enumeration) Policy(DisableOverride);\n",
+		"Qualifier Tag : SInt32 Scope(Property, Reference, EnumerationValue);\n"
 	};
 	
 	@BeforeClass
@@ -172,6 +176,8 @@ public class StandardQualifierTypeTest {
 				true,	//WRITE
 				true,	//XMLNAMESPACE
 				false,	//IMPLEMENTS
+				false,	//OID
+				false	// TAG
 				
 		};
 		for(int i = 0; i < qualifiers.length; i++) {
@@ -221,7 +227,10 @@ public class StandardQualifierTypeTest {
 			false,	// VERSION
 			false,	// WRITE
 			false,	// XMLNAMESPACE
-			true	// IMPLEMENTS
+			true,	// IMPLEMENTS
+			false,	//OID
+			false	// TAG
+			
 		};
 		assertEquals(qualifiers.length,isArray.length);
 		for(int i = 0; i < qualifiers.length; i++){
@@ -276,7 +285,10 @@ public class StandardQualifierTypeTest {
 				{Scope.INTERFACE, Scope.CLASS, Scope.ASSOCIATION, Scope.ENUMERATION, Scope.STRUCTURE },	//VERSION 
 				{Scope.PROPERTY, Scope.REFERENCE },	//WRITE 
 				{Scope.PARAMETER, Scope.PROPERTY, Scope.REFERENCE, Scope.METHOD },	//XMLNAMESPACE 
-				{Scope.CLASS, Scope.STRUCTURE }	//IMPLEMENTS 
+				{Scope.CLASS, Scope.STRUCTURE },	//IMPLEMENTS
+				{Scope.STRUCTURE,Scope.CLASS,Scope.INTERFACE,Scope.ENUMERATION},	//OID
+				{Scope.PROPERTY,Scope.REFERENCE,Scope.ENUMERATIONVALUE}	// TAG
+				
 		};
 		
 		for(int i = 0; i < qualifiers.length; i++){
@@ -325,7 +337,9 @@ public class StandardQualifierTypeTest {
 			Policy.RESTRICTED,	//VERSION
 			null,	//WRITE
 			null,	//XMLNAMESPACE
-			Policy.RESTRICTED	//IMPLEMENTS
+			Policy.RESTRICTED,	//IMPLEMENTS
+			Policy.DISABLEOVERRIDE,	// OID
+			null	// TAG
 		};
 		
 		assertEquals(qualifiers.length,policy.length);
@@ -371,7 +385,9 @@ public class StandardQualifierTypeTest {
 			DataType.STRING,	//VERSION
 			DataType.BOOLEAN,	//WRITE
 			DataType.STRING,	//XMLNAMESPACE
-			DataType.STRING_ARRAY	//IMPLEMENTS
+			DataType.STRING_ARRAY,	//IMPLEMENTS
+			DataType.STRING,	// OID
+			DataType.SINT32		// TAG
 		};
 		assertEquals(qualifiers.length,dataType.length);
 		for(int i = 0; i < qualifiers.length; i++){
@@ -416,7 +432,8 @@ public class StandardQualifierTypeTest {
 				new DataValue(DataType.BOOLEAN,false),	//WRITE
 				new DataValue(DataType.STRING,null),	//XMLNAMESPACE
 				null,	//IMPLEMENTS
-				
+				null,	//OID
+				null	// TAG	
 		};
 		assertEquals(dataValue.length,qualifiers.length);
 		for(int i = 0; i < qualifiers.length; i++){
