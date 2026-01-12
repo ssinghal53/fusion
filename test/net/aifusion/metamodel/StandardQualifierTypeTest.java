@@ -1,5 +1,5 @@
 /**
- * Copyright 2014, Sharad Singhal, All Rights Reserved
+ * Copyright 2014-2026, Sharad Singhal, All Rights Reserved
  *  
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,6 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Nov 22, 2014 by Sharad Singhal
+ * Last Modified Jan 11, 2026 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
