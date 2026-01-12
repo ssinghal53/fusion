@@ -837,9 +837,13 @@ public class MOFParser implements Parser {
 			// turn compiler debugging on or off
 			debug = "on".equalsIgnoreCase(pragmaParameter);
 		} else if("oid".equalsIgnoreCase(pragmaName)) {
-			p.oid = pragmaParameter;
-			if(!p.oid.matches("^\\d+(\\.\\d+)*$")) throw new ModelException(ExceptionReason.INVALID_PARAMETER,
+			if("null".equalsIgnoreCase(pragmaParameter)) {
+				p.oid = null;
+			} else {
+				p.oid = pragmaParameter;
+				if(!p.oid.matches("^\\d+(\\.\\d+)*$")) error(ExceptionReason.INVALID_PARAMETER,
 					"Expected OID of the form nn[.nn]*, found "+pragmaParameter);
+			}
 		} else {
 			warn("Pragma "+pragmaName+" "+pragmaParameter+" ignored");
 		}
