@@ -1,5 +1,5 @@
 /**
- * Copyright 2014,2025 Sharad Singhal, All Rights Reserved
+ * Copyright 2014-2026 Sharad Singhal, All Rights Reserved
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright notice, this
@@ -22,7 +22,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Nov 29, 2014 by Sharad Singhal
- * Last Modified Mar 31, 2025 by Sharad Singhal
+ * Last Modified Jan 11, 2026 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
@@ -54,8 +54,10 @@ public class Constants {
 	public static final String defaultRepositoryLocation = "repository";
 	/** MappingStrings qualifier definition as fusiononMap JavaClassPath [# methodName] */
 	public static final String fusionMap = "Bind.CF|";
+	/** OID values for Fusion related encodings {aifusion.net (10)} */
+	public static final String fusionOid = "1.3.6.1.4.1.56026.10";
 	/** MappingStrings qualifier prefix for fusion mof encoding to binary */
-	public static final String fusionMofPrefix = "oid.aifusion-net|mof.1.3.6.1.4.1.56026.1";
+	public static final String oidPrefix = "oid.aifusion-net|mof."+fusionOid;
 	/** Default version (if none given) assumed for mapped java classes (0.0.1)*/
 	public static final String defaultVersion = "0.0.1";
 	/** Byte encoding for strings and character arrays (UTF-8) */
