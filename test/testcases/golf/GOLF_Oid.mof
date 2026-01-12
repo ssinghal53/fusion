@@ -1,0 +1,2 @@
+#pragma oid("1.2.3.4")
+#pragma include ("GOLF_Schema.mof")

@@ -1,5 +1,5 @@
 /**
- * Copyright 2015, Sharad Singhal, All Rights Reserved
+ * Copyright 2015,2026 Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,11 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Feb 28, 2015 by Sharad Singhal
+ * Last Modified Jan 11, 2026 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -294,6 +296,37 @@ public class MOFParserTest {
 			if(verbose) System.out.println(e);
 			fail("Parse failed");
 		}
+	}
+	
+	@Test
+	public final void testOID() {
+		InMemoryRepository r = new InMemoryRepository();
+		String pragma = "#pragma oid (\"1.2.3.4\")";
+		MOFParser p = new MOFParser(r);
+		p.parse(new ByteArrayInputStream(pragma.getBytes()), null);
+		try {
+			p.parse("test/testcases/golf/GOLF_Oid.mof", null);
+			List<NamedElement> l = r.getElements(null,null,null, false);
+			assertNotNull(l);
+			assertEquals(21,l.size());
+			for(NamedElement e : l) {
+				if(verbose) System.out.println(e.getElementType());
+				switch(e.getElementType()) {
+				case ENUMERATION:
+				case STRUCTURE:
+				case CLASS:
+					assertTrue(e.hasQualifier("oid"));
+					assertEquals("1.2.3.4",e.getQualifierValue("oid").toString());
+					break;
+				default:
+					assertFalse(e.hasQualifier("oid"));
+				}
+			}
+		} catch (ModelException e){
+			if(verbose) System.out.println(e);
+			fail("Parse failed");
+		}
+		
 	}
 
 }
