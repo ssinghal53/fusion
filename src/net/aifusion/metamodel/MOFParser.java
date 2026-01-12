@@ -82,6 +82,8 @@ public class MOFParser implements Parser {
 		NameSpacePath path = null;
 		/** Current Log Level */
 		Level logLevel = Level.INFO;
+		/** Current OID */
+		public String oid = null;
 	}
 
 	/**
@@ -834,6 +836,10 @@ public class MOFParser implements Parser {
 		} else if("debug".equalsIgnoreCase(pragmaName)){		// #pragma debug ("on" | "off")
 			// turn compiler debugging on or off
 			debug = "on".equalsIgnoreCase(pragmaParameter);
+		} else if("oid".equalsIgnoreCase(pragmaName)) {
+			p.oid = pragmaParameter;
+			if(!p.oid.matches("^\\d+(\\.\\d+)*$")) throw new ModelException(ExceptionReason.INVALID_PARAMETER,
+					"Expected OID of the form nn[.nn]*, found "+pragmaParameter);
 		} else {
 			warn("Pragma "+pragmaName+" "+pragmaParameter+" ignored");
 		}
@@ -1023,6 +1029,7 @@ public class MOFParser implements Parser {
 		}
 		skipOver(TokenType.RBRACE);
 		skipOver(TokenType.SEMICOLON);
+		if(p.oid != null) updateOidInQualifierList(quals);
 		return new CimEnumeration(enumName, superEnum, quals, p.path, dataType, values);
 	}
 
@@ -1187,6 +1194,7 @@ public class MOFParser implements Parser {
 		skipOver(TokenType.RBRACE);
 		skipOver(TokenType.SEMICOLON);
 		NamedElement c = null;
+		if(p.oid != null) updateOidInQualifierList(quals);
 		switch(elementType){
 		case CLASS:
 			c = new CimClass(elementType,elementName,superType,quals,p.path,elementFeatures);
@@ -1391,6 +1399,7 @@ public class MOFParser implements Parser {
 		}
 		skipOver(TokenType.RBRACE);
 		skipOver(TokenType.SEMICOLON);
+		if(p.oid != null) updateOidInQualifierList(quals);
 		CimStructure struct = new CimStructure(ElementType.STRUCTURE,structureName,superStruct,quals, p.path, structureFeatures);
 		
 		if(debug) System.out.println(struct.toMOF());
@@ -1619,6 +1628,21 @@ public class MOFParser implements Parser {
 		}
 		Qualifier q = dataValue == null ? new Qualifier(t) : new Qualifier(t,dataValue);
 		return q;
+	}
+	
+	/**
+	 * Add an OID qualifier to qualifier list if not present and #pragma oid() is present
+	 * @param quals - qualifier list to check
+	 */
+	private void updateOidInQualifierList(List<Qualifier> quals) {
+		if(p.oid != null) {
+			for(Qualifier q : quals) {
+				if(q.getName().equalsIgnoreCase("oid")) return;
+			}
+			QualifierType qt = StandardQualifierType.OID.getQualifierType(p.path);
+			quals.add(new Qualifier(qt,new DataValue(DataType.STRING,p.oid)));
+		}
+		return;
 	}
 
 	/**
@@ -2796,15 +2820,18 @@ public class MOFParser implements Parser {
 		// TODO: Currently we only handle relative paths. Also add checks when fileName contains full path information
 		String lastDirectory = "";
 		NameSpacePath lastPath = null;
+		String lastOid = null;
 		if(p != null){
 			lastDirectory = p.directory;
 			lastPath = p.path;
+			lastOid = p.oid;
 			inputStack.push(p);
 		}
 		p = new ParserState();
 		p.directory = lastDirectory;
 		p.file = fileName;
 		p.path = lastPath;
+		p.oid = lastOid;
 		if(debug) System.out.println("OpenNewInput: Read File: ["+p.directory+"]"+p.file);
 		String filePath = p.directory + p.file;
 		try {
