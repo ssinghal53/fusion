@@ -162,11 +162,11 @@ public enum StandardQualifierType {
 	// additional Fusion related qualifiers
 	/** Qualifier IMPLEMENTS : String[], Scope(CLASS, ASSOCIATION), Policy(RESTRICTED) */
 	IMPLEMENTS("Implements",DataType.STRING_ARRAY,null, new Scope[]{Scope.CLASS,Scope.STRUCTURE}, Policy.RESTRICTED),
-	/** Qualifier OID : STRING, Scope(STRUCTURE,CLASS,INTERFACE,ENUMERATION),Policy(DISABLEOVERRIDE) */
+	/** Qualifier OID : STRING, Scope(STRUCTURE,CLASS,INTERFACE,ENUMERATION),Policy(ENABLEOVERRIDE) */
 	OID("OID",DataType.STRING,null,new Scope[] {Scope.STRUCTURE,Scope.CLASS,Scope.INTERFACE,
-			Scope.ENUMERATION},Policy.DISABLEOVERRIDE),
-	/** Qualifier TAG : Int32,null, Scope(Property,Reference,EnumerationValue), Policy(EnableOverride) */
-	TAG("Tag",DataType.SINT32,null,new Scope[]{Scope.PROPERTY,Scope.REFERENCE,Scope.ENUMERATIONVALUE},null);
+			Scope.ENUMERATION},null),
+	/** Qualifier TAG : Int32,null, Scope(Property,Reference,EnumerationValue), Policy(RESTRICTED) */
+	TAG("Tag",DataType.SINT32,null,new Scope[]{Scope.PROPERTY,Scope.REFERENCE,Scope.ENUMERATIONVALUE},Policy.RESTRICTED);
 	
 	/** MOF name for this qualifier type */
 	private final String mofName;
