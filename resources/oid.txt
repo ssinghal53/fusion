@@ -13,7 +13,17 @@ Note that OIDs should be specified using the MappingStrings qualifier (See Annex
 
 Thus, for new OID assignments, new code should use
 
-[MappingStrings { "OID.aifusion-net|mof.1.3.6.1.4.1.56026."+oidValue }] as the qualifier
+[MappingStrings { "OID.aifusion-net|mof.1.3.6.1.4.1.56026.10"+oidValue }] as the qualifier
+
+Note that StandardQualifier.java now contains additional qualifier types OID {String} and Tag {Sint32} to
+specify OIDs and property tags, as well as #pragma oid(String) to allow OIDs (using format nn.nn...) to be inserted without
+requiring a qualifier on each class. A #pragma oid("null") can be used to turn insertions off. If a class declares tags, it
+must declare tags for all properties. If tags are not specified in a structure declaration, they will be automatically
+assigned in order of property declaration within the structure. 
+
+MOF encoding is ROID 10
+
+Normally we would use suffix applicationOID.schemaOID.StructureOID for oidValue
 
 See http://www.iana.org/assignments/enterprise-numbers/enterprise-numbers for list of current Enterprise numbers
 See https://pen.iana.org/pen/ModifyPen.page for modifying numbers
