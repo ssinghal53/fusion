@@ -297,6 +297,7 @@ public class MOFParser implements Parser {
 	 */
 	public MOFParser(Repository repository){
 		this.repository = repository;
+		this.definitions = new InMemoryCache();
 		return;
 	}
 	
