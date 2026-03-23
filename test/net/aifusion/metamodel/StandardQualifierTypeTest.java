@@ -114,8 +114,8 @@ public class StandardQualifierTypeTest {
 		"Qualifier Write : Boolean = false Scope(Property, Reference);\n",
 		"Qualifier XMLNamespaceName : String = null Scope(Parameter, Property, Reference, Method);\n",
 		"Qualifier Implements : String[] Scope(Class, Structure) Policy(Restricted);\n",
-		"Qualifier OID : String Scope(Structure, Class, Interface, Enumeration) Policy(DisableOverride);\n",
-		"Qualifier Tag : SInt32 Scope(Property, Reference, EnumerationValue);\n"
+		"Qualifier OID : String Scope(Structure, Class, Interface, Enumeration);\n",
+		"Qualifier Tag : SInt32 Scope(Property, Reference, EnumerationValue) Policy(Restricted);\n"
 	};
 	
 	@BeforeClass
@@ -339,8 +339,8 @@ public class StandardQualifierTypeTest {
 			null,	//WRITE
 			null,	//XMLNAMESPACE
 			Policy.RESTRICTED,	//IMPLEMENTS
-			Policy.DISABLEOVERRIDE,	// OID
-			null	// TAG
+			null,	// OID
+			Policy.RESTRICTED	// TAG
 		};
 		
 		assertEquals(qualifiers.length,policy.length);
