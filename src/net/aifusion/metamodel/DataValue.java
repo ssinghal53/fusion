@@ -138,6 +138,17 @@ public class DataValue {
 		}
 		return retValue;
 	}
+	
+	/**
+	 * Get this value as an array value.
+	 * @return value encapsulated in an array value
+	 */
+	public DataValue toArray() {
+		if(type.isArray()) return this;
+		Object avalue = Array.newInstance(value.getClass(), 1);
+		Array.set(avalue, 0, value);
+		return new DataValue(type.getArrayType(),avalue);
+	}
 
 	/**
 	 * Get the MOF representation of this data dataValue
