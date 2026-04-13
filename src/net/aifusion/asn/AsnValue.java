@@ -152,7 +152,7 @@ public abstract class AsnValue {
 		int saved = cursor;
 		// get the tag and tag class information
 		Tag tag = Tag.locate(buffer[cursor]);
-		TagClass tagClass = TagClass.getTagClass(buffer[cursor]);
+		TagClass tagClass = tag.getTagClass();
 
 		if(debug) {
 			TagEncoding tagEncoding = TagEncoding.getTagEncoding(buffer[cursor]);
@@ -233,8 +233,9 @@ public abstract class AsnValue {
 			}
 		case CONTEXT_SPECIFIC:
 			return TaggedValue.create(buffer, blen, cursor);
-		case APPLICATION:
 		case PRIVATE:
+			return CimDataValue.create(buffer, blen, cursor);
+		case APPLICATION:
 		default:
 			throw new ModelException(tagClass+": Tag class not yet handled");
 		}
