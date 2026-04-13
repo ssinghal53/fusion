@@ -65,7 +65,7 @@ public class TagTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		assertEquals(76,Tag.values().length);
+		assertEquals(77,Tag.values().length);
 	}
 
 	/**
@@ -513,6 +513,12 @@ public class TagTest {
 				assertEquals(TagEncoding.PRIMITIVE,t.getTagEncoding());
 				assertEquals(-64,t.getIdentifier());
 				assertArrayEquals(new byte[] {-64},t.getEncoded());
+				break;
+			case CLASS_DEFINED:
+				assertEquals(0,t.getTagNumber());
+				assertEquals(TagEncoding.CONSTRUCTED,t.getTagEncoding());
+				assertEquals(-32,t.getIdentifier());
+				assertArrayEquals(new byte[] {-32},t.getEncoded());
 				break;
 			default:
 				fail("Unhandled case "+t);
