@@ -1,0 +1,56 @@
+CQLStatement = SelectStatement | UpdateStatement | DeleteStatement
+
+
+SelectStatment = SELECT [FIRST uint] [DISTINCT] selectList FROM fromCriteria [WHERE searchCondition] [ORDER BY SortList] 
+				| "(" SelectStatement ")" [AS] result_class
+
+
+SelectList = SelectedEntry *( COMMA SelectedEntry )
+SelectedEntry = StarExpression | expr [AS Identifier]
+StarExpression = '*' | chain '.' '*' | chain '.' propertyScope '*'
+
+
+classList = fromSpecifier *(COMMA fromSpecificer) | '(' selectStatement ')' identifier
+FromSpecification = classPath [[AS] ALIAS] | '(' SubQuery ')' identifier
+SearchCondition = expr
+
+Expression := ORExpression
+ORExpression = AndExpression *( OR AndExpression)
+AndExpression := NotExpression *(AND NotExpression)
+NotExpression := [NOT] CompareExpression
+
+CompareExpression := ArrayCompare
+ArrayCompare := (ANY | EVERY) comp | (ANY | EVERY) Identifier IN expr SATISFIES '(' comp ')'
+comp := arith | arith IS [NOT] Null | arith ISA identifier | arith (GT | GE | EQ | LE | LT | LIKE) arith
+Arith := term *( ('+' | '-') term)
+Term := factor *( ('*'|'/') factor)
+Factor := ['+' | '-'] concat
+Concat := Chain | *( '||' Chain)
+
+chain := literal | '(' expr ')' | Identifier | Identifier '#' stringLiteral<br>
+	  			| chain '.' Identifier | chain '.' identifier '#' stringLiteral<br>
+	 			| chain '[' arrayIndexList ']' | identifier PROPERTYQUALIFIER identifier<br>
+	 			| chain CLASSQUALIFIER identifier | identifier '(' arg-list ')'<br>
+	 			| propertyScope identifier | chain '.' propertyScope identifier <br>
+	 			| chain '.' propertyScope identifier '#' StringLiteral<br>
+				
+literal := stringLiteral | decimal-value | binary-value | hex-value | real-value | TRUE | FALSE | '{' [literal *( ',' literal )] '}'
+PropertyScope := '::' identifier [ '.' '*' ] 
+classPath = ['/' identifier *('/' identifier) ':' ] className
+className = identifier
+
+
+SortList = SortSpec ["," SortSpec ... ]			
+SortSpec = expr (ASC | DSC)
+
+
+
+In addition to above, the Fusion extends CQL to include constructs to allow deletion of objects and updates to writable properties. structures can be deleted in the cache
+by using the syntax
+
+DeleteStatment = DELETE [FIRST uint] [DISTINCT] FROM className [WHERE searchCondition] [ORDER BY SortList]
+
+Writable properties in a structure can be updated using the syntax
+
+UpdateStatement = UPDATE className SET propertyName1 = value1 [, propertyName2 = value2, ...] [WHERE searchCondition]
+				
