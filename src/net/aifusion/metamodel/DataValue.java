@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, Sharad Singhal, All Rights Reserved
+ * Copyright 2013,2026 Sharad Singhal, All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * Created Dec 29, 2013 by Sharad Singhal
- * Last Modified Aug 15, 2016 by Sharad Singhal
+ * Last Modified May 8, 2026 by Sharad Singhal
  */
 package net.aifusion.metamodel;
 
@@ -148,6 +148,39 @@ public class DataValue {
 		Object avalue = Array.newInstance(value.getClass(), 1);
 		Array.set(avalue, 0, value);
 		return new DataValue(type.getArrayType(),avalue);
+	}
+	
+	/**
+	 * Append a data value to this data value
+	 * @param dv new data value (of the same component type as this value)
+	 * @return a data value with combined values
+	 */
+	public DataValue append(DataValue dv) {
+		if(dv == null) return this;		
+		if(type.getComponentType() != dv.getType().getComponentType()) {
+			throw new ModelException(ExceptionReason.INVALID_PARAMETER,"Type mismatch: Expected "+type+" found "+dv.type);
+		}
+		// create a new array with the combined length
+		int l1 = type.isArray() ? Array.getLength(value) : 1;
+		int l2 = dv.type.isArray() ? Array.getLength(dv.value) : 1;
+		Object aValue = Array.newInstance(value.getClass().isArray() ? 
+				value.getClass().componentType() : value.getClass(), l1+l2);
+		// copy the two data values in the new array
+		if(type.isArray()) {
+			for(int i = 0; i < l1; i++) {
+				Array.set(aValue, i, Array.get(value, i));
+			}
+		} else {
+			Array.set(aValue,0,value);
+		}
+		if(dv.type.isArray()) {
+			for(int i = 0; i < l2; i++) {
+				Array.set(aValue, l1+i, Array.get(dv.value, i));
+			}
+		} else {
+			Array.set(aValue,l1,dv.value);
+		}
+		return new DataValue(type.getArrayType(),aValue);
 	}
 
 	/**
