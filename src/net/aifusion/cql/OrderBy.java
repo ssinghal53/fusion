@@ -29,6 +29,7 @@ package net.aifusion.cql;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 
 import net.aifusion.metamodel.DataType;
 import net.aifusion.metamodel.DataValue;
@@ -100,12 +101,17 @@ class OrderBy extends Node {
 				lastElement = currentElement;
 			}
 		}
-		// TODO: This seems incorrect. List.sublist() returns a sublist view, but does not change the
-		// underlying list?
 		
-		// if fewer rows are needed, return them
-		if(rowsToReturn > 0 && rowsToReturn < instances.size()) {
-			instances.subList(rowsToReturn, instances.size()).clear();
+		// TODO: Can we avoid copies here using sublist()/removeAll()/retainAll() etc?
+		if(rowsToReturn > 0 || rowOffset > 0) {
+			Vector<StructureValue> retained = new Vector<StructureValue>();
+			for(int i = 0; i < instances.size(); i++) {
+				if(i < rowOffset) continue;
+				if(rowsToReturn > 0 && retained.size() >= rowsToReturn) break;
+				retained.add(instances.get(i));
+			}
+			instances.clear();
+			instances.addAll(retained);
 		}
 		
 		if(debug) System.out.println(toString()+"(headers, instances) - Exit "+getValue());
