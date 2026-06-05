@@ -164,7 +164,7 @@ class QueryParser {
 	}
 
 	/**
-	 * DeleteStatment = DELETE [FIRST uint] [DISTINCT] FROM className [WHERE searchCondition] [ORDER BY SortList]
+	 * DeleteStatment = DELETE [FIRST uint] [DISTINCT] FROM className [WHERE searchCondition] [ORDER BY SortList] [OFFSET uint]
 	 * @param p - parser state
 	 * @return - delete node
 	 */
@@ -224,6 +224,15 @@ class QueryParser {
 				advanceOver(p,TokenType.COMMA);
 				orderBy.addChild(sortSpec(p));
 			}
+			if(p.lookAheadToken.is(TokenType.OFFSET)) {
+				advanceOver(p,TokenType.OFFSET);
+				Token items = advanceOver(p,TokenType.INTEGER);
+				int rowOffset = Integer.valueOf(items.value());
+				if(rowOffset < 0) {
+					error(p,"Expected unsigned integer found "+rowOffset);
+				}
+				orderBy.setOffset(rowOffset);
+			}
 		}
 
 		if(orderBy != null) delete.addChild(orderBy);
@@ -235,7 +244,7 @@ class QueryParser {
 
 
 	/**
-	 * SelectStatment = SELECT [FIRST uint] [DISTINCT] selectList FROM fromCriteria [WHERE searchCondition] [ORDER BY SortList]
+	 * SelectStatment = SELECT [FIRST uint] [DISTINCT] selectList FROM fromCriteria [WHERE searchCondition] [ORDER BY SortList] [OFFSET uint]
 	 * 		| "(" SelectStatement ")" [AS] result_class
 	 * @param p - parser state
 	 * @return - select node
@@ -308,6 +317,15 @@ class QueryParser {
 			while(p.lookAheadToken.is(TokenType.COMMA)) {
 				advanceOver(p,TokenType.COMMA);
 				orderBy.addChild(sortSpec(p));
+			}
+			if(p.lookAheadToken.is(TokenType.OFFSET)) {
+				advanceOver(p,TokenType.OFFSET);
+				Token items = advanceOver(p,TokenType.INTEGER);
+				int rowOffset = Integer.valueOf(items.value());
+				if(rowOffset < 0) {
+					error(p,"Expected unsigned integer found "+rowOffset);
+				}
+				orderBy.setOffset(rowOffset);
 			}
 		}
 

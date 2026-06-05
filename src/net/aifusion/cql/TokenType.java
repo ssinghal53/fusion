@@ -42,6 +42,7 @@ enum TokenType {
 	NE("<>",false),
 	NOT("not",false),
 	NULL("null",false),
+	OFFSET("offset",false),
 	OR("or",false),
 	ORDER("order",false),
 	PERIOD(".",false),

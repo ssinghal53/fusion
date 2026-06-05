@@ -44,6 +44,8 @@ import net.aifusion.metamodel.StructureValue;
 class OrderBy extends Node {
 	/** Return only the first n rows */
 	int rowsToReturn = -1;
+	/** initial offset to use in the list */
+	int rowOffset = 0;
 	/** Return only distinct rows */
 	boolean distinct = false;
 
@@ -59,6 +61,10 @@ class OrderBy extends Node {
 		return;
 	}
 	
+	public void setOffset(int n) {
+		rowOffset = n;
+	}
+	
 	public void setDistinct() {
 		distinct = true;
 		return;
@@ -66,7 +72,7 @@ class OrderBy extends Node {
 
 	@Override
 	public String toString() {
-		return super.toString()+"<"+rowsToReturn+","+distinct+">";
+		return super.toString()+"<"+distinct+","+rowsToReturn+"@"+rowOffset+">";
 	}
 	
 	@Override
@@ -94,6 +100,8 @@ class OrderBy extends Node {
 				lastElement = currentElement;
 			}
 		}
+		// TODO: This seems incorrect. List.sublist() returns a sublist view, but does not change the
+		// underlying list?
 		
 		// if fewer rows are needed, return them
 		if(rowsToReturn > 0 && rowsToReturn < instances.size()) {
