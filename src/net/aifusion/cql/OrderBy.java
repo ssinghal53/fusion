@@ -119,7 +119,7 @@ class OrderBy extends Node {
 	}
 	
 	/*
-   |-- ORDER_BY<3,true>
+   |-- ORDER_BY<true,3@0>
    |   |-- SORT_BY<true>
    |   |   |-- ADD
    |   |   |   |-- IDENTIFIER (Property1) [path = null class = null property = Property1]
