@@ -55,7 +55,7 @@ It also contains a number of CIM repository implementations.
  </ul></li>	
  <li>Miscellaneous
  <ul>
-  <li>StandardQualifierTypes - provides static methods to initialize the repository with known Qualifiers (DSP0004, Cim Version 3.0) as well as
+  <li>StandardQualifierType - provides static methods to initialize the repository with known Qualifiers (DSP0004, Cim Version 3.0) as well as
   extensions to declare that a class implements the methods, properties, and references declared in the corresponding interface class.
    </li>
  </ul>
