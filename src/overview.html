@@ -18,9 +18,9 @@ are unnecessary, and cause complexity when mapping to Java.</li>
 <li><b>Object names are structured differently.</b> Unlike the standards, the {@link net.aifusion.metamodel.ObjectPath} class provides a single way
 to represent all named elements within the metamodel.</li>
 <li><b>CIM operations over HTTP do not use XML.</b> The CIM Server uses MOF and plain-text over HTTP to avoid an extra layer of translation to XML.
-In addition, the number of intrinsic operations required has been reduced significantly, since the all named elements can be unambiguously
+In addition, the number of intrinsic operations required has been reduced significantly, since all named elements can be unambiguously
 addressed using a uniform structure.</li>
-<li><b>CQL support is partial.</b> Joins are currently not supported in CQL, so the query returns a list of instance and structure values
+<li><b>CQL support is partial.</b> Joins are partially supported in CQL, so the query returns a list of instance and structure values
 rather than row sets.</li>
 <li><b>Java to MOF bindings are supported.</b> Annotations enable the CIM model to be derived directly from the java code at run-time.
 Conversely, tools can create annotated java stubs from MOF input.</li>
