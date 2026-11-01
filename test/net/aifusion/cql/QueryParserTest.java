@@ -263,6 +263,8 @@ public class QueryParserTest {
 			new TestQuery("Select * from cim_class where property = $var$",true,0),
 			// sort/distinct
 			new TestQuery("Select FIRST 3 DISTINCT * from cim_class where property1 > 5 Order by Property1+Property2 ASC, Property2 DESC",true,0),
+			// sort offset
+			new TestQuery("Select FIRST 3 * from cim_class where property1 > 5 Order by Property1+Property2 ASC, Property2 DESC OFFSET 4",true,0),
 			// delete
 			new TestQuery("Delete FIRST 3 DISTINCT from cim_class where property1 > 5 Order by Property1+Property2 ASC, Property2 DESC",true,0),
 			
