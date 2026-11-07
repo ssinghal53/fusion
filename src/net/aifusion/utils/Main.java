@@ -68,7 +68,7 @@ public class Main {
 	/**
 	 * The Main (dispatcher) entry point for all Fusion tools<br>
 	 * This program is the main entry point for all tools and provides a command line interface that dispatches
-	 * the request to the different. The following tools are currently handled:
+	 * the request to the different tools. The following tools are currently handled:
 	 * <dl>
 	 * <dt>server</dt><dd>Run the cim Server</dd>
 	 * <dt>test</dt><dd>Run the unit tests</dd>
